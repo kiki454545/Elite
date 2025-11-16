@@ -6,7 +6,7 @@ import { AdsStats } from '@/components/AdsStats'
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-gray-950 pb-20">
+    <main className="min-h-screen bg-gray-950 pb-20 overflow-x-hidden">
       <Header />
       <AdsStats />
       <ProfileGrid />

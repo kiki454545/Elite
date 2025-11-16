@@ -20,7 +20,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr">
-      <body className="antialiased">
+      <body className="antialiased overflow-x-hidden">
         <AuthProvider>
           <LanguageProvider>
             <FavoritesProvider>
