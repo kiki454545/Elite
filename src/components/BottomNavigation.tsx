@@ -46,7 +46,7 @@ export function BottomNavigation() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-20 bg-gray-900/95 backdrop-blur-sm border-t border-gray-800">
-      <div className="max-w-screen-xl mx-auto px-4">
+      <div className="max-w-screen-xl mx-auto px-2">
         <div className="flex items-center justify-around">
           {navItems.map((item) => {
             const Icon = item.icon
@@ -56,7 +56,7 @@ export function BottomNavigation() {
               <motion.button
                 key={item.id}
                 onClick={() => handleNavClick(item)}
-                className="relative flex flex-col items-center gap-1 py-3 px-4 transition-colors"
+                className="relative flex flex-col items-center gap-1 py-3 px-2 transition-colors"
                 whileTap={{ scale: 0.95 }}
               >
                 {/* Active indicator */}
