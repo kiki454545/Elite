@@ -228,7 +228,7 @@ export function useAdById(id: string) {
           createdAt: new Date(data.created_at),
           updatedAt: data.updated_at ? new Date(data.updated_at) : new Date(data.created_at),
           // Nouvelles propriétés (utiliser les données du profil si pas dans l'annonce)
-          contactInfo: contactInfo,
+          contactInfo: contactInfo || undefined,
           languages: profileData?.languages || [],
           acceptsCouples: data.accepts_couples,
           outcall: data.outcall,
