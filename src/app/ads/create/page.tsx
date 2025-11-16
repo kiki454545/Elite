@@ -326,7 +326,7 @@ export default function CreateAdPage() {
     const newFiles = Array.from(files)
 
     // Obtenir la limite de photos selon le grade de l'utilisateur
-    const userRank = profile?.rank || 'standard'
+    const userRank = (profile?.rank || 'standard') as keyof typeof RANK_CONFIG
     const maxPhotos = RANK_CONFIG[userRank].maxPhotos
 
     // Limiter selon le grade
