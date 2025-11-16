@@ -10,7 +10,7 @@ import { AgeVerificationModal } from '@/components/AgeVerificationModal'
 
 export const metadata: Metadata = {
   title: 'SexElite',
-  description: 'Plateforme élite de rencontres',
+  description: 'Plateforme d\'annonce Libertine',
 }
 
 export default function RootLayout({
