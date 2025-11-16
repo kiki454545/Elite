@@ -335,7 +335,7 @@ export const mockAds: Ad[] = [
     age: 25,
     location: 'Rome',
     country: 'IT',
-    category: 'couple',
+    category: 'escort',
     photos: [],
     services: ['Accompagnement'],
     availability: 'Week-ends',
