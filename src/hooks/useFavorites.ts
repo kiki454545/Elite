@@ -166,28 +166,22 @@ export function useFavoriteAds() {
         .select(`
           id,
           created_at,
-          ads (
+          ads!inner (
             id,
             user_id,
-            username,
             title,
             description,
-            age,
             location,
             arrondissement,
             country,
-            category,
+            categories,
             photos,
-            video,
             video_url,
             price,
-            services,
-            availability,
+            meeting_places,
             verified,
-            rank,
-            online,
             views,
-            favorites,
+            favorites_count,
             created_at,
             updated_at
           )
@@ -201,31 +195,34 @@ export function useFavoriteAds() {
 
       // Transformer les données
       const ads = (data || [])
-        .filter(fav => fav.ads) // Filtrer les favoris sans annonce (annonce supprimée)
-        .map(fav => ({
-          id: fav.ads.id,
-          userId: fav.ads.user_id,
-          username: fav.ads.username,
-          title: fav.ads.title,
-          description: fav.ads.description || '',
-          age: fav.ads.age,
-          location: fav.ads.location,
-          arrondissement: fav.ads.arrondissement,
-          country: fav.ads.country,
-          category: fav.ads.category,
-          photos: fav.ads.photos || [],
-          video: fav.ads.video_url,
-          price: fav.ads.price,
-          services: fav.ads.services || [],
-          availability: fav.ads.availability,
-          verified: fav.ads.verified,
-          rank: fav.ads.rank,
-          online: fav.ads.online,
-          views: fav.ads.views || 0,
-          favorites: fav.ads.favorites || 0,
-          createdAt: new Date(fav.ads.created_at),
-          updatedAt: new Date(fav.ads.updated_at)
-        }))
+        .filter((fav: any) => fav.ads) // Filtrer les favoris sans annonce (annonce supprimée)
+        .map((fav: any) => {
+          const ad = fav.ads
+          return {
+            id: ad.id,
+            userId: ad.user_id,
+            username: ad.title || 'Utilisateur',
+            title: ad.title || '',
+            description: ad.description || '',
+            age: 25, // Valeur par défaut
+            location: ad.location,
+            arrondissement: ad.arrondissement,
+            country: ad.country,
+            category: (ad.categories && ad.categories[0]) || 'escort',
+            photos: ad.photos || [],
+            video: ad.video_url,
+            price: ad.price,
+            services: ad.meeting_places || [],
+            availability: '',
+            verified: ad.verified || false,
+            rank: 'standard' as const,
+            online: false,
+            views: ad.views || 0,
+            favorites: ad.favorites_count || 0,
+            createdAt: new Date(ad.created_at),
+            updatedAt: ad.updated_at ? new Date(ad.updated_at) : new Date(ad.created_at)
+          }
+        })
 
       setFavoriteAds(ads)
     } catch (err) {
