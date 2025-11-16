@@ -1,0 +1,154 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    🚀 DÉPLOIEMENT - RÉSUMÉ RAPIDE                            ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+✅ ÉTAT ACTUEL : Votre site est prêt à être déployé !
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 ÉTAPES À SUIVRE (5 minutes)
+
+1️⃣  VÉRIFICATION (30 secondes)
+
+   Lancez cette commande pour vérifier que tout est prêt :
+
+   npm run deploy:check
+
+   ✅ Si vous voyez "TOUT EST PRÊT", passez à l'étape 2
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+2️⃣  GITHUB (2 minutes)
+
+   a) Créez un compte sur https://github.com/signup (si pas déjà fait)
+
+   b) Créez un nouveau repository : https://github.com/new
+
+   c) Poussez votre code :
+
+      git init
+      git add .
+      git commit -m "Initial commit"
+      git remote add origin https://github.com/VOTRE-USERNAME/VOTRE-REPO.git
+      git branch -M main
+      git push -u origin main
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+3️⃣  VERCEL (3 minutes)
+
+   a) Allez sur https://vercel.com/signup
+
+   b) Connectez-vous avec GitHub
+
+   c) Cliquez sur "Add New..." → "Project"
+
+   d) Sélectionnez votre repository
+
+   e) IMPORTANT : Ajoutez ces 3 variables d'environnement :
+
+      NEXT_PUBLIC_SUPABASE_URL
+      NEXT_PUBLIC_SUPABASE_ANON_KEY
+      SUPABASE_SERVICE_ROLE_KEY
+
+      (Les valeurs sont dans votre fichier .env.local)
+
+   f) Cliquez sur "Deploy"
+
+   ⏳ Attendez 2-3 minutes...
+
+   🎉 Votre site est en ligne !
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+4️⃣  SUPABASE (1 minute)
+
+   a) Allez sur https://supabase.com/dashboard
+
+   b) Sélectionnez votre projet
+
+   c) Authentication → URL Configuration
+
+   d) Ajoutez votre URL Vercel dans :
+      - Site URL : https://votre-projet.vercel.app
+      - Redirect URLs : https://votre-projet.vercel.app/**
+
+   e) Cliquez sur "Save"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 RÉSULTAT
+
+Votre site sera accessible à l'adresse :
+https://votre-projet.vercel.app
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔄 MISES À JOUR FUTURES
+
+Pour mettre à jour votre site après modifications :
+
+git add .
+git commit -m "Description des changements"
+git push
+
+→ Vercel redéploiera automatiquement en 2-3 minutes !
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📚 GUIDES DISPONIBLES
+
+GUIDE-DEPLOIEMENT-RAPIDE.md  → Guide visuel étape par étape (recommandé)
+DEPLOIEMENT.md               → Guide complet avec toutes les options
+README.md                    → Documentation générale du projet
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🌍 DOMAINE PERSONNALISÉ (Optionnel)
+
+Si vous voulez un nom de domaine personnalisé (ex: monsite.com) :
+
+1. Achetez un domaine sur OVH.com (~10€/an)
+2. Dans Vercel : Settings → Domains → Add
+3. Suivez les instructions DNS
+4. Ajoutez le nouveau domaine dans Supabase
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💰 COÛTS
+
+Vercel :      GRATUIT (jusqu'à 100GB de bande passante/mois)
+Supabase :    GRATUIT (jusqu'à 500MB de stockage)
+GitHub :      GRATUIT
+Domaine :     ~10-15€/an (optionnel)
+
+→ Vous pouvez démarrer à 0€ !
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🆘 EN CAS DE PROBLÈME
+
+1. Consultez GUIDE-DEPLOIEMENT-RAPIDE.md
+2. Vérifiez les logs dans Vercel (onglet "Deployments")
+3. Vérifiez que les variables d'environnement sont bien configurées
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✨ IMPORTANT : AVANT DE PARTAGER VOTRE SITE
+
+⚠️  Assurez-vous d'avoir exécuté le SQL de migration pour ajouter les colonnes
+    manquantes (arrondissement, video_url) dans votre base de données Supabase.
+
+    → Voir le fichier : scripts/add_missing_columns.mjs
+
+✅ Testez toutes les fonctionnalités :
+   - Inscription / Connexion
+   - Création d'annonce
+   - Upload de photos
+   - Upload de vidéo
+   - Recherche
+   - Favoris
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Bonne chance ! 🚀

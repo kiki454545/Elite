@@ -1,0 +1,160 @@
+{
+  "search": {
+    "advancedFilters": "Advanced Filters",
+    "clearAll": "Clear All",
+    "searchByPhone": "Search by Phone",
+    "phonePlaceholder": "Ex: 06 12 34 56 78",
+    "basicInfo": "Basic Information",
+    "physicalAttributes": "Physical Attributes",
+    "meetingPlaces": "Meeting Places",
+    "languages": "Spoken Languages",
+    "otherFilters": "Other Filters",
+
+    "gender": {
+      "label": "Gender",
+      "female": "Female",
+      "male": "Male",
+      "trans": "Trans",
+      "couple": "Couple",
+      "nonBinary": "Non-binary"
+    },
+
+    "age": {
+      "label": "Age",
+      "min": "Min",
+      "max": "Max"
+    },
+
+    "nationality": {
+      "label": "Nationality",
+      "FR": "🇫🇷 French",
+      "BE": "🇧🇪 Belgian",
+      "CH": "🇨🇭 Swiss",
+      "ES": "🇪🇸 Spanish",
+      "IT": "🇮🇹 Italian",
+      "PT": "🇵🇹 Portuguese",
+      "DE": "🇩🇪 German",
+      "GB": "🇬🇧 British",
+      "BR": "🇧🇷 Brazilian",
+      "RU": "🇷🇺 Russian",
+      "US": "🇺🇸 American",
+      "RO": "🇷🇴 Romanian",
+      "PL": "🇵🇱 Polish",
+      "MA": "🇲🇦 Moroccan",
+      "DZ": "🇩🇿 Algerian",
+      "TN": "🇹🇳 Tunisian",
+      "CN": "🇨🇳 Chinese",
+      "TH": "🇹🇭 Thai",
+      "CO": "🇨🇴 Colombian"
+    },
+
+    "ethnicity": {
+      "label": "Ethnicity",
+      "caucasian": "Caucasian",
+      "african": "African",
+      "asian": "Asian",
+      "latina": "Latina",
+      "arab": "Arab",
+      "mixed": "Mixed",
+      "other": "Other"
+    },
+
+    "cupSize": {
+      "label": "Cup Size"
+    },
+
+    "height": {
+      "label": "Height (cm)"
+    },
+
+    "weight": {
+      "label": "Weight (kg)"
+    },
+
+    "hairColor": {
+      "label": "Hair Color",
+      "blonde": "Blonde",
+      "brunette": "Brunette",
+      "redhead": "Redhead",
+      "brown": "Brown",
+      "black": "Black",
+      "grey": "Grey",
+      "white": "White",
+      "colored": "Colored",
+      "other": "Other"
+    },
+
+    "eyeColor": {
+      "label": "Eye Color",
+      "blue": "Blue",
+      "green": "Green",
+      "brown": "Brown",
+      "black": "Black",
+      "grey": "Grey",
+      "hazel": "Hazel",
+      "other": "Other"
+    },
+
+    "bodyType": {
+      "label": "Body Type",
+      "slim": "Slim",
+      "athletic": "Athletic",
+      "average": "Average",
+      "curvy": "Curvy",
+      "voluptuous": "Voluptuous",
+      "muscular": "Muscular"
+    },
+
+    "pubicHair": {
+      "label": "Pubic Hair",
+      "shaved": "Shaved",
+      "trimmed": "Trimmed",
+      "natural": "Natural",
+      "waxed": "Waxed"
+    },
+
+    "tattoos": {
+      "label": "Tattoos",
+      "with": "With tattoos",
+      "without": "Without tattoos"
+    },
+
+    "piercings": {
+      "label": "Piercings",
+      "with": "With piercings",
+      "without": "Without piercings"
+    },
+
+    "meeting": {
+      "atHome": "Your place",
+      "atHotel": "Hotel",
+      "inCar": "Car date",
+      "atEscort": "Escort's place"
+    },
+
+    "languagesList": {
+      "fr": "🇫🇷 French",
+      "en": "🇬🇧 English",
+      "es": "🇪🇸 Spanish",
+      "de": "🇩🇪 German",
+      "it": "🇮🇹 Italian",
+      "pt": "🇵🇹 Portuguese",
+      "ru": "🇷🇺 Russian",
+      "ar": "🇸🇦 Arabic",
+      "zh": "🇨🇳 Chinese",
+      "ja": "🇯🇵 Japanese"
+    },
+
+    "verifiedOnly": "Verified profiles only",
+    "withCommentsOnly": "With comments only",
+
+    "results": {
+      "count": "{{count}} result",
+      "count_plural": "{{count}} results",
+      "noResults": "No results",
+      "noResultsDesc": "Try changing your search criteria",
+      "reset": "Reset search",
+      "withinRadius": "within {{radius}} km of {{city}}"
+    }
+  }
+}

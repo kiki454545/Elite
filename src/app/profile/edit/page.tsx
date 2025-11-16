@@ -1,0 +1,1146 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { motion } from 'framer-motion'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { useAuth } from '@/contexts/AuthContext'
+import { Header } from '@/components/Header'
+import { User, Eye, Heart, Phone, Settings } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
+
+type Gender = 'female' | 'male' | 'couple' | 'transsexual'
+type Orientation = 'heterosexual' | 'bisexual' | 'homosexual'
+type Ethnicity = 'asian' | 'black' | 'caucasian' | 'latin' | 'indian' | 'oriental' | 'mixed'
+type HairColor = 'blond' | 'chestnut' | 'brown' | 'red' | 'black'
+type EyeColor = 'blue' | 'gray' | 'brown' | 'hazel' | 'green'
+type BreastType = 'natural' | 'silicone'
+type HairRemoval = 'fully' | 'partially' | 'circumcised' | 'natural'
+type ContactMethod = 'sms_only' | 'call_only' | 'call_and_sms'
+
+export default function EditProfilePage() {
+  const router = useRouter()
+  const { t } = useLanguage()
+  const { user, profile, loading } = useAuth()
+
+  // Form state - tous vides par défaut
+  const [gender, setGender] = useState<Gender | ''>('')
+  const [orientation, setOrientation] = useState<Orientation | ''>('')
+  const [interestedIn, setInterestedIn] = useState({
+    men: false,
+    women: false,
+    couples: false,
+    transsexuals: false,
+    over25: false,
+    gays: false
+  })
+  const [showname, setShowname] = useState('')
+  const [age, setAge] = useState('')
+  const [ethnicity, setEthnicity] = useState<Ethnicity | ''>('')
+  const [nationality, setNationality] = useState('')
+  const [hair, setHair] = useState<HairColor | ''>('')
+  const [eyes, setEyes] = useState<EyeColor | ''>('')
+  const [height, setHeight] = useState('')
+  const [weight, setWeight] = useState('')
+  const [bust, setBust] = useState('')
+  const [waist, setWaist] = useState('')
+  const [hips, setHips] = useState('')
+  const [breastSize, setBreastSize] = useState('')
+  const [breastType, setBreastType] = useState<BreastType | ''>('')
+  const [hairRemoval, setHairRemoval] = useState<HairRemoval | ''>('')
+  const [tattoo, setTattoo] = useState(false)
+  const [piercings, setPiercings] = useState(false)
+  const [languages, setLanguages] = useState<string[]>([])
+  const [availability, setAvailability] = useState<{
+    [key: string]: { enabled: boolean; start: string; end: string }
+  }>({
+    monday: { enabled: false, start: '09:00', end: '17:00' },
+    tuesday: { enabled: false, start: '09:00', end: '17:00' },
+    wednesday: { enabled: false, start: '09:00', end: '17:00' },
+    thursday: { enabled: false, start: '09:00', end: '17:00' },
+    friday: { enabled: false, start: '09:00', end: '17:00' },
+    saturday: { enabled: false, start: '09:00', end: '17:00' },
+    sunday: { enabled: false, start: '09:00', end: '17:00' },
+  })
+  const [available24_7, setAvailable24_7] = useState(false)
+
+  // Coordonnées
+  const [phoneNumber, setPhoneNumber] = useState('')
+  const [hasWhatsapp, setHasWhatsapp] = useState(false)
+  const [contactEmail, setContactEmail] = useState('')
+  const [contactMethod, setContactMethod] = useState<ContactMethod | ''>()
+
+  // Charger les données du profil une fois qu'elles sont disponibles
+  useEffect(() => {
+    async function loadProfile() {
+      if (user?.id) {
+        // Charger les données depuis Supabase
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single()
+
+        if (error) {
+          console.error('Erreur lors du chargement du profil:', error)
+          return
+        }
+
+        if (data) {
+          console.log('📥 CHARGEMENT DEPUIS DB - available24_7:', data.available24_7)
+          console.log('📥 CHARGEMENT DEPUIS DB - availability:', data.availability)
+          console.log('📥 CHARGEMENT DEPUIS DB - type de availability:', typeof data.availability)
+
+          setShowname(data.username || '')
+          setGender(data.gender || '')
+          setOrientation(data.orientation || '')
+          setInterestedIn(data.interested_in || {
+            men: false,
+            women: false,
+            couples: false,
+            transsexuals: false,
+            over25: false,
+            gays: false
+          })
+          setAge(data.age ? String(data.age) : '')
+          setEthnicity(data.ethnicity || '')
+          setNationality(data.nationality || '')
+          setHair(data.hair_color || '')
+          setEyes(data.eye_color || '')
+          setHeight(data.height ? String(data.height) : '')
+          setWeight(data.weight ? String(data.weight) : '')
+          setBust(data.bust ? String(data.bust) : '')
+          setWaist(data.waist ? String(data.waist) : '')
+          setHips(data.hips ? String(data.hips) : '')
+          setBreastSize(data.breast_size || '')
+          setBreastType(data.breast_type || '')
+          setHairRemoval(data.hair_removal || '')
+          setTattoo(data.tattoo || false)
+          setPiercings(data.piercings || false)
+          setLanguages(data.languages || [])
+          if (data.availability) {
+            console.log('✅ availability existe, on la charge')
+            // Si c'est une string JSON, la parser en objet
+            const parsedAvailability = typeof data.availability === 'string'
+              ? JSON.parse(data.availability)
+              : data.availability
+            console.log('📦 Availability parsée:', parsedAvailability)
+            setAvailability(parsedAvailability)
+          } else {
+            console.log('❌ availability n\'existe pas dans la DB')
+          }
+          setAvailable24_7(data.available24_7 || false)
+          console.log('📥 APRÈS CHARGEMENT - État des states:')
+          console.log('  - available24_7 sera:', data.available24_7 || false)
+          console.log('  - availability sera:', data.availability)
+          setPhoneNumber(data.phone_number || '')
+          setHasWhatsapp(data.has_whatsapp || false)
+          setContactEmail(data.contact_email || '')
+          setContactMethod(data.contact_method || '')
+        }
+      }
+    }
+
+    loadProfile()
+  }, [user?.id])
+
+  // Rediriger si non authentifié (dans un useEffect pour éviter l'erreur côté serveur)
+  useEffect(() => {
+    if (!loading && (!user || !profile)) {
+      router.push('/auth')
+    }
+  }, [user, profile, loading, router])
+
+  // Afficher un loader pendant la vérification de l'auth
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <div className="text-white text-xl">Chargement...</div>
+      </div>
+    )
+  }
+
+  // Ne rien afficher si pas authentifié (la redirection est en cours)
+  if (!user || !profile) {
+    return null
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!user?.id) return
+
+    console.log('💾 SAUVEGARDE - available24_7:', available24_7)
+    console.log('💾 SAUVEGARDE - availability:', availability)
+
+    try {
+      // Mettre à jour le profil dans Supabase avec TOUTES les données
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          username: showname,
+          gender: gender || null,
+          orientation: orientation || null,
+          interested_in: interestedIn,
+          age: age ? parseInt(age) : null,
+          ethnicity: ethnicity || null,
+          nationality: nationality || null,
+          hair_color: hair || null,
+          eye_color: eyes || null,
+          height: height ? parseInt(height) : null,
+          weight: weight ? parseInt(weight) : null,
+          bust: bust ? parseInt(bust) : null,
+          waist: waist ? parseInt(waist) : null,
+          hips: hips ? parseInt(hips) : null,
+          breast_size: breastSize || null,
+          breast_type: breastType || null,
+          hair_removal: hairRemoval || null,
+          tattoo: tattoo,
+          piercings: piercings,
+          languages: languages,
+          availability: availability,
+          available24_7: available24_7,
+          phone_number: phoneNumber || null,
+          has_whatsapp: hasWhatsapp,
+          contact_email: contactEmail || null,
+          contact_method: contactMethod || null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id)
+
+      if (error) {
+        console.error('Erreur lors de la mise à jour du profil:', error)
+        alert('Erreur lors de la sauvegarde du profil')
+        return
+      }
+
+      // Recharger le profil depuis Supabase pour mettre à jour le contexte
+      await supabase.auth.getSession()
+
+      // Créer et afficher le modal directement dans le DOM
+      const modalOverlay = document.createElement('div')
+      modalOverlay.id = 'success-modal-overlay'
+      modalOverlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 99999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(8px);
+      `
+
+      modalOverlay.innerHTML = `
+        <div style="width: 90%; max-width: 28rem; padding: 1rem;">
+          <div style="background: linear-gradient(135deg, #1f2937 0%, #111827 100%); border-radius: 24px; padding: 2rem; border: 1px solid #374151; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);">
+            <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+              <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.5);">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </div>
+              <h3 style="font-size: 1.5rem; font-weight: bold; color: white; margin-bottom: 0.5rem;">
+                Profil mis à jour !
+              </h3>
+              <p style="color: #9ca3af; font-size: 0.875rem;">
+                Vos modifications ont été enregistrées avec succès
+              </p>
+            </div>
+          </div>
+        </div>
+      `
+
+      document.body.appendChild(modalOverlay)
+
+      // Rediriger après 2 secondes
+      setTimeout(() => {
+        modalOverlay.remove()
+        router.push('/my-ads')
+      }, 2000)
+    } catch (err) {
+      console.error('Erreur:', err)
+      alert('Erreur lors de la sauvegarde du profil')
+    }
+  }
+
+  return (
+    <>
+      <div className="min-h-screen bg-gray-950 pb-24">
+        <Header title="Éditer le profil" />
+
+        <div className="max-w-5xl mx-auto px-4 py-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+
+          {/* Section: Informations de base */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 rounded-3xl p-6 md:p-8 border border-gray-800 shadow-2xl"
+          >
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-12 h-12 bg-gradient-to-r from-pink-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <User className="w-6 h-6 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-white">
+                Informations de base
+              </h2>
+            </div>
+
+            <div className="space-y-6">
+              {/* Showname */}
+              <div>
+                <label className="text-white text-sm font-medium mb-2 block">
+                  <span className="text-pink-500">*</span> Pseudo
+                </label>
+                <input
+                  type="text"
+                  value={showname}
+                  onChange={(e) => setShowname(e.target.value)}
+                  placeholder="Votre pseudo..."
+                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 transition-all"
+                />
+              </div>
+
+              {/* Âge */}
+              <div>
+                <label className="text-white text-sm font-medium mb-2 block">
+                  <span className="text-pink-500">*</span> Âge
+                </label>
+                <input
+                  type="number"
+                  value={age}
+                  onChange={(e) => setAge(e.target.value)}
+                  min="18"
+                  max="99"
+                  placeholder="25"
+                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 transition-all"
+                />
+              </div>
+
+              {/* Genre */}
+              <div>
+                <label className="text-white text-sm font-medium mb-3 block">
+                  <span className="text-pink-500">*</span> Je suis
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {(['female', 'male', 'couple', 'transsexual'] as Gender[]).map((g) => (
+                    <button
+                      key={g}
+                      type="button"
+                      onClick={() => setGender(g)}
+                      className={`p-4 rounded-xl border-2 transition-all font-medium ${
+                        gender === g
+                          ? 'border-pink-500 bg-pink-500/10 text-pink-500'
+                          : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600 hover:text-gray-300'
+                      }`}
+                    >
+                      {t(`profileForm.${g}`)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Orientation */}
+              <div>
+                <label className="text-white text-sm font-medium mb-3 block">
+                  Orientation sexuelle
+                </label>
+                <div className="grid grid-cols-3 gap-3">
+                  {(['heterosexual', 'bisexual', 'homosexual'] as Orientation[]).map((o) => (
+                    <button
+                      key={o}
+                      type="button"
+                      onClick={() => setOrientation(o)}
+                      className={`p-3 rounded-xl border-2 transition-all text-sm font-medium ${
+                        orientation === o
+                          ? 'border-pink-500 bg-pink-500/10 text-pink-500'
+                          : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600'
+                      }`}
+                    >
+                      {t(`profileForm.${o}`)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Intéressé à rencontrer */}
+              <div>
+                <label className="text-white text-sm font-medium mb-3 block">
+                  Intéressé(e) à rencontrer
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {[
+                    { key: 'men', label: t('profileForm.men'), icon: '👨' },
+                    { key: 'women', label: t('profileForm.women'), icon: '👩' },
+                    { key: 'couples', label: t('profileForm.couples'), icon: '👫' },
+                    { key: 'transsexuals', label: t('profileForm.transsexuals'), icon: '🏳️‍⚧️' },
+                    { key: 'over25', label: t('profileForm.over25'), icon: '👥' },
+                    { key: 'gays', label: t('profileForm.gays'), icon: '🏳️‍🌈' }
+                  ].map((item) => (
+                    <button
+                      key={item.key}
+                      type="button"
+                      onClick={() => setInterestedIn({ ...interestedIn, [item.key]: !interestedIn[item.key as keyof typeof interestedIn] })}
+                      className={`p-3 rounded-xl border-2 transition-all text-sm font-medium flex items-center gap-2 justify-center ${
+                        interestedIn[item.key as keyof typeof interestedIn]
+                          ? 'border-pink-500 bg-pink-500/10 text-pink-500'
+                          : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600'
+                      }`}
+                    >
+                      <span>{item.icon}</span>
+                      <span>{item.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Origine ethnique */}
+                <div>
+                  <label className="text-white text-sm font-medium mb-2 block">
+                    Origine ethnique
+                  </label>
+                  <select
+                    value={ethnicity}
+                    onChange={(e) => setEthnicity(e.target.value as Ethnicity)}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20"
+                  >
+                    <option value="">Sélectionner...</option>
+                    {(['asian', 'black', 'caucasian', 'latin', 'indian', 'oriental', 'mixed'] as Ethnicity[]).map((e) => (
+                      <option key={e} value={e}>{t(`profileForm.${e}`)}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Nationalité */}
+                <div>
+                  <label className="text-white text-sm font-medium mb-2 block">
+                    Nationalité
+                  </label>
+                  <select
+                    value={nationality}
+                    onChange={(e) => setNationality(e.target.value)}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20"
+                  >
+                    <option value="">Sélectionner...</option>
+
+                    {/* Europe de l'Ouest */}
+                    <optgroup label="Europe de l'Ouest">
+                      <option value="FR">France</option>
+                      <option value="BE">Belgique</option>
+                      <option value="CH">Suisse</option>
+                      <option value="LU">Luxembourg</option>
+                      <option value="DE">Allemagne</option>
+                      <option value="NL">Pays-Bas</option>
+                      <option value="AT">Autriche</option>
+                      <option value="IE">Irlande</option>
+                      <option value="GB">Royaume-Uni</option>
+                    </optgroup>
+
+                    {/* Europe du Sud */}
+                    <optgroup label="Europe du Sud">
+                      <option value="ES">Espagne</option>
+                      <option value="IT">Italie</option>
+                      <option value="PT">Portugal</option>
+                      <option value="GR">Grèce</option>
+                      <option value="MT">Malte</option>
+                      <option value="CY">Chypre</option>
+                    </optgroup>
+
+                    {/* Europe de l'Est */}
+                    <optgroup label="Europe de l'Est">
+                      <option value="PL">Pologne</option>
+                      <option value="RO">Roumanie</option>
+                      <option value="BG">Bulgarie</option>
+                      <option value="HU">Hongrie</option>
+                      <option value="CZ">République tchèque</option>
+                      <option value="SK">Slovaquie</option>
+                      <option value="UA">Ukraine</option>
+                      <option value="BY">Biélorussie</option>
+                      <option value="MD">Moldavie</option>
+                      <option value="RU">Russie</option>
+                      <option value="AL">Albanie</option>
+                      <option value="RS">Serbie</option>
+                      <option value="HR">Croatie</option>
+                      <option value="SI">Slovénie</option>
+                      <option value="BA">Bosnie-Herzégovine</option>
+                      <option value="MK">Macédoine du Nord</option>
+                      <option value="ME">Monténégro</option>
+                      <option value="XK">Kosovo</option>
+                    </optgroup>
+
+                    {/* Europe du Nord */}
+                    <optgroup label="Europe du Nord">
+                      <option value="SE">Suède</option>
+                      <option value="NO">Norvège</option>
+                      <option value="DK">Danemark</option>
+                      <option value="FI">Finlande</option>
+                      <option value="IS">Islande</option>
+                      <option value="EE">Estonie</option>
+                      <option value="LV">Lettonie</option>
+                      <option value="LT">Lituanie</option>
+                    </optgroup>
+
+                    {/* Amérique Latine */}
+                    <optgroup label="Amérique Latine">
+                      <option value="BR">Brésil</option>
+                      <option value="AR">Argentine</option>
+                      <option value="CO">Colombie</option>
+                      <option value="VE">Venezuela</option>
+                      <option value="MX">Mexique</option>
+                      <option value="CL">Chili</option>
+                      <option value="PE">Pérou</option>
+                      <option value="EC">Équateur</option>
+                      <option value="UY">Uruguay</option>
+                      <option value="PY">Paraguay</option>
+                      <option value="BO">Bolivie</option>
+                      <option value="CR">Costa Rica</option>
+                      <option value="CU">Cuba</option>
+                      <option value="DO">République dominicaine</option>
+                      <option value="PA">Panama</option>
+                    </optgroup>
+
+                    {/* Amérique du Nord */}
+                    <optgroup label="Amérique du Nord">
+                      <option value="US">États-Unis</option>
+                      <option value="CA">Canada</option>
+                    </optgroup>
+
+                    {/* Afrique du Nord */}
+                    <optgroup label="Afrique du Nord">
+                      <option value="MA">Maroc</option>
+                      <option value="DZ">Algérie</option>
+                      <option value="TN">Tunisie</option>
+                      <option value="EG">Égypte</option>
+                      <option value="LY">Libye</option>
+                    </optgroup>
+
+                    {/* Afrique Subsaharienne */}
+                    <optgroup label="Afrique Subsaharienne">
+                      <option value="SN">Sénégal</option>
+                      <option value="CI">Côte d'Ivoire</option>
+                      <option value="CM">Cameroun</option>
+                      <option value="NG">Nigeria</option>
+                      <option value="GH">Ghana</option>
+                      <option value="KE">Kenya</option>
+                      <option value="ZA">Afrique du Sud</option>
+                      <option value="ET">Éthiopie</option>
+                    </optgroup>
+
+                    {/* Asie */}
+                    <optgroup label="Asie">
+                      <option value="CN">Chine</option>
+                      <option value="JP">Japon</option>
+                      <option value="KR">Corée du Sud</option>
+                      <option value="TH">Thaïlande</option>
+                      <option value="VN">Vietnam</option>
+                      <option value="PH">Philippines</option>
+                      <option value="IN">Inde</option>
+                      <option value="ID">Indonésie</option>
+                      <option value="MY">Malaisie</option>
+                      <option value="SG">Singapour</option>
+                      <option value="KH">Cambodge</option>
+                      <option value="LA">Laos</option>
+                    </optgroup>
+
+                    {/* Moyen-Orient */}
+                    <optgroup label="Moyen-Orient">
+                      <option value="TR">Turquie</option>
+                      <option value="IL">Israël</option>
+                      <option value="LB">Liban</option>
+                      <option value="JO">Jordanie</option>
+                      <option value="AE">Émirats arabes unis</option>
+                      <option value="SA">Arabie saoudite</option>
+                    </optgroup>
+
+                    {/* Océanie */}
+                    <optgroup label="Océanie">
+                      <option value="AU">Australie</option>
+                      <option value="NZ">Nouvelle-Zélande</option>
+                    </optgroup>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Section: Apparence physique */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 rounded-3xl p-6 md:p-8 border border-gray-800 shadow-2xl"
+          >
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <Eye className="w-6 h-6 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-white">
+                Apparence physique
+              </h2>
+            </div>
+
+            <div className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Cheveux */}
+                <div>
+                  <label className="text-white text-sm font-medium mb-2 block">
+                    Couleur de cheveux
+                  </label>
+                  <select
+                    value={hair}
+                    onChange={(e) => setHair(e.target.value as HairColor)}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20"
+                  >
+                    <option value="">Sélectionner...</option>
+                    {(['blond', 'chestnut', 'brown', 'red', 'black'] as HairColor[]).map((h) => (
+                      <option key={h} value={h}>{t(`profileForm.${h}`)}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Yeux */}
+                <div>
+                  <label className="text-white text-sm font-medium mb-2 block">
+                    Couleur des yeux
+                  </label>
+                  <select
+                    value={eyes}
+                    onChange={(e) => setEyes(e.target.value as EyeColor)}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20"
+                  >
+                    <option value="">Sélectionner...</option>
+                    {(['blue', 'gray', 'brown', 'hazel', 'green'] as EyeColor[]).map((e) => (
+                      <option key={e} value={e}>{t(`profileForm.${e}`)}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Taille */}
+                <div>
+                  <label className="text-white text-sm font-medium mb-2 block">
+                    Taille (cm)
+                  </label>
+                  <input
+                    type="number"
+                    value={height}
+                    onChange={(e) => setHeight(e.target.value)}
+                    placeholder="170"
+                    className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20"
+                  />
+                </div>
+
+                {/* Poids */}
+                <div>
+                  <label className="text-white text-sm font-medium mb-2 block">
+                    Poids (kg)
+                  </label>
+                  <input
+                    type="number"
+                    value={weight}
+                    onChange={(e) => setWeight(e.target.value)}
+                    placeholder="60"
+                    className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20"
+                  />
+                </div>
+              </div>
+
+              {/* Mensurations */}
+              <div>
+                <label className="text-white text-sm font-medium mb-2 block">
+                  Mensurations (Poitrine - Taille - Hanches)
+                </label>
+                <div className="grid grid-cols-3 gap-3">
+                  <input
+                    type="number"
+                    value={bust}
+                    onChange={(e) => setBust(e.target.value)}
+                    placeholder="90"
+                    className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20"
+                  />
+                  <input
+                    type="number"
+                    value={waist}
+                    onChange={(e) => setWaist(e.target.value)}
+                    placeholder="60"
+                    className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20"
+                  />
+                  <input
+                    type="number"
+                    value={hips}
+                    onChange={(e) => setHips(e.target.value)}
+                    placeholder="90"
+                    className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20"
+                  />
+                </div>
+              </div>
+
+              {/* Bonnet & Type de seins */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <label className="text-white text-sm font-medium mb-2 block">
+                    Taille de bonnet
+                  </label>
+                  <select
+                    value={breastSize}
+                    onChange={(e) => setBreastSize(e.target.value)}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20"
+                  >
+                    <option value="">Sélectionner...</option>
+                    {['A', 'B', 'C', 'D', 'E', 'F', 'G'].map(size => (
+                      <option key={size} value={size}>{size}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-white text-sm font-medium mb-2 block">
+                    Type de poitrine
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {(['natural', 'silicone'] as BreastType[]).map((b) => (
+                      <button
+                        key={b}
+                        type="button"
+                        onClick={() => setBreastType(b)}
+                        className={`p-3 rounded-xl border-2 transition-all text-sm font-medium ${
+                          breastType === b
+                            ? 'border-pink-500 bg-pink-500/10 text-pink-500'
+                            : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600'
+                        }`}
+                      >
+                        {t(`profileForm.${b}`)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Épilation */}
+              <div>
+                <label className="text-white text-sm font-medium mb-3 block">
+                  Épilation du maillot
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {([
+                    { key: 'fully', label: t('profileForm.fullyShaved') },
+                    { key: 'partially', label: t('profileForm.partiallyShaved') },
+                    { key: 'circumcised', label: t('profileForm.circumcised') },
+                    { key: 'natural', label: t('profileForm.entirelyNatural') }
+                  ] as { key: HairRemoval, label: string }[]).map((item) => (
+                    <button
+                      key={item.key}
+                      type="button"
+                      onClick={() => setHairRemoval(item.key)}
+                      className={`p-3 rounded-xl border-2 transition-all text-sm font-medium ${
+                        hairRemoval === item.key
+                          ? 'border-pink-500 bg-pink-500/10 text-pink-500'
+                          : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600'
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Tatouage */}
+              <div>
+                <label className="text-white text-sm font-medium mb-3 block">
+                  Tatouages
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setTattoo(true)}
+                    className={`p-3 rounded-xl border-2 transition-all font-medium ${
+                      tattoo
+                        ? 'border-pink-500 bg-pink-500/10 text-pink-500'
+                        : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600'
+                    }`}
+                  >
+                    {t('profileForm.yes')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTattoo(false)}
+                    className={`p-3 rounded-xl border-2 transition-all font-medium ${
+                      !tattoo
+                        ? 'border-pink-500 bg-pink-500/10 text-pink-500'
+                        : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600'
+                    }`}
+                  >
+                    {t('profileForm.no')}
+                  </button>
+                </div>
+              </div>
+
+              {/* Piercings */}
+              <div>
+                <label className="text-white text-sm font-medium mb-3 block">
+                  Piercings
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setPiercings(true)}
+                    className={`p-3 rounded-xl border-2 transition-all font-medium ${
+                      piercings
+                        ? 'border-pink-500 bg-pink-500/10 text-pink-500'
+                        : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600'
+                    }`}
+                  >
+                    {t('profileForm.yes')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPiercings(false)}
+                    className={`p-3 rounded-xl border-2 transition-all font-medium ${
+                      !piercings
+                        ? 'border-pink-500 bg-pink-500/10 text-pink-500'
+                        : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600'
+                    }`}
+                  >
+                    {t('profileForm.no')}
+                  </button>
+                </div>
+              </div>
+
+              {/* Langues parlées */}
+              <div>
+                <label className="text-white text-sm font-medium mb-3 block">
+                  Langues parlées
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                  {[
+                    { code: 'fr', label: 'Français 🇫🇷' },
+                    { code: 'en', label: 'English 🇬🇧' },
+                    { code: 'es', label: 'Español 🇪🇸' },
+                    { code: 'de', label: 'Deutsch 🇩🇪' },
+                    { code: 'it', label: 'Italiano 🇮🇹' },
+                    { code: 'pt', label: 'Português 🇵🇹' },
+                    { code: 'nl', label: 'Nederlands 🇳🇱' },
+                    { code: 'ru', label: 'Русский 🇷🇺' },
+                    { code: 'pl', label: 'Polski 🇵🇱' },
+                    { code: 'tr', label: 'Türkçe 🇹🇷' },
+                    { code: 'ar', label: 'العربية 🇸🇦' },
+                    { code: 'zh', label: '中文 🇨🇳' },
+                  ].map((lang) => (
+                    <button
+                      key={lang.code}
+                      type="button"
+                      onClick={() => {
+                        if (languages.includes(lang.code)) {
+                          setLanguages(languages.filter(l => l !== lang.code))
+                        } else {
+                          setLanguages([...languages, lang.code])
+                        }
+                      }}
+                      className={`p-3 rounded-xl border-2 transition-all font-medium text-sm ${
+                        languages.includes(lang.code)
+                          ? 'border-pink-500 bg-pink-500/10 text-pink-500'
+                          : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600'
+                      }`}
+                    >
+                      {lang.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Section: Disponibilités */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 rounded-3xl p-6 md:p-8 border border-gray-800 shadow-2xl"
+          >
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
+                  <Heart className="w-6 h-6 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold text-white">
+                  Disponibilités
+                </h2>
+              </div>
+
+              {/* Bouton Disponible 24/7 */}
+              <button
+                type="button"
+                onClick={() => {
+                  console.log('🔴 CLICK 24/7 - État avant:', available24_7)
+                  const newValue = !available24_7
+                  console.log('🔴 CLICK 24/7 - Nouvelle valeur:', newValue)
+                  setAvailable24_7(newValue)
+                  if (newValue) {
+                    console.log('✅ Activation 24/7 - Activation de tous les jours')
+                    // Activer tous les jours avec horaires 00:00 - 23:59
+                    setAvailability({
+                      monday: { enabled: true, start: '00:00', end: '23:59' },
+                      tuesday: { enabled: true, start: '00:00', end: '23:59' },
+                      wednesday: { enabled: true, start: '00:00', end: '23:59' },
+                      thursday: { enabled: true, start: '00:00', end: '23:59' },
+                      friday: { enabled: true, start: '00:00', end: '23:59' },
+                      saturday: { enabled: true, start: '00:00', end: '23:59' },
+                      sunday: { enabled: true, start: '00:00', end: '23:59' },
+                    })
+                  } else {
+                    console.log('❌ Désactivation 24/7 - Désactivation de tous les jours')
+                    // Désactiver tous les jours
+                    setAvailability({
+                      monday: { enabled: false, start: '09:00', end: '17:00' },
+                      tuesday: { enabled: false, start: '09:00', end: '17:00' },
+                      wednesday: { enabled: false, start: '09:00', end: '17:00' },
+                      thursday: { enabled: false, start: '09:00', end: '17:00' },
+                      friday: { enabled: false, start: '09:00', end: '17:00' },
+                      saturday: { enabled: false, start: '09:00', end: '17:00' },
+                      sunday: { enabled: false, start: '09:00', end: '17:00' },
+                    })
+                  }
+                }}
+                className={`px-4 py-2 rounded-xl border-2 transition-all font-medium text-sm whitespace-nowrap ${
+                  available24_7
+                    ? 'border-green-500 bg-green-500/10 text-green-500'
+                    : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600'
+                }`}
+              >
+                Disponible 24/7
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {[
+                { key: 'monday', label: 'Lundi' },
+                { key: 'tuesday', label: 'Mardi' },
+                { key: 'wednesday', label: 'Mercredi' },
+                { key: 'thursday', label: 'Jeudi' },
+                { key: 'friday', label: 'Vendredi' },
+                { key: 'saturday', label: 'Samedi' },
+                { key: 'sunday', label: 'Dimanche' },
+              ].map((day) => (
+                <div key={day.key} className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                    {/* Jour avec checkbox */}
+                    <div className="flex items-center gap-3 sm:w-40">
+                      <input
+                        type="checkbox"
+                        checked={availability[day.key]?.enabled || false}
+                        onChange={(e) => {
+                          setAvailability({
+                            ...availability,
+                            [day.key]: {
+                              ...(availability[day.key] || { start: '09:00', end: '17:00' }),
+                              enabled: e.target.checked
+                            }
+                          })
+                        }}
+                        className="w-5 h-5 rounded border-gray-600 text-pink-500 focus:ring-pink-500 focus:ring-offset-gray-900"
+                      />
+                      <label className="text-white font-medium">
+                        {day.label}
+                      </label>
+                    </div>
+
+                    {/* Horaires */}
+                    {availability[day.key]?.enabled && (
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className="flex items-center gap-2">
+                          <label className="text-gray-400 text-sm">De</label>
+                          <input
+                            type="time"
+                            value={availability[day.key]?.start || '09:00'}
+                            onChange={(e) => {
+                              setAvailability({
+                                ...availability,
+                                [day.key]: {
+                                  ...(availability[day.key] || { enabled: true, end: '17:00' }),
+                                  start: e.target.value
+                                }
+                              })
+                            }}
+                            className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20"
+                          />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <label className="text-gray-400 text-sm">à</label>
+                          <input
+                            type="time"
+                            value={availability[day.key]?.end || '17:00'}
+                            onChange={(e) => {
+                              setAvailability({
+                                ...availability,
+                                [day.key]: {
+                                  ...(availability[day.key] || { enabled: true, start: '09:00' }),
+                                  end: e.target.value
+                                }
+                              })
+                            }}
+                            className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Section: Coordonnées */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 rounded-3xl p-6 md:p-8 border border-gray-800 shadow-2xl"
+          >
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <Phone className="w-6 h-6 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-white">
+                Coordonnées
+              </h2>
+            </div>
+
+            <div className="space-y-6">
+              {/* Numéro de téléphone */}
+              <div>
+                <label className="text-white text-sm font-medium mb-2 block">
+                  Numéro de téléphone
+                </label>
+                <input
+                  type="tel"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  placeholder="+33 6 12 34 56 78"
+                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20"
+                />
+              </div>
+
+              {/* WhatsApp */}
+              <div>
+                <label className="text-white text-sm font-medium mb-3 block">
+                  Possédez-vous WhatsApp ?
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setHasWhatsapp(true)}
+                    className={`p-3 rounded-xl border-2 transition-all font-medium ${
+                      hasWhatsapp
+                        ? 'border-green-500 bg-green-500/10 text-green-500'
+                        : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600'
+                    }`}
+                  >
+                    Oui
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setHasWhatsapp(false)}
+                    className={`p-3 rounded-xl border-2 transition-all font-medium ${
+                      !hasWhatsapp
+                        ? 'border-pink-500 bg-pink-500/10 text-pink-500'
+                        : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600'
+                    }`}
+                  >
+                    Non
+                  </button>
+                </div>
+              </div>
+
+              {/* Email de contact */}
+              <div>
+                <label className="text-white text-sm font-medium mb-2 block">
+                  Email de contact
+                </label>
+                <input
+                  type="email"
+                  value={contactEmail}
+                  onChange={(e) => setContactEmail(e.target.value)}
+                  placeholder="contact@exemple.com"
+                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20"
+                />
+              </div>
+
+              {/* Méthode de contact préférée */}
+              <div>
+                <label className="text-white text-sm font-medium mb-3 block">
+                  Comment souhaitez-vous être contacté ?
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setContactMethod('sms_only')}
+                    className={`p-4 rounded-xl border-2 transition-all font-medium ${
+                      contactMethod === 'sms_only'
+                        ? 'border-pink-500 bg-pink-500/10 text-pink-500'
+                        : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600'
+                    }`}
+                  >
+                    Seulement SMS
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setContactMethod('call_only')}
+                    className={`p-4 rounded-xl border-2 transition-all font-medium ${
+                      contactMethod === 'call_only'
+                        ? 'border-pink-500 bg-pink-500/10 text-pink-500'
+                        : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600'
+                    }`}
+                  >
+                    Seulement Appel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setContactMethod('call_and_sms')}
+                    className={`p-4 rounded-xl border-2 transition-all font-medium ${
+                      contactMethod === 'call_and_sms'
+                        ? 'border-pink-500 bg-pink-500/10 text-pink-500'
+                        : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600'
+                    }`}
+                  >
+                    Appel + SMS
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </motion.div>
+
+          {/* Action buttons */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="flex flex-col sm:flex-row gap-4"
+          >
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="flex-1 bg-gray-800 hover:bg-gray-700 text-white py-4 rounded-2xl font-semibold transition-all border border-gray-700"
+            >
+              {t('profileForm.cancel')}
+            </button>
+            <button
+              type="submit"
+              className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white py-4 rounded-2xl font-semibold transition-all shadow-lg shadow-pink-500/25"
+            >
+              {t('profileForm.register')}
+            </button>
+          </motion.div>
+          </form>
+        </div>
+      </div>
+
+    </>
+  )
+}

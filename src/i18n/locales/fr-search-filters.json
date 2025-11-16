@@ -1,0 +1,160 @@
+{
+  "search": {
+    "advancedFilters": "Filtres avancés",
+    "clearAll": "Effacer tout",
+    "searchByPhone": "Recherche par téléphone",
+    "phonePlaceholder": "Ex: 06 12 34 56 78",
+    "basicInfo": "Informations de base",
+    "physicalAttributes": "Attributs physiques",
+    "meetingPlaces": "Lieux de rendez-vous",
+    "languages": "Langues parlées",
+    "otherFilters": "Autres filtres",
+
+    "gender": {
+      "label": "Sexe",
+      "female": "Femme",
+      "male": "Homme",
+      "trans": "Trans",
+      "couple": "Couple",
+      "nonBinary": "Non-binaire"
+    },
+
+    "age": {
+      "label": "Âge",
+      "min": "Min",
+      "max": "Max"
+    },
+
+    "nationality": {
+      "label": "Nationalité",
+      "FR": "🇫🇷 Française",
+      "BE": "🇧🇪 Belge",
+      "CH": "🇨🇭 Suisse",
+      "ES": "🇪🇸 Espagnole",
+      "IT": "🇮🇹 Italienne",
+      "PT": "🇵🇹 Portugaise",
+      "DE": "🇩🇪 Allemande",
+      "GB": "🇬🇧 Britannique",
+      "BR": "🇧🇷 Brésilienne",
+      "RU": "🇷🇺 Russe",
+      "US": "🇺🇸 Américaine",
+      "RO": "🇷🇴 Roumaine",
+      "PL": "🇵🇱 Polonaise",
+      "MA": "🇲🇦 Marocaine",
+      "DZ": "🇩🇿 Algérienne",
+      "TN": "🇹🇳 Tunisienne",
+      "CN": "🇨🇳 Chinoise",
+      "TH": "🇹🇭 Thaïlandaise",
+      "CO": "🇨🇴 Colombienne"
+    },
+
+    "ethnicity": {
+      "label": "Ethnie",
+      "caucasian": "Caucasienne",
+      "african": "Africaine",
+      "asian": "Asiatique",
+      "latina": "Latine",
+      "arab": "Arabe",
+      "mixed": "Métisse",
+      "other": "Autre"
+    },
+
+    "cupSize": {
+      "label": "Bonnet"
+    },
+
+    "height": {
+      "label": "Hauteur (cm)"
+    },
+
+    "weight": {
+      "label": "Poids (kg)"
+    },
+
+    "hairColor": {
+      "label": "Cheveux",
+      "blonde": "Blonde",
+      "brunette": "Brune",
+      "redhead": "Rousse",
+      "brown": "Châtain",
+      "black": "Noire",
+      "grey": "Grise",
+      "white": "Blanche",
+      "colored": "Colorée",
+      "other": "Autre"
+    },
+
+    "eyeColor": {
+      "label": "Yeux",
+      "blue": "Bleus",
+      "green": "Verts",
+      "brown": "Marrons",
+      "black": "Noirs",
+      "grey": "Gris",
+      "hazel": "Noisette",
+      "other": "Autre"
+    },
+
+    "bodyType": {
+      "label": "Silhouette",
+      "slim": "Mince",
+      "athletic": "Athlétique",
+      "average": "Moyenne",
+      "curvy": "Ronde",
+      "voluptuous": "Pulpeuse",
+      "muscular": "Musclée"
+    },
+
+    "pubicHair": {
+      "label": "Maillot",
+      "shaved": "Rasée",
+      "trimmed": "Taillée",
+      "natural": "Naturelle",
+      "waxed": "Épilée"
+    },
+
+    "tattoos": {
+      "label": "Tatouages",
+      "with": "Avec tatouages",
+      "without": "Sans tatouages"
+    },
+
+    "piercings": {
+      "label": "Piercings",
+      "with": "Avec piercings",
+      "without": "Sans piercings"
+    },
+
+    "meeting": {
+      "atHome": "Chez vous",
+      "atHotel": "Hôtel",
+      "inCar": "Plan voiture",
+      "atEscort": "Chez l'escorte"
+    },
+
+    "languagesList": {
+      "fr": "🇫🇷 Français",
+      "en": "🇬🇧 Anglais",
+      "es": "🇪🇸 Espagnol",
+      "de": "🇩🇪 Allemand",
+      "it": "🇮🇹 Italien",
+      "pt": "🇵🇹 Portugais",
+      "ru": "🇷🇺 Russe",
+      "ar": "🇸🇦 Arabe",
+      "zh": "🇨🇳 Chinois",
+      "ja": "🇯🇵 Japonais"
+    },
+
+    "verifiedOnly": "Uniquement profils vérifiés",
+    "withCommentsOnly": "Uniquement avec commentaires",
+
+    "results": {
+      "count": "{{count}} résultat",
+      "count_plural": "{{count}} résultats",
+      "noResults": "Aucun résultat",
+      "noResultsDesc": "Essayez de modifier vos critères de recherche",
+      "reset": "Réinitialiser la recherche",
+      "withinRadius": "dans un rayon de {{radius}} km autour de {{city}}"
+    }
+  }
+}
