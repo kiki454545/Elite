@@ -56,7 +56,7 @@ export function BottomNavigation() {
               <motion.button
                 key={item.id}
                 onClick={() => handleNavClick(item)}
-                className="relative flex flex-col items-center gap-1 py-3 px-2 transition-colors"
+                className="relative flex flex-col items-center gap-0.5 py-2 px-1 transition-colors"
                 whileTap={{ scale: 0.95 }}
               >
                 {/* Active indicator */}
@@ -71,7 +71,7 @@ export function BottomNavigation() {
                 {/* Icon */}
                 <div className="relative">
                   <Icon
-                    className={`w-6 h-6 transition-colors ${
+                    className={`w-5 h-5 transition-colors ${
                       isActive
                         ? 'text-pink-500'
                         : 'text-gray-400 group-hover:text-gray-300'
@@ -80,15 +80,15 @@ export function BottomNavigation() {
 
                   {/* Notification badge for messages */}
                   {item.id === 'messages' && unreadCount > 0 && (
-                    <div className="absolute -top-1 -right-1 min-w-[16px] h-4 bg-red-500 rounded-full flex items-center justify-center px-1">
-                      <span className="text-white text-xs font-bold">{unreadCount}</span>
+                    <div className="absolute -top-1 -right-1 min-w-[14px] h-3.5 bg-red-500 rounded-full flex items-center justify-center px-0.5">
+                      <span className="text-white text-[10px] font-bold">{unreadCount}</span>
                     </div>
                   )}
                 </div>
 
                 {/* Label */}
                 <span
-                  className={`text-xs font-medium transition-colors ${
+                  className={`text-[10px] font-medium transition-colors ${
                     isActive
                       ? 'text-pink-500'
                       : 'text-gray-400'

@@ -55,9 +55,9 @@ export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderP
 
   return (
     <header className="sticky top-0 z-10 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
-      <div className="max-w-screen-xl mx-auto px-2 md:px-4 py-3 md:py-4 flex items-center justify-between gap-2 md:gap-4">
+      <div className="max-w-screen-xl mx-auto px-1 md:px-4 py-2 md:py-4 flex items-center justify-between gap-1 md:gap-4">
         {/* Left side - Back button (if enabled) or Logo + Country Selector */}
-        <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
+        <div className="flex items-center gap-1 md:gap-4 flex-shrink-0">
           {showBackButton ? (
             <motion.button
               whileTap={{ scale: 0.95 }}
@@ -69,7 +69,7 @@ export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderP
           ) : (
             <button
               onClick={() => router.push('/')}
-              className="text-lg md:text-2xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent hover:opacity-80 transition-opacity whitespace-nowrap"
+              className="text-base md:text-2xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent hover:opacity-80 transition-opacity whitespace-nowrap"
             >
               SexElite.eu
             </button>
@@ -79,12 +79,12 @@ export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderP
           <div className="relative">
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center gap-1 md:gap-2 bg-gray-800/80 hover:bg-gray-700/80 px-2 md:px-3 py-1.5 md:py-2 rounded-lg transition-colors border border-gray-700"
+              className="flex items-center gap-0.5 md:gap-2 bg-gray-800/80 hover:bg-gray-700/80 px-1.5 md:px-3 py-1 md:py-2 rounded-lg transition-colors border border-gray-700"
             >
               <span className="text-sm text-white font-medium hidden md:inline">
                 {t(`countries.${selectedCountry.code}`)}
               </span>
-              <span className="text-lg md:text-xl">{selectedCountry.flag}</span>
+              <span className="text-base md:text-xl">{selectedCountry.flag}</span>
               <ChevronDown className={`w-3 h-3 md:w-4 md:h-4 text-gray-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
 
@@ -130,22 +130,22 @@ export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderP
         </div>
 
         {/* Center - Title or Stats */}
-        <div className="flex-1 flex items-center justify-center gap-2 md:gap-4 overflow-hidden">
+        <div className="flex-1 flex items-center justify-center gap-1 md:gap-4 overflow-hidden">
           {title ? (
-            <h1 className="text-lg md:text-xl font-bold text-white truncate">
+            <h1 className="text-base md:text-xl font-bold text-white truncate">
               {title}
             </h1>
           ) : (
             !statsLoading && (
               <>
-                <div className="flex items-center gap-1 md:gap-2 bg-gray-800/50 px-2 md:px-3 py-1 md:py-1.5 rounded-lg border border-gray-700">
+                <div className="flex items-center gap-0.5 md:gap-2 bg-gray-800/50 px-1.5 md:px-3 py-0.5 md:py-1.5 rounded-lg border border-gray-700">
                   <Users className="w-3 h-3 md:w-4 md:h-4 text-blue-500" />
-                  <span className="text-white font-semibold text-xs md:text-sm">{stats.totalUsers}</span>
+                  <span className="text-white font-semibold text-[10px] md:text-sm">{stats.totalUsers}</span>
                   <span className="text-gray-400 text-xs hidden md:inline">Utilisateurs</span>
                 </div>
-                <div className="flex items-center gap-1 md:gap-2 bg-gray-800/50 px-2 md:px-3 py-1 md:py-1.5 rounded-lg border border-gray-700">
+                <div className="flex items-center gap-0.5 md:gap-2 bg-gray-800/50 px-1.5 md:px-3 py-0.5 md:py-1.5 rounded-lg border border-gray-700">
                   <FileText className="w-3 h-3 md:w-4 md:h-4 text-pink-500" />
-                  <span className="text-white font-semibold text-xs md:text-sm">{stats.totalAds}</span>
+                  <span className="text-white font-semibold text-[10px] md:text-sm">{stats.totalAds}</span>
                   <span className="text-gray-400 text-xs hidden md:inline">Annonces</span>
                 </div>
               </>
@@ -154,7 +154,7 @@ export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderP
         </div>
 
         {/* Right side - Language Selector (always visible) */}
-        <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
+        <div className="flex items-center gap-0.5 md:gap-2 flex-shrink-0">
           {languages.map((lang) => (
             <button
               key={lang.code}
@@ -164,7 +164,7 @@ export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderP
               }`}
               title={lang.name}
             >
-              <div className="w-6 h-4 md:w-8 md:h-6">
+              <div className="w-5 h-3.5 md:w-8 md:h-6">
                 {lang.flag}
               </div>
             </button>
