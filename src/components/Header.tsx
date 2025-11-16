@@ -130,7 +130,7 @@ export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderP
         </div>
 
         {/* Center - Title or Stats */}
-        <div className="flex-1 flex items-center justify-center gap-0.5 md:gap-4 overflow-hidden mr-2">
+        <div className="flex-1 flex items-center justify-end md:justify-center gap-0.5 md:gap-4 overflow-hidden mr-3 md:mr-0">
           {title ? (
             <h1 className="text-base md:text-xl font-bold text-white truncate">
               {title}
@@ -154,7 +154,7 @@ export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderP
         </div>
 
         {/* Right side - Language Selector (always visible) */}
-        <div className="flex items-center gap-2 md:gap-2 flex-shrink-0 ml-2">
+        <div className="flex items-center gap-2 md:gap-2 flex-shrink-0">
           {languages.map((lang) => (
             <button
               key={lang.code}
