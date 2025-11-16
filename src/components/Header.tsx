@@ -168,7 +168,7 @@ export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderP
         </div>
 
         {/* Right side - Language Selector (always visible) */}
-        <div className="flex items-center gap-2 md:gap-2 flex-shrink-0 ml-auto mr-4 md:mr-0">
+        <div className="flex items-center gap-2 md:gap-2 flex-shrink-0 ml-auto mr-8 md:mr-0">
           {languages.map((lang) => (
             <button
               key={lang.code}
