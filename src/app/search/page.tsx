@@ -138,7 +138,8 @@ export default function SearchPage() {
           id: item.id,
           userId: item.user_id,
           username: profile?.username || item.title || 'Utilisateur',
-          age: item.age || 25,
+          title: item.title || profile?.username || 'Utilisateur',
+          age: profile?.age || item.age || 25,
           location: item.location,
           photos: item.photos || [],
           category: (item.categories && item.categories[0]) || 'escort',
@@ -149,8 +150,11 @@ export default function SearchPage() {
           views: item.views || 0,
           favorites: item.favorites_count || 0,
           rank: (profile?.rank || 'standard') as RankType,
-          video: false,
+          video: item.video_url,
           country: item.country || selectedCountry.code,
+          availability: '',
+          createdAt: new Date(item.created_at),
+          updatedAt: item.updated_at ? new Date(item.updated_at) : new Date(item.created_at),
         }
       })
 
