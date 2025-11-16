@@ -56,7 +56,7 @@ export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderP
   return (
     <header className="sticky top-0 z-10 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
       <div className="max-w-screen-xl mx-auto px-0.5 md:px-4 py-2 md:py-4 flex items-center justify-between gap-0.5 md:gap-4">
-        {/* Left side - Back button (if enabled) or Logo + Country Selector */}
+        {/* Left side - Back button (if enabled) or Logo + Country Selector + Stats */}
         <div className="flex items-center gap-1 md:gap-4 flex-shrink-0">
           {showBackButton ? (
             <motion.button
@@ -127,26 +127,40 @@ export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderP
               )}
             </AnimatePresence>
           </div>
+
+          {/* Stats on mobile - next to country selector */}
+          {!title && !statsLoading && (
+            <div className="flex items-center gap-0.5 md:hidden">
+              <div className="flex items-center gap-0.5 bg-gray-800/50 px-0.5 py-0.5 rounded-lg border border-gray-700">
+                <Users className="w-3 h-3 text-blue-500" />
+                <span className="text-white font-semibold text-[10px]">{stats.totalUsers}</span>
+              </div>
+              <div className="flex items-center gap-0.5 bg-gray-800/50 px-0.5 py-0.5 rounded-lg border border-gray-700">
+                <FileText className="w-3 h-3 text-pink-500" />
+                <span className="text-white font-semibold text-[10px]">{stats.totalAds}</span>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Center - Title or Stats */}
-        <div className="flex-1 flex items-center justify-end md:justify-center gap-0.5 md:gap-4 overflow-hidden mr-3 md:mr-0">
+        {/* Center - Title or Stats (desktop only) */}
+        <div className="flex-1 hidden md:flex items-center justify-center gap-4 overflow-hidden">
           {title ? (
-            <h1 className="text-base md:text-xl font-bold text-white truncate">
+            <h1 className="text-xl font-bold text-white truncate">
               {title}
             </h1>
           ) : (
             !statsLoading && (
               <>
-                <div className="flex items-center gap-0.5 md:gap-2 bg-gray-800/50 px-0.5 md:px-3 py-0.5 md:py-1.5 rounded-lg border border-gray-700">
-                  <Users className="w-3 h-3 md:w-4 md:h-4 text-blue-500" />
-                  <span className="text-white font-semibold text-[10px] md:text-sm">{stats.totalUsers}</span>
-                  <span className="text-gray-400 text-xs hidden md:inline">Utilisateurs</span>
+                <div className="flex items-center gap-2 bg-gray-800/50 px-3 py-1.5 rounded-lg border border-gray-700">
+                  <Users className="w-4 h-4 text-blue-500" />
+                  <span className="text-white font-semibold text-sm">{stats.totalUsers}</span>
+                  <span className="text-gray-400 text-xs">Utilisateurs</span>
                 </div>
-                <div className="flex items-center gap-0.5 md:gap-2 bg-gray-800/50 px-0.5 md:px-3 py-0.5 md:py-1.5 rounded-lg border border-gray-700">
-                  <FileText className="w-3 h-3 md:w-4 md:h-4 text-pink-500" />
-                  <span className="text-white font-semibold text-[10px] md:text-sm">{stats.totalAds}</span>
-                  <span className="text-gray-400 text-xs hidden md:inline">Annonces</span>
+                <div className="flex items-center gap-2 bg-gray-800/50 px-3 py-1.5 rounded-lg border border-gray-700">
+                  <FileText className="w-4 h-4 text-pink-500" />
+                  <span className="text-white font-semibold text-sm">{stats.totalAds}</span>
+                  <span className="text-gray-400 text-xs">Annonces</span>
                 </div>
               </>
             )
