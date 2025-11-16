@@ -651,7 +651,7 @@ export default function CreateAdPage() {
 
             <button
               onClick={() => setStep(2)}
-              disabled={!formData.title || !city || formData.categories.length === 0}
+              disabled={!city || formData.categories.length === 0}
               className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white py-4 rounded-lg font-medium hover:from-pink-600 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Continuer
