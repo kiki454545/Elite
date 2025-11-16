@@ -356,7 +356,7 @@ export const mockAds: Ad[] = [
     age: 31,
     location: 'Berlin',
     country: 'DE',
-    category: 'domination',
+    category: 'escort',
     photos: [],
     services: ['Domination', 'Fétichisme'],
     availability: 'Sur RDV',
