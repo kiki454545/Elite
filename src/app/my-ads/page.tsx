@@ -180,7 +180,7 @@ export default function MyAdsPage() {
     return null
   }
 
-  const rankConfig = profile.rank ? RANK_CONFIG[profile.rank] : RANK_CONFIG['standard']
+  const rankConfig = profile.rank ? RANK_CONFIG[profile.rank as RankType] : RANK_CONFIG['standard']
 
   const handleLogout = () => {
     logout()
