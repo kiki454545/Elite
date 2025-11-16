@@ -144,7 +144,7 @@ export const mockAds: Ad[] = [
     age: 28,
     location: 'Nantes',
     country: 'FR',
-    category: 'couple',
+    category: 'escort',
     photos: [],
     services: ['Accompagnement'],
     availability: 'Week-ends et mercredis',
