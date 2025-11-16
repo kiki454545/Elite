@@ -4407,6 +4407,9 @@ export const CITIES_BY_COUNTRY: Record<string, string[]> = {
     'Ġnejna Bay', 'Golden Bay', 'Mellieħa Bay', 'Paradise Bay', 'Armier Bay', 'Little Armier',
     'Anchor Bay', 'Ġnejna', 'Għajn Tuffieħa', 'Manikata', 'Mġarr', 'Żebbiegħ', 'Mtarfa', 'Bidnija',
     'Buġibba', 'Qawra', 'Salina', 'Burmarrad', 'Wardija', 'Bidnija', 'Pwales', 'Baħrija', 'Binġemma',
+    'St Julian\'s', 'St. Julian\'s', 'Paceville', 'St George\'s Bay', 'Spinola Bay', 'Madliena',
+    'Tas-Sliema', 'The Strand', 'Portomaso', 'St Andrews', 'Balluta Bay', 'St. Paul\'s Bay',
+    'St Paul\'s Bay', 'Xemxija', 'Mistra Bay', 'Għadira Bay'
   ].sort()
 }
 
