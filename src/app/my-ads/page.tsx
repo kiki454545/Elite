@@ -438,49 +438,6 @@ export default function MyAdsPage() {
           </div>
         )}
 
-        {/* Upgrade Card */}
-        {profile.rank === 'standard' && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-gradient-to-r from-pink-500/10 to-purple-600/10 border border-pink-500/30 rounded-2xl p-6 mb-6"
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <Crown className="w-8 h-8 text-yellow-400" />
-              <h3 className="text-xl font-bold text-white">
-                Passez à l'élite
-              </h3>
-            </div>
-            <p className="text-gray-300 mb-4">
-              Apparaissez en tête des résultats et débloquez des fonctionnalités premium
-            </p>
-            <ul className="space-y-2 mb-6">
-              <li className="flex items-center gap-2 text-gray-300">
-                <div className="w-1.5 h-1.5 bg-pink-500 rounded-full" />
-                <span>Priorité dans les résultats de recherche</span>
-              </li>
-              <li className="flex items-center gap-2 text-gray-300">
-                <div className="w-1.5 h-1.5 bg-pink-500 rounded-full" />
-                <span>Badge distinctif sur vos annonces</span>
-              </li>
-              <li className="flex items-center gap-2 text-gray-300">
-                <div className="w-1.5 h-1.5 bg-pink-500 rounded-full" />
-                <span>Statistiques détaillées</span>
-              </li>
-              <li className="flex items-center gap-2 text-gray-300">
-                <div className="w-1.5 h-1.5 bg-pink-500 rounded-full" />
-                <span>Messages illimités</span>
-              </li>
-            </ul>
-            <motion.button
-              whileTap={{ scale: 0.98 }}
-              className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white py-3 rounded-lg font-medium hover:from-pink-600 hover:to-purple-700 transition-all"
-            >
-              Voir les offres
-            </motion.button>
-          </motion.div>
-        )}
 
         {/* Settings Links */}
         <div className="bg-gray-900 rounded-2xl border border-gray-800 divide-y divide-gray-800 mb-6">
