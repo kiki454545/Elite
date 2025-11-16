@@ -227,10 +227,8 @@ export default function ConversationPage() {
 
   const confirmDelete = async () => {
     setShowDeleteModal(false)
-    const success = await deleteConversation(conversationId)
-    if (success) {
-      router.push('/messages')
-    }
+    await deleteConversation(conversationId)
+    router.push('/messages')
   }
 
   const cancelDelete = () => {
