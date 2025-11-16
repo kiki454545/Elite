@@ -27,7 +27,7 @@ export interface ContactInfo {
   acceptsSMS?: boolean
   whatsapp?: boolean
   telegram?: boolean
-  email?: string
+  email?: boolean
   availability?: Availability
 }
 

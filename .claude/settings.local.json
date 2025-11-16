@@ -60,7 +60,11 @@
       "Bash(git --version:*)",
       "Bash(git init:*)",
       "Bash(git add:*)",
-      "Bash(if exist nul del nul)"
+      "Bash(if exist nul del nul)",
+      "Bash(git commit:*)",
+      "Bash(git branch:*)",
+      "Bash(git remote add:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
