@@ -130,7 +130,7 @@ export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderP
         </div>
 
         {/* Center - Title or Stats */}
-        <div className="flex-1 flex items-center justify-center gap-0.5 md:gap-4 overflow-hidden mr-1">
+        <div className="flex-1 flex items-center justify-center gap-0.5 md:gap-4 overflow-hidden mr-2">
           {title ? (
             <h1 className="text-base md:text-xl font-bold text-white truncate">
               {title}
@@ -138,12 +138,12 @@ export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderP
           ) : (
             !statsLoading && (
               <>
-                <div className="flex items-center gap-0.5 md:gap-2 bg-gray-800/50 px-1 md:px-3 py-0.5 md:py-1.5 rounded-lg border border-gray-700">
+                <div className="flex items-center gap-0.5 md:gap-2 bg-gray-800/50 px-0.5 md:px-3 py-0.5 md:py-1.5 rounded-lg border border-gray-700">
                   <Users className="w-3 h-3 md:w-4 md:h-4 text-blue-500" />
                   <span className="text-white font-semibold text-[10px] md:text-sm">{stats.totalUsers}</span>
                   <span className="text-gray-400 text-xs hidden md:inline">Utilisateurs</span>
                 </div>
-                <div className="flex items-center gap-0.5 md:gap-2 bg-gray-800/50 px-1 md:px-3 py-0.5 md:py-1.5 rounded-lg border border-gray-700">
+                <div className="flex items-center gap-0.5 md:gap-2 bg-gray-800/50 px-0.5 md:px-3 py-0.5 md:py-1.5 rounded-lg border border-gray-700">
                   <FileText className="w-3 h-3 md:w-4 md:h-4 text-pink-500" />
                   <span className="text-white font-semibold text-[10px] md:text-sm">{stats.totalAds}</span>
                   <span className="text-gray-400 text-xs hidden md:inline">Annonces</span>
@@ -154,7 +154,7 @@ export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderP
         </div>
 
         {/* Right side - Language Selector (always visible) */}
-        <div className="flex items-center gap-1.5 md:gap-2 flex-shrink-0 ml-1">
+        <div className="flex items-center gap-2 md:gap-2 flex-shrink-0 ml-2">
           {languages.map((lang) => (
             <button
               key={lang.code}
