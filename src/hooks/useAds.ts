@@ -222,7 +222,7 @@ export function useAdById(id: string) {
           availability: '',
           verified: profileData?.verified || false,
           rank: profileData?.rank || 'standard',
-          online: profileData?.online || false,
+          online: false,
           views: data.views || 0,
           favorites: data.favorites_count || 0,
           createdAt: new Date(data.created_at),
