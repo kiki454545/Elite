@@ -64,7 +64,9 @@
       "Bash(git commit:*)",
       "Bash(git branch:*)",
       "Bash(git remote add:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git merge:*)",
+      "Bash(node scripts/create-370-accounts.mjs:*)"
     ],
     "deny": [],
     "ask": []
