@@ -384,7 +384,7 @@ export default function ConversationPage() {
 
                     {/* Signaler */}
                     <button
-                      onClick={handleReport}
+                      onClick={() => handleReport()}
                       className="w-full flex items-center gap-3 px-4 py-3 text-orange-400 hover:bg-gray-700 transition-colors text-left"
                     >
                       <Flag className="w-4 h-4" />
