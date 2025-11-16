@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import { Plus, Settings, LogOut, Crown, Eye, Heart, Loader2, Trash2, Edit, Pause, Play, Shield, MessageCircle, AlertTriangle, ShoppingBag, Star, Sparkles, Zap } from 'lucide-react'
-import { RANK_CONFIG } from '@/types/profile'
+import { RANK_CONFIG, RankType } from '@/types/profile'
 import { Header } from '@/components/Header'
 import { supabase } from '@/lib/supabase'
 import { Ad } from '@/types/ad'
@@ -84,7 +84,7 @@ export default function MyAdsPage() {
           services: ad.meeting_places || [],
           availability: '',
           verified: false,
-          rank: profile?.rank || 'standard',
+          rank: (profile?.rank || 'standard') as RankType,
           online: false,
           views: ad.views || 0,
           favorites: ad.favorites_count || 0,
