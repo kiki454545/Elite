@@ -314,7 +314,7 @@ export const mockAds: Ad[] = [
     age: 24,
     location: 'Madrid',
     country: 'ES',
-    category: 'trans',
+    category: 'escort',
     photos: [],
     services: ['Massage', 'GFE'],
     availability: 'Tous les jours 14h-23h',
