@@ -79,7 +79,7 @@ export default function MyAdsPage() {
           country: ad.country,
           category: ad.categories?.[0] || 'escort',
           photos: ad.photos || [],
-          video: false,
+          video: ad.video_url,
           price: ad.price,
           services: ad.meeting_places || [],
           availability: '',
