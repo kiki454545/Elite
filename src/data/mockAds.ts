@@ -57,7 +57,7 @@ export const mockAds: Ad[] = [
     age: 23,
     location: 'Marseille',
     country: 'FR',
-    category: 'vip',
+    category: 'escort',
     photos: [],
     price: 300,
     services: ['Accompagnement', 'Dîner romantique', 'GFE'],
