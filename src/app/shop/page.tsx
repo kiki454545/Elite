@@ -214,28 +214,17 @@ export default function ShopPage() {
     }
 
     fetchUserCoins()
-  }, [])
 
-  // Charger le widget Dédipass quand le modal s'ouvre
-  useEffect(() => {
-    if (showDedipassModal && currentPurchase) {
-      // Supprimer les anciens scripts Dédipass s'ils existent
-      const existingScripts = document.querySelectorAll('script[src*="dedipass"]')
-      existingScripts.forEach(script => script.remove())
-
-      // Ajouter le script
+    // Charger le script Dédipass une seule fois au chargement de la page
+    if (!document.getElementById('dedipass-script')) {
+      console.log('📦 Chargement initial du script Dédipass')
       const script = document.createElement('script')
       script.src = 'https://api.dedipass.com/v1/pay.js'
+      script.id = 'dedipass-script'
       script.async = true
 
       script.onload = () => {
-        console.log('✅ Script Dédipass chargé')
-        // Forcer le rafraîchissement du widget après un court délai
-        setTimeout(() => {
-          if (window.dedipassUpdate) {
-            window.dedipassUpdate()
-          }
-        }, 100)
+        console.log('✅ Script Dédipass chargé au montage du composant')
       }
 
       script.onerror = () => {
@@ -243,12 +232,33 @@ export default function ShopPage() {
       }
 
       document.body.appendChild(script)
+    }
+  }, [])
 
-      return () => {
-        if (document.body.contains(script)) {
-          document.body.removeChild(script)
+  // Rafraîchir le widget Dédipass quand le modal s'ouvre
+  useEffect(() => {
+    if (showDedipassModal && currentPurchase) {
+      console.log('🔄 Modal ouvert, rafraîchissement du widget...')
+
+      // Attendre que le DOM soit mis à jour avec le modal
+      const timer = setTimeout(() => {
+        const widgetContainer = document.querySelector('[data-dedipass]')
+        console.log('📦 Conteneur widget:', widgetContainer)
+
+        if (window.dedipassUpdate) {
+          console.log('🔄 Appel de window.dedipassUpdate()')
+          try {
+            window.dedipassUpdate()
+            console.log('✅ Widget rafraîchi')
+          } catch (error) {
+            console.error('❌ Erreur lors du rafraîchissement:', error)
+          }
+        } else {
+          console.warn('⚠️ window.dedipassUpdate() non disponible - Le script est-il chargé ?')
         }
-      }
+      }, 300)
+
+      return () => clearTimeout(timer)
     }
   }, [showDedipassModal, currentPurchase])
 
