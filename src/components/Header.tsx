@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCountry, COUNTRIES } from '@/contexts/CountryContext'
 import { useLanguage, Language } from '@/contexts/LanguageContext'
 import { useStats } from '@/hooks/useStats'
-import { ChevronDown, ArrowLeft, Users, FileText } from 'lucide-react'
+import { ChevronDown, ArrowLeft, Users, FileText, Coins } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { supabase } from '@/lib/supabase'
 
 interface HeaderProps {
   title?: string
@@ -47,6 +48,54 @@ export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderP
   const { language, setLanguage, t } = useLanguage()
   const { stats, loading: statsLoading } = useStats()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [eliteCoins, setEliteCoins] = useState<number>(0)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  // Récupérer le solde EliteCoin de l'utilisateur
+  useEffect(() => {
+    const fetchUserCoins = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+
+      if (user) {
+        setIsLoggedIn(true)
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('elite_coins')
+          .eq('id', user.id)
+          .single()
+
+        if (profile) {
+          setEliteCoins(profile.elite_coins || 0)
+        }
+      } else {
+        setIsLoggedIn(false)
+      }
+    }
+
+    fetchUserCoins()
+
+    // S'abonner aux changements du solde
+    const channel = supabase
+      .channel('elite_coins_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles'
+        },
+        (payload: any) => {
+          if (payload.new.elite_coins !== undefined) {
+            setEliteCoins(payload.new.elite_coins)
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [])
 
   const languages = [
     { code: 'fr' as Language, name: 'Français', flag: <FrenchFlag className="w-8 h-6" /> },
@@ -167,8 +216,23 @@ export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderP
           )}
         </div>
 
-        {/* Right side - Language Selector (always visible) */}
-        <div className="flex items-center gap-4 md:gap-2 flex-shrink-0 ml-auto mr-8 md:mr-0">
+        {/* Right side - EliteCoins + Language Selector */}
+        <div className="flex items-center gap-2 md:gap-3 flex-shrink-0 ml-auto mr-8 md:mr-0">
+          {/* EliteCoins Display - Only if logged in */}
+          {isLoggedIn && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              onClick={() => router.push('/shop')}
+              className="flex items-center gap-1 md:gap-1.5 bg-gradient-to-r from-amber-400/20 to-yellow-500/20 hover:from-amber-400/30 hover:to-yellow-500/30 px-1.5 md:px-3 py-1 md:py-1.5 rounded-lg border border-amber-400/30 transition-all cursor-pointer"
+              title="Acheter des EliteCoins"
+            >
+              <Coins className="w-3 h-3 md:w-4 md:h-4 text-amber-400" />
+              <span className="text-amber-400 font-bold text-[10px] md:text-sm">{eliteCoins}</span>
+            </motion.button>
+          )}
+
+          {/* Language Selector */}
           {languages.map((lang) => (
             <button
               key={lang.code}

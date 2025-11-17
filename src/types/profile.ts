@@ -42,6 +42,7 @@ export interface Profile {
   online: boolean
   verified: boolean
   rank: RankType
+  elite_coins: number // Solde de monnaie virtuelle EliteCoin
 
   // Informations personnelles
   gender?: 'femme' | 'homme' | 'trans' | 'couple' | 'non-binaire'
