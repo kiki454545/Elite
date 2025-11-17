@@ -7,6 +7,7 @@ import { Header } from '@/components/Header'
 import { ArrowLeft, Crown, Coins, Sparkles, Check, Shield, Eye, TrendingUp, MessageCircle, ChevronRight, ShoppingCart } from 'lucide-react'
 import { RANK_CONFIG } from '@/types/profile'
 import { supabase } from '@/lib/supabase'
+import { Notification, NotificationType } from '@/components/Notification'
 
 interface CoinPackage {
   id: string
@@ -176,6 +177,17 @@ export default function ShopPage() {
   const [isValidating, setIsValidating] = useState(false)
   const [validationError, setValidationError] = useState('')
   const [showPaymentOptions, setShowPaymentOptions] = useState(false)
+  const [notification, setNotification] = useState<{
+    isVisible: boolean
+    type: NotificationType
+    title: string
+    message: string
+  }>({
+    isVisible: false,
+    type: 'success',
+    title: '',
+    message: ''
+  })
 
   useEffect(() => {
     const fetchUserCoins = async () => {
@@ -227,12 +239,21 @@ export default function ShopPage() {
     }))
   }
 
+  const showNotification = (type: NotificationType, title: string, message: string) => {
+    setNotification({
+      isVisible: true,
+      type,
+      title,
+      message
+    })
+  }
+
   const handleBuyCoins = async (packageId: string, price: number, coins: number) => {
     // Vérifier que l'utilisateur est connecté
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-      alert('Vous devez être connecté pour acheter des EliteCoins')
+      showNotification('warning', 'Connexion requise', 'Vous devez être connecté pour acheter des EliteCoins')
       router.push('/login')
       return
     }
@@ -287,7 +308,11 @@ export default function ShopPage() {
         setEliteCoins(data.newBalance)
         setShowDedipassModal(false)
         setDedipassCode('')
-        alert(`✅ ${data.coinsAdded} EliteCoins crédités avec succès ! Nouveau solde: ${data.newBalance} EliteCoins`)
+        showNotification(
+          'success',
+          'Achat réussi !',
+          `${data.coinsAdded} EliteCoins ont été ajoutés à votre compte. Nouveau solde: ${data.newBalance} EC`
+        )
       } else {
         // Erreur de validation
         setValidationError(data.error || 'Code invalide ou déjà utilisé')
@@ -304,27 +329,83 @@ export default function ShopPage() {
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-      alert('Vous devez être connecté pour acheter un grade')
+      showNotification('warning', 'Connexion requise', 'Vous devez être connecté pour acheter un grade')
       router.push('/login')
       return
     }
 
     if (eliteCoins < coinPrice) {
-      alert(`Vous n'avez pas assez d'EliteCoins. Il vous manque ${coinPrice - eliteCoins} EliteCoins.`)
+      showNotification(
+        'error',
+        'Solde insuffisant',
+        `Il vous manque ${coinPrice - eliteCoins} EliteCoins pour cet achat. Rechargez votre compte !`
+      )
       setActiveTab('coins')
       return
     }
 
-    // TODO: Implémenter l'achat du grade
-    // 1. Débiter les EliteCoins
-    // 2. Attribuer le grade pour la durée
-    // 3. Calculer la date d'expiration
-    alert(`Achat du grade ${offerId} pour ${days} jours - ${coinPrice} EliteCoins`)
+    try {
+      // Appeler l'API d'achat de grade
+      const response = await fetch('/api/ranks/purchase', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          rank: offerId,
+          days: days,
+          coinPrice: coinPrice,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        // Succès - mettre à jour le solde et afficher la confirmation
+        setEliteCoins(data.newBalance)
+
+        const rankNames = {
+          plus: 'Plus ✨',
+          vip: 'VIP 👑',
+          elite: 'Elite ⭐'
+        }
+
+        showNotification(
+          'success',
+          'Grade acheté !',
+          `Vous avez obtenu le grade ${rankNames[offerId as keyof typeof rankNames]} pour ${days} jours. ${coinPrice} EC débités.`
+        )
+      } else {
+        // Erreur
+        showNotification(
+          'error',
+          'Erreur d\'achat',
+          data.error || 'Une erreur est survenue lors de l\'achat du grade'
+        )
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'achat du grade:', error)
+      showNotification(
+        'error',
+        'Erreur serveur',
+        'Impossible de traiter votre achat. Veuillez réessayer.'
+      )
+    }
   }
 
   return (
     <div className="min-h-screen bg-gray-950 pb-20">
       <Header title="Boutique Premium" />
+
+      {/* Notification */}
+      <Notification
+        type={notification.type}
+        title={notification.title}
+        message={notification.message}
+        isVisible={notification.isVisible}
+        onClose={() => setNotification(prev => ({ ...prev, isVisible: false }))}
+      />
 
       <div className="max-w-6xl mx-auto px-4 py-6">
         {/* Back Button */}
