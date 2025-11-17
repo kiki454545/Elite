@@ -9,6 +9,13 @@ import { RANK_CONFIG } from '@/types/profile'
 import { supabase } from '@/lib/supabase'
 import { Notification, NotificationType } from '@/components/Notification'
 
+// Déclaration TypeScript pour la fonction Dédipass
+declare global {
+  interface Window {
+    dedipassUpdate?: () => void
+  }
+}
+
 interface CoinPackage {
   id: string
   coins: number
@@ -212,9 +219,29 @@ export default function ShopPage() {
   // Charger le widget Dédipass quand le modal s'ouvre
   useEffect(() => {
     if (showDedipassModal && currentPurchase) {
+      // Supprimer les anciens scripts Dédipass s'ils existent
+      const existingScripts = document.querySelectorAll('script[src*="dedipass"]')
+      existingScripts.forEach(script => script.remove())
+
+      // Ajouter le script
       const script = document.createElement('script')
       script.src = 'https://api.dedipass.com/v1/pay.js'
       script.async = true
+
+      script.onload = () => {
+        console.log('✅ Script Dédipass chargé')
+        // Forcer le rafraîchissement du widget après un court délai
+        setTimeout(() => {
+          if (window.dedipassUpdate) {
+            window.dedipassUpdate()
+          }
+        }, 100)
+      }
+
+      script.onerror = () => {
+        console.error('❌ Erreur de chargement du script Dédipass')
+      }
+
       document.body.appendChild(script)
 
       return () => {
