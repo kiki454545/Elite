@@ -118,15 +118,11 @@ export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderP
           ) : (
             <button
               onClick={() => router.push('/')}
-              className="text-base md:text-2xl font-bold hover:opacity-80 transition-opacity whitespace-nowrap"
-              style={{
-                background: 'linear-gradient(to right, rgb(236, 72, 153), rgb(147, 51, 234))',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text'
-              }}
+              className="text-base md:text-2xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent hover:opacity-80 transition-opacity whitespace-nowrap flex items-center"
             >
-              SexElit<span style={{ display: 'inline-block', transform: 'scaleX(-1)' }}>E</span>.eu
+              <span>SexElit</span>
+              <span className="inline-block" style={{ transform: 'rotate(180deg)' }}>Ǝ</span>
+              <span>.eu</span>
             </button>
           )}
 
