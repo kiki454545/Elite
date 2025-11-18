@@ -120,7 +120,7 @@ export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderP
               onClick={() => router.push('/')}
               className="text-base md:text-2xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent hover:opacity-80 transition-opacity whitespace-nowrap"
             >
-              SexElite.eu
+              SexElit<span style={{ display: 'inline-block', transform: 'scaleX(-1)' }}>E</span>.eu
             </button>
           )}
 
