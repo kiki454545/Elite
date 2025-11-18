@@ -2,10 +2,11 @@
 
 import { useParams, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Heart, MapPin, Eye, Share2, Flag, MessageCircle, Crown, Phone, Calendar, Check, X, Users, Home, Car, Globe, Loader2, Clock, ArrowUp } from 'lucide-react'
+import { ArrowLeft, Heart, MapPin, Eye, Share2, Flag, MessageCircle, Crown, Phone, Calendar, Check, X, Users, Home, Car, Globe, Loader2, Clock, ArrowUp, Coins } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useFavorites } from '@/contexts/FavoritesContext'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { useCountry } from '@/contexts/CountryContext'
 import { RANK_CONFIG, RankType } from '@/types/profile'
 import { Watermark } from '@/components/Watermark'
 import { useAdById } from '@/hooks/useAds'
@@ -35,6 +36,7 @@ export default function AdDetailPage() {
   const router = useRouter()
   const { toggleFavorite, isFavorite } = useFavorites()
   const { t, language } = useLanguage()
+  const { isRestricted, selectedCountry } = useCountry()
   const { user, isAuthenticated } = useAuth()
   const { createConversation, error: conversationError } = useConversations()
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
@@ -45,6 +47,10 @@ export default function AdDetailPage() {
   const [reportReason, setReportReason] = useState('')
   const [reportDescription, setReportDescription] = useState('')
   const [isSubmittingReport, setIsSubmittingReport] = useState(false)
+  const [showDonateModal, setShowDonateModal] = useState(false)
+  const [donateAmount, setDonateAmount] = useState('')
+  const [isDonating, setIsDonating] = useState(false)
+  const [userCoins, setUserCoins] = useState(0)
 
   // Helper pour générer le message WhatsApp selon la langue
   const getWhatsAppMessage = (username: string, title: string, country: string) => {
@@ -73,6 +79,77 @@ export default function AdDetailPage() {
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  // Récupérer le solde EliteCoins de l'utilisateur
+  useEffect(() => {
+    const fetchUserCoins = async () => {
+      if (!user) return
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('elite_coins')
+        .eq('id', user.id)
+        .single()
+
+      if (profile) {
+        setUserCoins(profile.elite_coins || 0)
+      }
+    }
+    fetchUserCoins()
+  }, [user])
+
+  // Fonction pour faire un don
+  const handleDonate = async () => {
+    if (!user || !ad) {
+      showToast('Vous devez être connecté pour faire un don', 'error')
+      return
+    }
+
+    const amount = parseInt(donateAmount)
+    if (!amount || amount <= 0) {
+      showToast('Montant invalide', 'error')
+      return
+    }
+
+    if (amount > userCoins) {
+      showToast(`Solde insuffisant. Vous avez ${userCoins} EC`, 'error')
+      return
+    }
+
+    setIsDonating(true)
+    try {
+      const payload = {
+        fromUserId: user.id,
+        toUserId: ad.userId,
+        amount
+      }
+
+      console.log('📤 Envoi du don:', payload)
+
+      const response = await fetch('/api/coins/donate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+
+      const data = await response.json()
+      console.log('📥 Réponse API:', data)
+
+      if (response.ok && data.success) {
+        setUserCoins(data.fromBalance)
+        setShowDonateModal(false)
+        setDonateAmount('')
+        showToast(`✅ Don de ${amount} EC envoyé avec succès !`, 'success')
+      } else {
+        console.error('❌ Erreur don:', data)
+        showToast(data.error || 'Erreur lors du don', 'error')
+      }
+    } catch (error) {
+      console.error('❌ Exception:', error)
+      showToast('Erreur de connexion', 'error')
+    } finally {
+      setIsDonating(false)
+    }
+  }
 
   // Fonction pour remonter en haut
   const scrollToTop = () => {
@@ -193,6 +270,35 @@ export default function AdDetailPage() {
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-8 h-8 text-pink-500 animate-spin" />
           <p className="text-gray-400">Chargement de l'annonce...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Vérifier la restriction géographique
+  if (ad && isRestricted && ad.country !== selectedCountry.code) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-2xl p-8">
+            <div className="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Globe className="w-8 h-8 text-amber-500" />
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-3">
+              🚫 Restriction géographique
+            </h2>
+            <p className="text-gray-400 mb-6">
+              En raison des lois françaises, vous ne pouvez consulter que les annonces de France.
+              <br /><br />
+              Cette annonce est située en {ad.country} et n'est pas accessible depuis votre localisation.
+            </p>
+            <button
+              onClick={() => router.push('/')}
+              className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-3 rounded-xl font-medium hover:from-pink-600 hover:to-purple-700 transition-all"
+            >
+              Retour aux annonces françaises
+            </button>
+          </div>
         </div>
       </div>
     )
@@ -332,6 +438,22 @@ export default function AdDetailPage() {
             >
               <Share2 className="w-5 h-5" />
             </motion.button>
+            {ad && user && ad.userId !== user.id && (
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={() => {
+                  if (!isAuthenticated) {
+                    showToast('Connectez-vous pour faire un don', 'error')
+                    return
+                  }
+                  setShowDonateModal(true)
+                }}
+                className="p-2 rounded-full bg-gradient-to-r from-yellow-500 to-amber-600 text-white hover:from-yellow-600 hover:to-amber-700 transition-all shadow-lg"
+                title="Faire un don d'EliteCoins"
+              >
+                <Coins className="w-5 h-5" />
+              </motion.button>
+            )}
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={() => {
@@ -922,6 +1044,107 @@ export default function AdDetailPage() {
             </div>
           </motion.div>
         </div>
+      )}
+
+      {/* Modal de don */}
+      {showDonateModal && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => !isDonating && setShowDonateModal(false)}
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50"
+          />
+
+          {/* Modal */}
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-gray-900 rounded-2xl border border-gray-800 p-6 max-w-md w-full shadow-2xl"
+            >
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-gradient-to-r from-yellow-500 to-amber-600 rounded-full flex items-center justify-center">
+                  <Coins className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-white">
+                  Faire un don
+                </h3>
+              </div>
+
+              <div className="mb-6 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-400">Votre solde</span>
+                  <span className="font-bold text-white flex items-center gap-1">
+                    <Coins className="w-4 h-4 text-yellow-500" />
+                    {userCoins} EC
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Montant du don (EliteCoins) *
+                  </label>
+                  <input
+                    type="number"
+                    value={donateAmount}
+                    onChange={(e) => setDonateAmount(e.target.value)}
+                    placeholder="Entrez le montant"
+                    min="1"
+                    max={userCoins}
+                    className="w-full bg-gray-800 text-white p-3 rounded-lg border border-gray-700 focus:border-yellow-500 focus:outline-none"
+                    disabled={isDonating}
+                  />
+                </div>
+
+                <div className="grid grid-cols-4 gap-2">
+                  {[10, 25, 50, 100].map((amount) => (
+                    <button
+                      key={amount}
+                      onClick={() => setDonateAmount(amount.toString())}
+                      disabled={isDonating || amount > userCoins}
+                      className="bg-gray-800 hover:bg-gray-700 text-white py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {amount}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={() => {
+                      setShowDonateModal(false)
+                      setDonateAmount('')
+                    }}
+                    disabled={isDonating}
+                    className="flex-1 bg-gray-800 text-white py-3 rounded-xl font-medium hover:bg-gray-700 transition-colors disabled:opacity-50"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={handleDonate}
+                    disabled={isDonating || !donateAmount || parseInt(donateAmount) <= 0}
+                    className="flex-1 bg-gradient-to-r from-yellow-500 to-amber-600 text-white py-3 rounded-xl font-medium hover:from-yellow-600 hover:to-amber-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {isDonating ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Envoi...
+                      </>
+                    ) : (
+                      'Envoyer'
+                    )}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </>
       )}
 
       {/* Modal de signalement */}

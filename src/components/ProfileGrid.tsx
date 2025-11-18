@@ -32,7 +32,7 @@ export function ProfileGrid() {
   const router = useRouter()
   const { isAuthenticated, user } = useAuth()
   const { toggleFavorite, isFavorite } = useFavorites()
-  const { selectedCountry } = useCountry()
+  const { selectedCountry, isDetectingCountry } = useCountry()
   const { selectedCity } = useCityFilter()
   const [currentPhotoIndices, setCurrentPhotoIndices] = useState<Record<string, number>>({})
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' | 'info' } | null>(null)
@@ -43,8 +43,11 @@ export function ProfileGrid() {
     setTimeout(() => setToast(null), 3000)
   }
 
-  // Charger les annonces depuis Supabase
-  const { ads, loading, error } = useAds(selectedCountry.code, selectedCity || undefined)
+  // Charger les annonces depuis Supabase - attendre que la détection du pays soit terminée
+  const { ads, loading, error } = useAds(
+    isDetectingCountry ? undefined : selectedCountry.code,
+    selectedCity || undefined
+  )
 
   // Trier par rank (Elite > VIP > Plus > Standard)
   const sortedAds = [...ads].sort((a, b) => {

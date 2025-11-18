@@ -44,7 +44,7 @@ function BritishFlag({ className = '' }: { className?: string }) {
 
 export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderProps) {
   const router = useRouter()
-  const { selectedCountry, setSelectedCountry } = useCountry()
+  const { selectedCountry, setSelectedCountry, canChangeCountry } = useCountry()
   const { language, setLanguage, t } = useLanguage()
   const { stats, loading: statsLoading } = useStats()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)

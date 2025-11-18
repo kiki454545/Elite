@@ -10,6 +10,15 @@ export function useAds(country?: string, city?: string) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    console.log('🔄 useAds: Rechargement des annonces pour pays:', country, 'ville:', city)
+
+    // Ne pas charger si le pays n'est pas encore défini
+    if (!country) {
+      console.log('⏸️  Attente de la détection du pays...')
+      setLoading(true)
+      return
+    }
+
     fetchAds()
   }, [country, city, user])
 
@@ -25,10 +34,14 @@ export function useAds(country?: string, city?: string) {
         .eq('status', 'approved')
         .order('created_at', { ascending: false })
 
-      // Filtrer par pays si spécifié
-      if (country) {
-        adsQuery = adsQuery.eq('country', country)
+      // Filtrer par pays (obligatoire)
+      if (!country) {
+        setAds([])
+        setLoading(false)
+        return
       }
+
+      adsQuery = adsQuery.eq('country', country)
 
       // Filtrer par ville si spécifié
       if (city) {
