@@ -46,7 +46,8 @@ export interface Ad {
   photos: string[]
   video?: string // URL de la vidéo
   price?: number
-  services: string[]
+  services: string[] // Services d'escorte proposés
+  meetingPlaces?: string[] // Lieux de rencontre (Incall, Outcall, etc.)
   availability: string
   verified: boolean
   rank: RankType
@@ -230,10 +231,145 @@ export const COMMON_SERVICES = [
 ]
 
 export const MEETING_PLACES = [
-  'Domicile',
+  'Incall',
   'Hôtel',
-  'Chez vous',
+  'Outcall',
   'Plan voiture',
+]
+
+// Liste complète des services d'escorte
+export const ESCORT_SERVICES = [
+  // Expériences
+  'GFE (Girlfriend Experience)',
+  'PSE (Pornstar Experience)',
+  'French Kiss',
+  'Embrasser avec la langue',
+  'Accompagnement',
+  'Soirée romantique',
+  'Dîner',
+  'Voyages',
+
+  // Services oraux
+  'Fellation nature',
+  'Fellation avec préservatif',
+  'Fellation profonde',
+  'Cunnilingus',
+  '69',
+  'Avaler',
+  'Ejaculation buccale',
+  'Ejaculation faciale',
+  'Ejaculation sur le corps',
+
+  // Massages
+  'Massage érotique',
+  'Massage tantrique',
+  'Massage body-body',
+  'Massage prostatique',
+  'Massage naturiste',
+  'Massage relaxant',
+  'Massage 4 mains',
+
+  // Positions
+  'Toutes positions',
+  'Levrette',
+  'Amazone',
+  'Missionnaire',
+  'Andromaque',
+
+  // Pratiques spéciales
+  'Anulingus donné',
+  'Anulingus reçu',
+  'Sodomie',
+  'Pénétration anale',
+  'Double pénétration',
+  'Fisting vaginal',
+  'Fist anal',
+  'Squirting',
+  'Éjaculations multiples',
+
+  // BDSM et domination
+  'Domination soft',
+  'Domination hard',
+  'Soumission',
+  'Bondage',
+  'Discipline',
+  'Fessée',
+  'Fouet',
+  'Cire chaude',
+  'Humiliation',
+  'Jeux de rôle',
+  'Maîtresse',
+  'Esclave',
+  'Strap-on',
+  'Gode-ceinture',
+
+  // Fétichisme
+  'Fétichisme des pieds',
+  'Footjob',
+  'Adoration des pieds',
+  'Fétichisme du cuir',
+  'Fétichisme du latex',
+  'Fétichisme des bas',
+  'Fétichisme des talons',
+  'Golden shower donné',
+  'Golden shower reçu',
+
+  // Sex toys
+  'Sex toys',
+  'Godes',
+  'Vibromasseurs',
+  'Plugs',
+
+  // Pour couples
+  'Couples (H+F)',
+  'Trio (HHF)',
+  'Trio (HFF)',
+  'Échangisme',
+  'Bisexuelle',
+  'Gang bang',
+
+  // Shows
+  'Striptease',
+  'Lap dance',
+  'Show lesbien',
+  'Show avec copine',
+  'Masturbation devant vous',
+  'Voyeurisme',
+  'Exhibitionnisme',
+
+  // Services à distance
+  'Webcam',
+  'Sexe au téléphone',
+  'Sexting',
+  'Photos personnalisées',
+  'Vidéos personnalisées',
+  'Contenu sur mesure',
+
+  // Roleplay
+  'Infirmière',
+  'Secrétaire',
+  'Étudiante',
+  'Policière',
+  'Professeur',
+  'Hôtesse de l\'air',
+  'Scénarios personnalisés',
+
+  // Durée et extras
+  'Nuit complète',
+  'Week-end',
+  'Vacances',
+  'Petit-déjeuner',
+  'Jacuzzi',
+  'Sauna',
+  'Bain partagé',
+
+  // Spécialités
+  'Débutants acceptés',
+  'Virgin friendly',
+  'Disabled friendly',
+  'Seniors welcome',
+  'Discrétion assurée',
+  'Plusieurs fois',
 ]
 
 export const DAYS_OF_WEEK = [
