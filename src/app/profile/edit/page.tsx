@@ -20,7 +20,7 @@ type ContactMethod = 'sms_only' | 'call_only' | 'call_and_sms'
 
 export default function EditProfilePage() {
   const router = useRouter()
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const { user, profile, loading } = useAuth()
 
   // Form state - tous vides par défaut

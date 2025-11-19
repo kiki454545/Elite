@@ -32,7 +32,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }
 
   const t = (key: string, options?: any): string => {
-    return i18n.t(key, options) as string
+    // Force re-render when language changes by including it in the dependency
+    return i18n.t(key, { ...options, lng: language }) as string
   }
 
   return (
