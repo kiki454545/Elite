@@ -41,6 +41,8 @@ export default function AdDetailPage() {
   const { user, isAuthenticated } = useAuth()
   const { createConversation, error: conversationError } = useConversations()
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
+  const [touchStart, setTouchStart] = useState<number | null>(null)
+  const [touchEnd, setTouchEnd] = useState<number | null>(null)
   const [isCreatingConversation, setIsCreatingConversation] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' | 'info' } | null>(null)
   const [showScrollTop, setShowScrollTop] = useState(false)
@@ -69,6 +71,33 @@ export default function AdDetailPage() {
   const showToast = (message: string, type: 'error' | 'success' | 'info' = 'info') => {
     setToast({ message, type })
     setTimeout(() => setToast(null), 3000)
+  }
+
+  // Handlers pour le swipe sur mobile
+  const minSwipeDistance = 50
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null)
+    setTouchStart(e.targetTouches[0].clientX)
+  }
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX)
+  }
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return
+
+    const distance = touchStart - touchEnd
+    const isLeftSwipe = distance > minSwipeDistance
+    const isRightSwipe = distance < -minSwipeDistance
+
+    if (isLeftSwipe && currentPhotoIndex < media.length - 1) {
+      setCurrentPhotoIndex(currentPhotoIndex + 1)
+    }
+    if (isRightSwipe && currentPhotoIndex > 0) {
+      setCurrentPhotoIndex(currentPhotoIndex - 1)
+    }
   }
 
   // Gérer l'affichage du bouton scroll to top
@@ -467,7 +496,12 @@ export default function AdDetailPage() {
               animate={{ opacity: 1 }}
               className="sticky top-24"
             >
-              <div className="relative aspect-[3/4] bg-gray-900 rounded-2xl overflow-hidden mb-3">
+              <div
+                className="relative aspect-[3/4] bg-gray-900 rounded-2xl overflow-hidden mb-3"
+                onTouchStart={onTouchStart}
+                onTouchMove={onTouchMove}
+                onTouchEnd={onTouchEnd}
+              >
                 {media[currentPhotoIndex].type === 'video' ? (
                   <div className="absolute inset-0">
                     <video
