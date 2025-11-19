@@ -3,12 +3,13 @@ import { initReactI18next } from 'react-i18next'
 import fr from './locales/fr.json'
 import en from './locales/en.json'
 import adDataEn from './locales/ad-data-en.json'
+import adDataFr from './locales/ad-data-fr.json'
 
 i18n
   .use(initReactI18next)
   .init({
     resources: {
-      fr: { translation: fr, adData: {} }, // Pas de traduction pour FR, on utilise les valeurs en français directement
+      fr: { translation: fr, adData: adDataFr },
       en: { translation: en, adData: adDataEn },
     },
     lng: 'fr',
@@ -20,7 +21,6 @@ i18n
 
 // Helper function to translate ad data (services, categories, etc.)
 export const translateAdData = (key: string, language: string = 'fr'): string => {
-  if (language === 'fr') return key // Return French as-is
   return i18n.t(key, { ns: 'adData', lng: language, defaultValue: key })
 }
 
