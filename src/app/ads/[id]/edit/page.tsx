@@ -4,16 +4,19 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
-import { CreateAdFormData, AdCategory, AD_CATEGORIES, MEETING_PLACES } from '@/types/ad'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { CreateAdFormData, AdCategory, AD_CATEGORIES, MEETING_PLACES, ESCORT_SERVICES } from '@/types/ad'
 import { RANK_CONFIG } from '@/types/profile'
 import { Upload, X, MapPin } from 'lucide-react'
 import LocationSelector from '@/components/LocationSelector'
 import { searchCities } from '@/data/cities'
 import { supabase } from '@/lib/supabase'
+import { translateAdData } from '@/i18n/config'
 
 export default function EditAdPage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const { user, profile, loading } = useAuth()
+  const { t, language } = useLanguage()
   const [step, setStep] = useState(1)
   const [adId] = useState(params.id)
   const [existingPhotos, setExistingPhotos] = useState<string[]>([])
@@ -75,7 +78,7 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
       if (error) throw error
 
       if (!ad) {
-        setErrorMessage('Annonce introuvable ou vous n\'avez pas les droits pour la modifier')
+        setErrorMessage(t('adEditPage.errors.notFound'))
         setTimeout(() => router.push('/my-ads'), 2000)
         return
       }
@@ -118,7 +121,7 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
       setIsLoading(false)
     } catch (error) {
       console.error('Erreur lors du chargement de l\'annonce:', error)
-      setErrorMessage('Erreur lors du chargement de l\'annonce')
+      setErrorMessage(t('adEditPage.errors.loadFailed'))
       setIsLoading(false)
     }
   }
@@ -127,7 +130,7 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
   if (loading || isLoading) {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="text-white">Chargement...</div>
+        <div className="text-white">{t('adEditPage.loading')}</div>
       </div>
     )
   }
@@ -168,7 +171,7 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
 
           if (error) {
             console.error('Erreur upload photo:', error)
-            throw new Error(`Erreur lors de l'upload de la photo ${i + 1}: ${error.message}. Vérifiez que le bucket 'ad-photos' existe et que vous avez les bonnes permissions.`)
+            throw new Error(`${t('adEditPage.errors.photoUpload')} ${i + 1}: ${error.message}. ${t('adEditPage.errors.checkBucket')}`)
           }
 
           // Récupérer l'URL publique
@@ -200,7 +203,7 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
 
         if (error) {
           console.error('Erreur upload vidéo:', error)
-          throw new Error(`Erreur lors de l'upload de la vidéo: ${error.message}`)
+          throw new Error(`${t('adEditPage.errors.videoUpload')}: ${error.message}`)
         }
 
         // Supprimer l'ancienne vidéo si elle existe
@@ -228,37 +231,56 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
       const filteredNearbyCities = nearbyCityInputs.filter(c => c.trim() !== '')
 
       // 3. Mettre à jour l'annonce
-      const { data: ad, error: adError } = await supabase
-        .from('ads')
-        .update({
-          user_id: user.id,
-          title: profile.username || user.email || 'Utilisateur', // Utiliser le pseudo du profil
-          description: formData.description,
-          location: city,
-          arrondissement: arrondissement || null,
-          country: country,
-          nearby_cities: filteredNearbyCities,
-          categories: formData.categories,
-          meeting_places: formData.meetingPlaces,
-          price: formData.price,
-          photos: photoUrls,
-          video_url: videoUrl
-          // Note: availability et contact_info sont gérés dans le profil, pas dans l'annonce
-          })
-        .eq('id', adId)
-        .eq('user_id', user.id)
-        .select()
-        .single()
+      console.log('📝 Données à mettre à jour:', {
+        categories: formData.categories,
+        meeting_places: formData.meetingPlaces,
+        services: formData.services,
+        servicesCount: formData.services?.length || 0
+      })
 
-      if (adError) {
-        console.error('Erreur mise à jour annonce:', adError)
-        throw new Error(`Erreur lors de la mise à jour de l'annonce: ${adError.message}`)
+      const updateData = {
+        user_id: user.id,
+        title: profile.username || user.email || 'Utilisateur', // Utiliser le pseudo du profil
+        description: formData.description,
+        location: city,
+        arrondissement: arrondissement || null,
+        country: country,
+        nearby_cities: filteredNearbyCities,
+        categories: formData.categories,
+        meeting_places: formData.meetingPlaces,
+        services: formData.services,
+        price: formData.price,
+        photos: photoUrls,
+        video_url: videoUrl
+        // Note: availability et contact_info sont gérés dans le profil, pas dans l'annonce
       }
 
+      console.log('🚀 Envoi de la mise à jour via API...')
+
+      // Utiliser la route API pour éviter les problèmes CORS
+      const response = await fetch('/api/ads/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          adId,
+          userId: user.id,
+          updateData,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error('❌ Erreur mise à jour annonce:', errorData)
+        throw new Error(`${t('adEditPage.errors.updateFailed')}: ${errorData.error || t('adEditPage.errors.unknown')}`)
+      }
+
+      const { data: ad } = await response.json()
       console.log('✅ Annonce mise à jour:', ad)
 
       // 4. Afficher un message de succès
-      setSuccessMessage('Votre annonce a été modifiée avec succès !')
+      setSuccessMessage(t('adEditPage.successMessage'))
 
       // Attendre 2 secondes puis rediriger
       setTimeout(() => {
@@ -267,7 +289,7 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
 
     } catch (error: any) {
       console.error('❌ Erreur:', error)
-      setErrorMessage(error.message || 'Une erreur est survenue lors de la mise à jour de l\'annonce')
+      setErrorMessage(error.message || t('adEditPage.errors.general'))
       setIsSubmitting(false)
     }
   }
@@ -287,6 +309,15 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
       meetingPlaces: prev.meetingPlaces.includes(place)
         ? prev.meetingPlaces.filter((p) => p !== place)
         : [...prev.meetingPlaces, place],
+    }))
+  }
+
+  const toggleService = (service: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      services: prev.services.includes(service)
+        ? prev.services.filter((s) => s !== service)
+        : [...prev.services, service],
     }))
   }
 
@@ -518,9 +549,9 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">
-            Modifier l'annonce
+            {t('adEditPage.title')}
           </h1>
-          <p className="text-gray-400">Étape {step} sur 3</p>
+          <p className="text-gray-400">{t('adEditPage.stepProgress', { step, total: 3 })}</p>
           <div className="mt-4 flex gap-2">
             {[1, 2, 3].map((s) => (
               <div
@@ -544,13 +575,13 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
           >
             <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
               <h2 className="text-xl font-semibold text-white mb-6">
-                Informations de base
+                {t('adEditPage.step1.title')}
               </h2>
 
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Catégories <span className="text-xs text-gray-500">(choix multiple possible)</span>
+                    {t('adEditPage.step1.categories')} <span className="text-xs text-gray-500">{t('adEditPage.step1.multipleChoice')}</span>
                   </label>
                   <div className="grid grid-cols-3 gap-3">
                     {(Object.keys(AD_CATEGORIES) as AdCategory[]).map((cat) => (
@@ -565,13 +596,13 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
                         }`}
                       >
                         <span className="text-2xl">{AD_CATEGORIES[cat].icon}</span>
-                        <span className="text-sm">{AD_CATEGORIES[cat].label}</span>
+                        <span className="text-sm">{translateAdData(`categories.${cat}`, language)}</span>
                       </button>
                     ))}
                   </div>
                   {formData.categories.length > 0 && (
                     <p className="text-xs text-gray-400 mt-2">
-                      {formData.categories.length} catégorie(s) sélectionnée(s)
+                      {t('adEditPage.step1.categoriesSelected', { count: formData.categories.length })}
                     </p>
                   )}
                 </div>
@@ -580,12 +611,12 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
                   <div className="flex items-start gap-3">
                     <div className="text-blue-400">ℹ️</div>
                     <div>
-                      <p className="text-sm text-blue-200 font-medium">Titre de votre annonce</p>
+                      <p className="text-sm text-blue-200 font-medium">{t('adEditPage.step1.adTitle')}</p>
                       <p className="text-xs text-blue-300 mt-1">
-                        Le titre de votre annonce sera automatiquement votre pseudo : <span className="font-semibold">{profile?.username || user?.email || 'Votre pseudo'}</span>
+                        {t('adEditPage.step1.adTitleInfo')} <span className="font-semibold">{profile?.username || user?.email || t('adEditPage.step1.yourUsername')}</span>
                       </p>
                       <p className="text-xs text-blue-300/80 mt-1">
-                        Pour le modifier, changez votre pseudo dans les paramètres de votre profil.
+                        {t('adEditPage.step1.adTitleChange')}
                       </p>
                     </div>
                   </div>
@@ -601,41 +632,41 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
                 {city.toLowerCase() === 'paris' && (
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Arrondissement <span className="text-xs text-gray-500">(optionnel)</span>
+                      {t('adEditPage.step1.arrondissement')} <span className="text-xs text-gray-500">{t('adEditPage.step1.optional')}</span>
                     </label>
                     <select
                       value={arrondissement}
                       onChange={(e) => setArrondissement(e.target.value)}
                       className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-pink-500"
                     >
-                      <option value="">Sélectionner un arrondissement</option>
-                      <option value="1er">1er arrondissement</option>
-                      <option value="2ème">2ème arrondissement</option>
-                      <option value="3ème">3ème arrondissement</option>
-                      <option value="4ème">4ème arrondissement</option>
-                      <option value="5ème">5ème arrondissement</option>
-                      <option value="6ème">6ème arrondissement</option>
-                      <option value="7ème">7ème arrondissement</option>
-                      <option value="8ème">8ème arrondissement</option>
-                      <option value="9ème">9ème arrondissement</option>
-                      <option value="10ème">10ème arrondissement</option>
-                      <option value="11ème">11ème arrondissement</option>
-                      <option value="12ème">12ème arrondissement</option>
-                      <option value="13ème">13ème arrondissement</option>
-                      <option value="14ème">14ème arrondissement</option>
-                      <option value="15ème">15ème arrondissement</option>
-                      <option value="16ème">16ème arrondissement</option>
-                      <option value="17ème">17ème arrondissement</option>
-                      <option value="18ème">18ème arrondissement</option>
-                      <option value="19ème">19ème arrondissement</option>
-                      <option value="20ème">20ème arrondissement</option>
+                      <option value="">{t('adEditPage.step1.selectArrondissement')}</option>
+                      <option value="1er">{t('adEditPage.step1.arr1')}</option>
+                      <option value="2ème">{t('adEditPage.step1.arr2')}</option>
+                      <option value="3ème">{t('adEditPage.step1.arr3')}</option>
+                      <option value="4ème">{t('adEditPage.step1.arr4')}</option>
+                      <option value="5ème">{t('adEditPage.step1.arr5')}</option>
+                      <option value="6ème">{t('adEditPage.step1.arr6')}</option>
+                      <option value="7ème">{t('adEditPage.step1.arr7')}</option>
+                      <option value="8ème">{t('adEditPage.step1.arr8')}</option>
+                      <option value="9ème">{t('adEditPage.step1.arr9')}</option>
+                      <option value="10ème">{t('adEditPage.step1.arr10')}</option>
+                      <option value="11ème">{t('adEditPage.step1.arr11')}</option>
+                      <option value="12ème">{t('adEditPage.step1.arr12')}</option>
+                      <option value="13ème">{t('adEditPage.step1.arr13')}</option>
+                      <option value="14ème">{t('adEditPage.step1.arr14')}</option>
+                      <option value="15ème">{t('adEditPage.step1.arr15')}</option>
+                      <option value="16ème">{t('adEditPage.step1.arr16')}</option>
+                      <option value="17ème">{t('adEditPage.step1.arr17')}</option>
+                      <option value="18ème">{t('adEditPage.step1.arr18')}</option>
+                      <option value="19ème">{t('adEditPage.step1.arr19')}</option>
+                      <option value="20ème">{t('adEditPage.step1.arr20')}</option>
                     </select>
                   </div>
                 )}
 
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Zones de déplacement <span className="text-xs text-gray-500">(optionnel, max 4)</span>
+                    {t('adEditPage.step1.travelZones')} <span className="text-xs text-gray-500">{t('adEditPage.step1.optionalMax4')}</span>
                   </label>
 
                   <div className="space-y-3">
@@ -647,7 +678,7 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
                           value={nearbyCityInputs[index]}
                           onChange={(e) => handleNearbyCityInput(index, e.target.value)}
                           className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 pl-11 pr-10 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                          placeholder={`Ville ${index + 1}`}
+                          placeholder={t('adEditPage.step1.cityPlaceholder', { number: index + 1 })}
                           autoComplete="off"
                         />
                         {nearbyCityInputs[index] && (
@@ -686,7 +717,7 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
                   </div>
 
                   <p className="text-xs text-gray-500 mt-2">
-                    Indiquez les villes où vous vous déplacez (commencez à taper pour voir les suggestions)
+                    {t('adEditPage.step1.travelZonesInfo')}
                   </p>
                 </div>
               </div>
@@ -697,7 +728,7 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
               disabled={!city || formData.categories.length === 0}
               className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white py-4 rounded-lg font-medium hover:from-pink-600 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Continuer
+              {t('adEditPage.continue')}
             </button>
           </motion.div>
         )}
@@ -711,13 +742,13 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
           >
             <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
               <h2 className="text-xl font-semibold text-white mb-6">
-                Description et lieux de rencontre
+                {t('adEditPage.step2.title')}
               </h2>
 
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Description
+                    {t('adEditPage.step2.description')}
                   </label>
                   <textarea
                     value={formData.description}
@@ -725,19 +756,19 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
                       setFormData({ ...formData, description: e.target.value })
                     }
                     className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 px-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 resize-none"
-                    placeholder="Décrivez vos services, votre personnalité..."
+                    placeholder={t('adEditPage.step2.descriptionPlaceholder')}
                     rows={6}
                     maxLength={5000}
                     required
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    {formData.description.length}/5000 caractères
+                    {t('adEditPage.step2.characterCount', { count: formData.description.length })}
                   </p>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Lieux de rencontre <span className="text-xs text-gray-500">(choix multiple possible)</span>
+                    {t('adEditPage.step2.meetingPlaces')} <span className="text-xs text-gray-500">{t('adEditPage.step1.multipleChoice')}</span>
                   </label>
                   <div className="grid grid-cols-2 gap-3">
                     {MEETING_PLACES.map((place) => (
@@ -751,10 +782,39 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
                             : 'bg-gray-800/50 text-gray-400 hover:text-white border-gray-700 hover:border-gray-600'
                         }`}
                       >
-                        {place}
+                        {translateAdData(`meetingPlaces.${place}`, language)}
                       </button>
                     ))}
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-3">
+                    {t('adEditPage.step2.services')} <span className="text-xs text-gray-500">{t('adEditPage.step2.servicesInfo')}</span>
+                  </label>
+                  <div className="bg-gray-800/30 rounded-lg p-4 max-h-96 overflow-y-auto">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {ESCORT_SERVICES.map((service) => (
+                        <button
+                          key={service}
+                          type="button"
+                          onClick={() => toggleService(service)}
+                          className={`py-2 px-3 rounded-lg font-medium transition-all text-xs text-left border ${
+                            formData.services.includes(service)
+                              ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white border-transparent shadow-md'
+                              : 'bg-gray-800/50 text-gray-400 hover:text-white border-gray-700 hover:border-gray-600 hover:bg-gray-700/50'
+                          }`}
+                        >
+                          {translateAdData(`services.${service}`, language)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {formData.services.length > 0 && (
+                    <p className="text-xs text-pink-400 mt-2">
+                      {t('adEditPage.step2.servicesSelected', { count: formData.services.length })}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -764,14 +824,14 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
                 onClick={() => setStep(1)}
                 className="flex-1 bg-gray-800 text-white py-4 rounded-lg font-medium hover:bg-gray-700 transition-all"
               >
-                Retour
+                {t('adEditPage.back')}
               </button>
               <button
                 onClick={() => setStep(3)}
                 disabled={!formData.description}
                 className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 text-white py-4 rounded-lg font-medium hover:from-pink-600 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Continuer
+                {t('adEditPage.continue')}
               </button>
             </div>
           </motion.div>
@@ -786,10 +846,10 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
           >
             <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
               <h2 className="text-xl font-semibold text-white mb-2">
-                Photos et Vidéo
+                {t('adEditPage.step3.title')}
               </h2>
               <p className="text-gray-400 mb-6">
-                Ajoutez au moins 3 photos (recommandé, maximum {maxPhotos} avec votre grade) + 1 vidéo optionnelle (max 30s)
+                {t('adEditPage.step3.subtitle', { maxPhotos })}
               </p>
 
               {/* Zone d'upload */}
@@ -807,10 +867,10 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
               >
                 <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-white mb-2">
-                  Cliquez pour ajouter des photos
+                  {t('adEditPage.step3.clickToAddPhotos')}
                 </p>
                 <p className="text-sm text-gray-400">
-                  PNG, JPG jusqu'à 10MB par photo
+                  {t('adEditPage.step3.photoFormats')}
                 </p>
               </label>
 
@@ -818,7 +878,7 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
               {photoPreviews.length > 0 && (
                 <div className="mt-6">
                   <p className="text-sm text-gray-400 mb-3">
-                    {photoPreviews.length} photo{photoPreviews.length > 1 ? 's' : ''} ajoutée{photoPreviews.length > 1 ? 's' : ''}
+                    {t('adEditPage.step3.photosAdded', { count: photoPreviews.length })}
                   </p>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                     {photoPreviews.map((preview, index) => (
@@ -842,16 +902,16 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
                         {/* Badge photo principale OU bouton pour définir comme principale */}
                         {index === 0 ? (
                           <div className="absolute bottom-2 left-2 bg-pink-500 text-white text-xs px-2 py-1 rounded">
-                            Photo principale
+                            {t('adEditPage.step3.mainPhoto')}
                           </div>
                         ) : (
                           <button
                             type="button"
                             onClick={() => setAsMainPhoto(index)}
                             className="absolute bottom-2 left-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded hover:bg-pink-500 transition-colors opacity-0 group-hover:opacity-100"
-                            title="Définir comme photo principale"
+                            title={t('adEditPage.step3.setAsMain')}
                           >
-                            Définir comme principale
+                            {t('adEditPage.step3.setAsMain')}
                           </button>
                         )}
                       </div>
@@ -861,17 +921,17 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
               )}
 
               <p className="text-xs text-gray-500 mt-4">
-                Les photos seront vérifiées avant publication. La première photo sera votre photo principale.
+                {t('adEditPage.step3.photoVerificationInfo')}
               </p>
             </div>
 
             {/* Section Vidéo */}
             <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
               <h2 className="text-xl font-semibold text-white mb-2">
-                Vidéo (optionnel)
+                {t('adEditPage.step3.videoTitle')}
               </h2>
               <p className="text-gray-400 mb-6">
-                Ajoutez une vidéo de présentation de maximum 30 secondes
+                {t('adEditPage.step3.videoSubtitle')}
               </p>
 
               {!videoPreview ? (
@@ -889,10 +949,10 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
                   >
                     <Upload className="w-12 h-12 text-purple-400 mx-auto mb-4" />
                     <p className="text-white mb-2">
-                      Cliquez pour ajouter une vidéo
+                      {t('adEditPage.step3.clickToAddVideo')}
                     </p>
                     <p className="text-sm text-gray-400">
-                      MP4, MOV, WebM - Max 30 secondes et 50MB
+                      {t('adEditPage.step3.videoFormats')}
                     </p>
                   </label>
                 </>
@@ -904,7 +964,7 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
                       controls
                       className="w-full rounded-lg border border-gray-700"
                     >
-                      Votre navigateur ne supporte pas la lecture de vidéos.
+                      {t('adEditPage.step3.browserNotSupported')}
                     </video>
                     <button
                       type="button"
@@ -919,7 +979,7 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    {existingVideoUrl && !videoFile ? 'Vidéo existante' : 'Vidéo ajoutée avec succès'}
+                    {existingVideoUrl && !videoFile ? t('adEditPage.step3.existingVideo') : t('adEditPage.step3.videoAddedSuccess')}
                   </p>
                 </div>
               )}
@@ -930,14 +990,14 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
                 onClick={() => setStep(2)}
                 className="flex-1 bg-gray-800 text-white py-4 rounded-lg font-medium hover:bg-gray-700 transition-all"
               >
-                Retour
+                {t('adEditPage.back')}
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
                 className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 text-white py-4 rounded-lg font-medium hover:from-pink-600 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? 'Mise à jour en cours...' : 'Mettre à jour l\'annonce'}
+                {isSubmitting ? t('adEditPage.updating') : t('adEditPage.updateAd')}
               </button>
             </div>
           </motion.div>
@@ -959,7 +1019,7 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
                 <X className="w-6 h-6 text-white" />
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-bold text-white mb-1">Erreur</h3>
+                <h3 className="text-lg font-bold text-white mb-1">{t('adEditPage.errorTitle')}</h3>
                 <p className="text-sm text-gray-300">{errorMessage}</p>
               </div>
               <button
@@ -989,7 +1049,7 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-bold text-white mb-1">Succès</h3>
+                  <h3 className="text-lg font-bold text-white mb-1">{t('adEditPage.successTitle')}</h3>
                   <p className="text-sm text-gray-300">{successMessage}</p>
                 </div>
               </div>

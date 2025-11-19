@@ -16,6 +16,7 @@ import { DAYS_OF_WEEK } from '@/types/ad'
 import { translateHairColor, translateEyeColor, translateEthnicity, translateHairRemoval, translateBreastType, getCountryName, getLanguageName } from '@/types/constants'
 import { AdComments } from '@/components/AdComments'
 import { supabase } from '@/lib/supabase'
+import { translateAdData } from '@/i18n/config'
 
 function RankBadge({ rank }: { rank: RankType }) {
   if (!rank || rank === 'standard') return null
@@ -100,18 +101,18 @@ export default function AdDetailPage() {
   // Fonction pour faire un don
   const handleDonate = async () => {
     if (!user || !ad) {
-      showToast('Vous devez être connecté pour faire un don', 'error')
+      showToast(t('adDetailPage.donateModal.mustBeLoggedIn'), 'error')
       return
     }
 
     const amount = parseInt(donateAmount)
     if (!amount || amount <= 0) {
-      showToast('Montant invalide', 'error')
+      showToast(t('adDetailPage.donateModal.invalidAmount'), 'error')
       return
     }
 
     if (amount > userCoins) {
-      showToast(`Solde insuffisant. Vous avez ${userCoins} EC`, 'error')
+      showToast(t('adDetailPage.donateModal.insufficientBalance', { balance: userCoins }), 'error')
       return
     }
 
@@ -138,14 +139,14 @@ export default function AdDetailPage() {
         setUserCoins(data.fromBalance)
         setShowDonateModal(false)
         setDonateAmount('')
-        showToast(`✅ Don de ${amount} EC envoyé avec succès !`, 'success')
+        showToast(t('adDetailPage.donateModal.success', { amount }), 'success')
       } else {
         console.error('❌ Erreur don:', data)
-        showToast(data.error || 'Erreur lors du don', 'error')
+        showToast(data.error || t('adDetailPage.donateModal.error'), 'error')
       }
     } catch (error) {
       console.error('❌ Exception:', error)
-      showToast('Erreur de connexion', 'error')
+      showToast(t('adDetailPage.donateModal.connectionError'), 'error')
     } finally {
       setIsDonating(false)
     }
@@ -159,12 +160,12 @@ export default function AdDetailPage() {
   // Fonction pour signaler un profil
   const handleReportProfile = async () => {
     if (!user || !ad) {
-      showToast('Vous devez être connecté pour signaler un profil', 'error')
+      showToast(t('adDetailPage.reportModal.mustBeLoggedIn'), 'error')
       return
     }
 
     if (!reportReason.trim()) {
-      showToast('Veuillez sélectionner une raison', 'error')
+      showToast(t('adDetailPage.reportModal.selectReasonError'), 'error')
       return
     }
 
@@ -182,13 +183,13 @@ export default function AdDetailPage() {
 
       if (error) throw error
 
-      showToast('Signalement envoyé avec succès', 'success')
+      showToast(t('adDetailPage.reportModal.success'), 'success')
       setShowReportModal(false)
       setReportReason('')
       setReportDescription('')
     } catch (error) {
       console.error('Erreur lors du signalement:', error)
-      showToast('Erreur lors de l\'envoi du signalement', 'error')
+      showToast(t('adDetailPage.reportModal.error'), 'error')
     } finally {
       setIsSubmittingReport(false)
     }
@@ -269,7 +270,7 @@ export default function AdDetailPage() {
       <div className="min-h-screen bg-gray-950 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-8 h-8 text-pink-500 animate-spin" />
-          <p className="text-gray-400">Chargement de l'annonce...</p>
+          <p className="text-gray-400">{t('adDetailPage.loading')}</p>
         </div>
       </div>
     )
@@ -285,18 +286,18 @@ export default function AdDetailPage() {
               <Globe className="w-8 h-8 text-amber-500" />
             </div>
             <h2 className="text-2xl font-bold text-white mb-3">
-              🚫 Restriction géographique
+              🚫 {t('adDetailPage.geoRestriction')}
             </h2>
             <p className="text-gray-400 mb-6">
-              En raison des lois françaises, vous ne pouvez consulter que les annonces de France.
+              {t('adDetailPage.geoRestrictionMessage')}
               <br /><br />
-              Cette annonce est située en {ad.country} et n'est pas accessible depuis votre localisation.
+              {t('adDetailPage.geoRestrictionAdLocation', { country: ad.country })}
             </p>
             <button
               onClick={() => router.push('/')}
               className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-3 rounded-xl font-medium hover:from-pink-600 hover:to-purple-700 transition-all"
             >
-              Retour aux annonces françaises
+              {t('adDetailPage.backToFrenchAds')}
             </button>
           </div>
         </div>
@@ -314,18 +315,18 @@ export default function AdDetailPage() {
               <X className="w-8 h-8 text-red-500" />
             </div>
             <h2 className="text-2xl font-bold text-white mb-3">
-              Accès refusé
+              {t('adDetailPage.accessDenied')}
             </h2>
             <p className="text-gray-400 mb-6">
               {blockReason === 'they_blocked'
-                ? "Cet utilisateur vous a bloqué. Vous ne pouvez pas accéder à son annonce."
-                : "Vous avez bloqué cet utilisateur. Vous ne pouvez pas accéder à son annonce."}
+                ? t('adDetailPage.theyBlockedYou')
+                : t('adDetailPage.youBlockedThem')}
             </p>
             <button
               onClick={() => router.push('/')}
               className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-3 rounded-xl font-medium hover:from-pink-600 hover:to-purple-700 transition-all"
             >
-              Retour à l'accueil
+              {t('adDetailPage.backToHome')}
             </button>
           </div>
         </div>
@@ -370,7 +371,7 @@ export default function AdDetailPage() {
   const handleToggleFavorite = () => {
     // Vérifier que l'utilisateur ne met pas sa propre annonce en favoris
     if (user?.id === ad.userId) {
-      showToast('Vous ne pouvez pas ajouter votre propre annonce aux favoris', 'error')
+      showToast(t('adDetailPage.cannotAddOwnAdToFavorites'), 'error')
       return
     }
     toggleFavorite(ad.id)
@@ -385,13 +386,13 @@ export default function AdDetailPage() {
 
     // Vérifier que l'utilisateur ne contacte pas sa propre annonce
     if (user?.id === ad.userId) {
-      showToast('Vous ne pouvez pas contacter votre propre annonce', 'error')
+      showToast(t('adDetailPage.cannotContactOwnAd'), 'error')
       return
     }
 
     // Vérifier si l'utilisateur accepte les messages privés
     if (ad.acceptsMessages === false) {
-      showToast('Cet utilisateur n\'accepte pas les messages privés sur le site. Veuillez le contacter par téléphone ou email.', 'info')
+      showToast(t('adDetailPage.userDoesNotAcceptMessages'), 'info')
       return
     }
 
@@ -407,14 +408,14 @@ export default function AdDetailPage() {
       } else {
         // Afficher l'erreur spécifique si disponible
         if (conversationError?.includes('contacter cet utilisateur')) {
-          showToast('Vous ne pouvez pas contacter cet utilisateur', 'error')
+          showToast(t('adDetailPage.cannotContactThisUser'), 'error')
         } else {
-          showToast('Erreur lors de la création de la conversation', 'error')
+          showToast(t('adDetailPage.errorCreatingConversation'), 'error')
         }
       }
     } catch (error) {
       console.error('Erreur lors de la création de la conversation:', error)
-      showToast('Erreur lors de la création de la conversation', 'error')
+      showToast(t('adDetailPage.errorCreatingConversation'), 'error')
     } finally {
       setIsCreatingConversation(false)
     }
@@ -438,33 +439,17 @@ export default function AdDetailPage() {
             >
               <Share2 className="w-5 h-5" />
             </motion.button>
-            {ad && user && ad.userId !== user.id && (
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => {
-                  if (!isAuthenticated) {
-                    showToast('Connectez-vous pour faire un don', 'error')
-                    return
-                  }
-                  setShowDonateModal(true)
-                }}
-                className="p-2 rounded-full bg-gradient-to-r from-yellow-500 to-amber-600 text-white hover:from-yellow-600 hover:to-amber-700 transition-all shadow-lg"
-                title="Faire un don d'EliteCoins"
-              >
-                <Coins className="w-5 h-5" />
-              </motion.button>
-            )}
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={() => {
                 if (!isAuthenticated) {
-                  showToast('Connectez-vous pour signaler', 'error')
+                  showToast(t('adDetailPage.loginToReport'), 'error')
                   return
                 }
                 setShowReportModal(true)
               }}
               className="p-2 rounded-full bg-gray-800 text-white hover:bg-gray-700 transition-colors"
-              title="Signaler ce profil"
+              title={t('adDetailPage.reportModal.title')}
             >
               <Flag className="w-5 h-5" />
             </motion.button>
@@ -616,17 +601,35 @@ export default function AdDetailPage() {
                 </div>
               </div>
             </div>
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={handleToggleFavorite}
-              className={`p-2.5 rounded-full transition-colors ${
-                isFavorite(ad.id)
-                  ? 'bg-pink-500 text-white'
-                  : 'bg-gray-800 text-pink-500 hover:bg-gray-700'
-              }`}
-            >
-              <Heart className={`w-5 h-5 ${isFavorite(ad.id) ? 'fill-current' : ''}`} />
-            </motion.button>
+            <div className="flex items-center gap-2">
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={handleToggleFavorite}
+                className={`p-2.5 rounded-full transition-colors ${
+                  isFavorite(ad.id)
+                    ? 'bg-pink-500 text-white'
+                    : 'bg-gray-800 text-pink-500 hover:bg-gray-700'
+                }`}
+              >
+                <Heart className={`w-5 h-5 ${isFavorite(ad.id) ? 'fill-current' : ''}`} />
+              </motion.button>
+              {ad && user && ad.userId !== user.id && (
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => {
+                    if (!isAuthenticated) {
+                      showToast(t('adDetailPage.loginToDonate'), 'error')
+                      return
+                    }
+                    setShowDonateModal(true)
+                  }}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-yellow-500 to-amber-600 text-white hover:from-yellow-600 hover:to-amber-700 transition-all shadow-lg"
+                >
+                  <Coins className="w-5 h-5" />
+                  <span className="font-medium text-sm">{t('adDetailPage.donateModal.title')}</span>
+                </motion.button>
+              )}
+            </div>
           </div>
         </motion.div>
 
@@ -653,12 +656,12 @@ export default function AdDetailPage() {
             {/* Genre */}
             {ad.gender && (
               <div className="bg-gray-800/50 p-2.5 rounded-lg">
-                <p className="text-gray-400 text-xs mb-0.5">Genre</p>
+                <p className="text-gray-400 text-xs mb-0.5">{t('adDetailPage.gender')}</p>
                 <p className="text-white text-sm font-medium">
-                  {ad.gender === 'female' && 'Femme'}
-                  {ad.gender === 'male' && 'Homme'}
-                  {ad.gender === 'couple' && 'Couple'}
-                  {ad.gender === 'transsexual' && 'Transsexuelle'}
+                  {ad.gender === 'female' && t('adDetailPage.genderFemale')}
+                  {ad.gender === 'male' && t('adDetailPage.genderMale')}
+                  {ad.gender === 'couple' && t('adDetailPage.genderCouple')}
+                  {ad.gender === 'transsexual' && t('adDetailPage.genderTranssexual')}
                 </p>
               </div>
             )}
@@ -702,7 +705,7 @@ export default function AdDetailPage() {
             )}
             {ad.country && (
               <div className="bg-gray-800/50 p-2.5 rounded-lg">
-                <p className="text-gray-400 text-xs mb-0.5">Nationalité</p>
+                <p className="text-gray-400 text-xs mb-0.5">{t('adDetailPage.nationality')}</p>
                 <p className="text-white text-sm font-medium">{getCountryName(ad.country)}</p>
               </div>
             )}
@@ -740,13 +743,13 @@ export default function AdDetailPage() {
             )}
             {ad.physicalAttributes?.breastType && (
               <div className="bg-gray-800/50 p-2.5 rounded-lg">
-                <p className="text-gray-400 text-xs mb-0.5">Type de seins</p>
+                <p className="text-gray-400 text-xs mb-0.5">{t('adDetailPage.breastType')}</p>
                 <p className="text-white text-sm font-medium">{translateBreastType(ad.physicalAttributes.breastType)}</p>
               </div>
             )}
             {ad.physicalAttributes?.hairRemoval && (
               <div className="bg-gray-800/50 p-2.5 rounded-lg">
-                <p className="text-gray-400 text-xs mb-0.5">Épilation maillot</p>
+                <p className="text-gray-400 text-xs mb-0.5">{t('adDetailPage.hairRemoval')}</p>
                 <p className="text-white text-sm font-medium">{translateHairRemoval(ad.physicalAttributes.hairRemoval)}</p>
               </div>
             )}
@@ -754,7 +757,7 @@ export default function AdDetailPage() {
             {/* Langues */}
             {ad.languages && ad.languages.length > 0 && (
               <div className="bg-gray-800/50 p-2.5 rounded-lg">
-                <p className="text-gray-400 text-xs mb-0.5">Langues</p>
+                <p className="text-gray-400 text-xs mb-0.5">{t('adDetailPage.languages')}</p>
                 <p className="text-white text-sm font-medium">{ad.languages.join(', ')}</p>
               </div>
             )}
@@ -762,14 +765,14 @@ export default function AdDetailPage() {
             {/* Ce qu'on souhaite rencontrer */}
             {ad.interestedIn && (
               <div className="bg-gray-800/50 p-2.5 rounded-lg col-span-2">
-                <p className="text-gray-400 text-xs mb-0.5">Souhaite rencontrer</p>
+                <p className="text-gray-400 text-xs mb-0.5">{t('adDetailPage.interestedInMeeting')}</p>
                 <p className="text-white text-sm font-medium">
                   {[
-                    ad.interestedIn.men && 'Hommes',
-                    ad.interestedIn.women && 'Femmes',
-                    ad.interestedIn.couples && 'Couples',
-                    ad.interestedIn.transsexuals && 'Transsexuels'
-                  ].filter(Boolean).join(', ') || 'Non spécifié'}
+                    ad.interestedIn.men && t('adDetailPage.interestedInMen'),
+                    ad.interestedIn.women && t('adDetailPage.interestedInWomen'),
+                    ad.interestedIn.couples && t('adDetailPage.interestedInCouples'),
+                    ad.interestedIn.transsexuals && t('adDetailPage.interestedInTranssexuals')
+                  ].filter(Boolean).join(', ') || t('adDetailPage.notSpecified')}
                 </p>
               </div>
             )}
@@ -777,21 +780,43 @@ export default function AdDetailPage() {
         </motion.div>
 
         {/* Lieux de rencontre */}
-        {ad.services && ad.services.length > 0 && (
+        {ad.meetingPlaces && ad.meetingPlaces.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
             className="bg-gray-900 rounded-2xl p-5 border border-gray-800"
           >
-            <h2 className="text-lg font-bold text-white mb-3">Lieux de rencontre</h2>
+            <h2 className="text-lg font-bold text-white mb-3">{t('adDetailPage.meetingPlaces')}</h2>
+            <div className="flex flex-wrap gap-2">
+              {ad.meetingPlaces.map((place, index) => (
+                <span
+                  key={index}
+                  className="bg-gradient-to-r from-blue-500/10 to-cyan-600/10 border border-blue-500/30 text-gray-200 px-3 py-1.5 rounded-full text-xs font-medium"
+                >
+                  {translateAdData(place, language)}
+                </span>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Services proposés */}
+        {ad.services && ad.services.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35 }}
+            className="bg-gray-900 rounded-2xl p-5 border border-gray-800"
+          >
+            <h2 className="text-lg font-bold text-white mb-3">{t('adDetailPage.servicesOffered')}</h2>
             <div className="flex flex-wrap gap-2">
               {ad.services.map((service, index) => (
                 <span
                   key={index}
                   className="bg-gradient-to-r from-pink-500/10 to-purple-600/10 border border-pink-500/30 text-gray-200 px-3 py-1.5 rounded-full text-xs"
                 >
-                  {service}
+                  {translateAdData(service, language)}
                 </span>
               ))}
             </div>
@@ -815,12 +840,12 @@ export default function AdDetailPage() {
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <Calendar className="w-4 h-4 text-pink-500" />
-                    <p className="text-gray-400 text-sm font-medium">Disponibilité</p>
+                    <p className="text-gray-400 text-sm font-medium">{t('adDetailPage.availabilityTitle')}</p>
                   </div>
 
                   {ad.contactInfo.availability.available247 ? (
                     <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-lg p-3">
-                      <p className="text-green-400 font-medium text-sm">🌟 Disponible 24/7</p>
+                      <p className="text-green-400 font-medium text-sm">🌟 {t('adDetailPage.available247')}</p>
                     </div>
                   ) : ad.contactInfo.availability.days && ad.contactInfo.availability.days.length > 0 ? (
                     <div className="bg-gray-800/50 rounded-lg p-3 space-y-2">
@@ -838,7 +863,7 @@ export default function AdDetailPage() {
                       })}
                     </div>
                   ) : (
-                    <p className="text-gray-500 text-sm">Non spécifié</p>
+                    <p className="text-gray-500 text-sm">{t('adDetailPage.notSpecified')}</p>
                   )}
                 </div>
               )}
@@ -847,7 +872,7 @@ export default function AdDetailPage() {
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <MapPin className="w-4 h-4 text-pink-500" />
-                  <p className="text-gray-400 text-sm font-medium">Lieu</p>
+                  <p className="text-gray-400 text-sm font-medium">{t('adDetailPage.location')}</p>
                 </div>
                 <button
                   onClick={() => router.push(`/?country=${ad.country}&city=${encodeURIComponent(ad.location)}`)}
@@ -863,7 +888,7 @@ export default function AdDetailPage() {
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <Globe className="w-4 h-4 text-pink-500" />
-                    <p className="text-gray-400 text-sm font-medium">Langues parlées</p>
+                    <p className="text-gray-400 text-sm font-medium">{t('adDetailPage.spokenLanguages')}</p>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {ad.languages.map((lang, index) => (
@@ -888,7 +913,7 @@ export default function AdDetailPage() {
                       <Phone className="w-5 h-5 text-pink-500" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-gray-400 text-xs mb-1">Téléphone</p>
+                      <p className="text-gray-400 text-xs mb-1">{t('adDetailPage.phone')}</p>
                       <a
                         href={`tel:${ad.contactInfo.phone}`}
                         className="text-white text-base font-semibold hover:text-pink-400 transition-colors"
@@ -899,13 +924,13 @@ export default function AdDetailPage() {
                         {ad.contactInfo.acceptsCalls && (
                           <span className="text-xs bg-gray-700 px-2 py-1 rounded flex items-center gap-1 text-gray-300">
                             <Phone className="w-3 h-3" />
-                            Appels
+                            {t('adDetailPage.calls')}
                           </span>
                         )}
                         {ad.contactInfo.acceptsSMS && (
                           <span className="text-xs bg-gray-700 px-2 py-1 rounded flex items-center gap-1 text-gray-300">
                             <MessageCircle className="w-3 h-3" />
-                            SMS
+                            {t('adDetailPage.sms')}
                           </span>
                         )}
                         {ad.contactInfo.whatsapp && (
@@ -939,7 +964,7 @@ export default function AdDetailPage() {
                       <MessageCircle className="w-5 h-5 text-purple-500" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-gray-400 text-xs mb-1">Email</p>
+                      <p className="text-gray-400 text-xs mb-1">{t('adDetailPage.email')}</p>
                       <a
                         href={`mailto:${ad.contactInfo.email}`}
                         className="text-white text-base font-semibold hover:text-purple-400 transition-colors break-all"
@@ -1002,12 +1027,12 @@ export default function AdDetailPage() {
             {isCreatingConversation ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                Création de la conversation...
+                {t('adDetailPage.creatingConversation')}
               </>
             ) : ad.acceptsMessages === false ? (
               <>
                 <X className="w-5 h-5" />
-                Messages privés désactivés
+                {t('adDetailPage.privateMessagesDisabled')}
               </>
             ) : (
               <>
@@ -1071,13 +1096,13 @@ export default function AdDetailPage() {
                   <Coins className="w-5 h-5 text-white" />
                 </div>
                 <h3 className="text-xl font-bold text-white">
-                  Faire un don
+                  {t('adDetailPage.donateModal.title')}
                 </h3>
               </div>
 
               <div className="mb-6 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-400">Votre solde</span>
+                  <span className="text-gray-400">{t('adDetailPage.donateModal.yourBalance')}</span>
                   <span className="font-bold text-white flex items-center gap-1">
                     <Coins className="w-4 h-4 text-yellow-500" />
                     {userCoins} EC
@@ -1088,13 +1113,13 @@ export default function AdDetailPage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Montant du don (EliteCoins) *
+                    {t('adDetailPage.donateModal.amountLabel')}
                   </label>
                   <input
                     type="number"
                     value={donateAmount}
                     onChange={(e) => setDonateAmount(e.target.value)}
-                    placeholder="Entrez le montant"
+                    placeholder={t('adDetailPage.donateModal.amountPlaceholder')}
                     min="1"
                     max={userCoins}
                     className="w-full bg-gray-800 text-white p-3 rounded-lg border border-gray-700 focus:border-yellow-500 focus:outline-none"
@@ -1124,7 +1149,7 @@ export default function AdDetailPage() {
                     disabled={isDonating}
                     className="flex-1 bg-gray-800 text-white py-3 rounded-xl font-medium hover:bg-gray-700 transition-colors disabled:opacity-50"
                   >
-                    Annuler
+                    {t('adDetailPage.donateModal.cancel')}
                   </button>
                   <button
                     onClick={handleDonate}
@@ -1134,10 +1159,10 @@ export default function AdDetailPage() {
                     {isDonating ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        Envoi...
+                        {t('adDetailPage.donateModal.sending')}
                       </>
                     ) : (
-                      'Envoyer'
+                      t('adDetailPage.donateModal.send')
                     )}
                   </button>
                 </div>
@@ -1172,14 +1197,14 @@ export default function AdDetailPage() {
                   <Flag className="w-5 h-5 text-red-500" />
                 </div>
                 <h3 className="text-xl font-bold text-white">
-                  Signaler ce profil
+                  {t('adDetailPage.reportModal.title')}
                 </h3>
               </div>
 
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Raison du signalement *
+                    {t('adDetailPage.reportModal.reasonLabel')}
                   </label>
                   <select
                     value={reportReason}
@@ -1187,24 +1212,24 @@ export default function AdDetailPage() {
                     className="w-full bg-gray-800 text-white p-3 rounded-lg border border-gray-700 focus:border-red-500 focus:outline-none"
                     disabled={isSubmittingReport}
                   >
-                    <option value="">Sélectionner une raison</option>
-                    <option value="fake_profile">Faux profil</option>
-                    <option value="inappropriate_content">Contenu inapproprié</option>
-                    <option value="scam">Arnaque</option>
-                    <option value="harassment">Harcèlement</option>
-                    <option value="underage">Mineur</option>
-                    <option value="other">Autre</option>
+                    <option value="">{t('adDetailPage.reportModal.selectReason')}</option>
+                    <option value="fake_profile">{t('adDetailPage.reportModal.fakeProfile')}</option>
+                    <option value="inappropriate_content">{t('adDetailPage.reportModal.inappropriateContent')}</option>
+                    <option value="scam">{t('adDetailPage.reportModal.scam')}</option>
+                    <option value="harassment">{t('adDetailPage.reportModal.harassment')}</option>
+                    <option value="underage">{t('adDetailPage.reportModal.underage')}</option>
+                    <option value="other">{t('adDetailPage.reportModal.other')}</option>
                   </select>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Description (optionnel)
+                    {t('adDetailPage.reportModal.descriptionLabel')}
                   </label>
                   <textarea
                     value={reportDescription}
                     onChange={(e) => setReportDescription(e.target.value)}
-                    placeholder="Détails supplémentaires..."
+                    placeholder={t('adDetailPage.reportModal.descriptionPlaceholder')}
                     className="w-full bg-gray-800 text-white p-3 rounded-lg border border-gray-700 focus:border-red-500 focus:outline-none resize-none"
                     rows={4}
                     disabled={isSubmittingReport}
@@ -1221,14 +1246,14 @@ export default function AdDetailPage() {
                     disabled={isSubmittingReport}
                     className="flex-1 bg-gray-800 text-white py-3 rounded-xl font-medium hover:bg-gray-700 transition-colors disabled:opacity-50"
                   >
-                    Annuler
+                    {t('adDetailPage.reportModal.cancel')}
                   </button>
                   <button
                     onClick={handleReportProfile}
                     disabled={isSubmittingReport || !reportReason}
                     className="flex-1 bg-gradient-to-r from-red-500 to-pink-600 text-white py-3 rounded-xl font-medium hover:from-red-600 hover:to-pink-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isSubmittingReport ? 'Envoi...' : 'Signaler'}
+                    {isSubmittingReport ? t('adDetailPage.reportModal.sending') : t('adDetailPage.reportModal.submit')}
                   </button>
                 </div>
               </div>
