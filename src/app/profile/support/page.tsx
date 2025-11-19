@@ -7,6 +7,7 @@ import { ArrowLeft, MessageCircle, Plus, Clock, CheckCircle, AlertCircle, Send, 
 import { Header } from '@/components/Header'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface TicketMessage {
   id: string
@@ -34,6 +35,7 @@ interface SupportTicket {
 export default function SupportPage() {
   const router = useRouter()
   const { user } = useAuth()
+  const { t } = useLanguage()
   const [loading, setLoading] = useState(true)
   const [tickets, setTickets] = useState<SupportTicket[]>([])
   const [showNewTicket, setShowNewTicket] = useState(false)
@@ -220,9 +222,9 @@ export default function SupportPage() {
   const getStatusText = (status: string) => {
     switch (status) {
       case 'open':
-        return 'En attente'
+        return t('supportPage.statusOpen')
       case 'closed':
-        return 'Résolu'
+        return t('supportPage.statusClosed')
       default:
         return status
     }
@@ -246,13 +248,13 @@ export default function SupportPage() {
   const getPriorityText = (priority: string) => {
     switch (priority) {
       case 'urgent':
-        return 'Urgent'
+        return t('supportPage.priorityUrgent')
       case 'high':
-        return 'Haute'
+        return t('supportPage.priorityHigh')
       case 'normal':
-        return 'Normale'
+        return t('supportPage.priorityNormal')
       case 'low':
-        return 'Basse'
+        return t('supportPage.priorityLow')
       default:
         return priority
     }
@@ -268,7 +270,7 @@ export default function SupportPage() {
 
   return (
     <div className="min-h-screen bg-gray-950">
-      <Header title="Support" showBackButton={true} backUrl="/my-ads" />
+      <Header title={t('supportPage.title')} showBackButton={true} backUrl="/my-ads" />
 
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Vue de conversation si un ticket est sélectionné */}
@@ -283,7 +285,7 @@ export default function SupportPage() {
                     className="text-gray-400 hover:text-white transition-colors mb-3 flex items-center gap-2"
                   >
                     <ArrowLeft className="w-5 h-5" />
-                    Retour à mes tickets
+                    {t('supportPage.backToTickets')}
                   </button>
                   <div className="flex items-center gap-3 mb-2">
                     <div className="p-2 bg-gray-800 rounded-lg">
@@ -303,7 +305,7 @@ export default function SupportPage() {
                           })}
                         </span>
                         <span className={`font-medium ${getPriorityColor(selectedTicket.priority)}`}>
-                          Priorité: {getPriorityText(selectedTicket.priority)}
+                          {t('supportPage.priority')}: {getPriorityText(selectedTicket.priority)}
                         </span>
                       </div>
                     </div>
@@ -328,7 +330,7 @@ export default function SupportPage() {
                   </div>
                 ) : messages.length === 0 ? (
                   <div className="flex items-center justify-center h-full text-gray-400">
-                    Aucun message
+                    {t('supportPage.noMessages')}
                   </div>
                 ) : (
                   <>
@@ -350,7 +352,7 @@ export default function SupportPage() {
                                 <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
                                   <MessageCircle className="w-3 h-3 text-white" />
                                 </div>
-                                <span className="text-xs font-medium text-purple-400">Support</span>
+                                <span className="text-xs font-medium text-purple-400">{t('supportPage.support')}</span>
                               </div>
                             )}
                             <p className="text-white whitespace-pre-wrap">{msg.message}</p>
@@ -379,7 +381,7 @@ export default function SupportPage() {
                       type="text"
                       value={replyMessage}
                       onChange={(e) => setReplyMessage(e.target.value)}
-                      placeholder="Écrivez votre message..."
+                      placeholder={t('supportPage.writeMessage')}
                       className="flex-1 bg-gray-800 text-white px-4 py-3 rounded-xl border border-gray-700 focus:border-purple-500 focus:outline-none"
                       disabled={sendingReply}
                     />
@@ -401,7 +403,7 @@ export default function SupportPage() {
               {selectedTicket.status === 'closed' && (
                 <div className="border-t border-gray-800 p-4 bg-green-500/10">
                   <p className="text-green-400 text-sm text-center">
-                    ✓ Ce ticket a été résolu et fermé
+                    ✓ {t('supportPage.ticketResolved')}
                   </p>
                 </div>
               )}
@@ -412,15 +414,15 @@ export default function SupportPage() {
             {/* Header avec bouton nouveau ticket */}
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h1 className="text-2xl font-bold text-white mb-2">Centre de support</h1>
-                <p className="text-gray-400">Gérez vos demandes d'assistance</p>
+                <h1 className="text-2xl font-bold text-white mb-2">{t('supportPage.supportCenter')}</h1>
+                <p className="text-gray-400">{t('supportPage.manageRequests')}</p>
               </div>
               <button
                 onClick={() => setShowNewTicket(!showNewTicket)}
                 className="flex items-center gap-2 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium transition-colors"
               >
                 <Plus className="w-5 h-5" />
-                Nouveau ticket
+                {t('supportPage.newTicket')}
               </button>
             </div>
 
@@ -434,7 +436,7 @@ export default function SupportPage() {
                   className="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-2xl p-6 mb-6"
                 >
                   <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xl font-bold text-white">Créer un nouveau ticket</h2>
+                    <h2 className="text-xl font-bold text-white">{t('supportPage.createNewTicket')}</h2>
                     <button
                       onClick={() => setShowNewTicket(false)}
                       className="text-gray-400 hover:text-white transition-colors"
@@ -445,13 +447,13 @@ export default function SupportPage() {
                   <form onSubmit={handleCreateTicket} className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Sujet
+                        {t('supportPage.subject')}
                       </label>
                       <input
                         type="text"
                         value={subject}
                         onChange={(e) => setSubject(e.target.value)}
-                        placeholder="Décrivez brièvement votre problème..."
+                        placeholder={t('supportPage.subjectPlaceholder')}
                         className="w-full bg-gray-800 text-white px-4 py-3 rounded-lg border border-gray-700 focus:border-purple-500 focus:outline-none"
                         required
                       />
@@ -459,28 +461,28 @@ export default function SupportPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Priorité
+                        {t('supportPage.priority')}
                       </label>
                       <select
                         value={priority}
                         onChange={(e) => setPriority(e.target.value as any)}
                         className="w-full bg-gray-800 text-white px-4 py-3 rounded-lg border border-gray-700 focus:border-purple-500 focus:outline-none"
                       >
-                        <option value="low">Basse</option>
-                        <option value="normal">Normale</option>
-                        <option value="high">Haute</option>
-                        <option value="urgent">Urgente</option>
+                        <option value="low">{t('supportPage.priorityLow')}</option>
+                        <option value="normal">{t('supportPage.priorityNormal')}</option>
+                        <option value="high">{t('supportPage.priorityHigh')}</option>
+                        <option value="urgent">{t('supportPage.priorityUrgent')}</option>
                       </select>
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Message
+                        {t('supportPage.message')}
                       </label>
                       <textarea
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
-                        placeholder="Décrivez votre problème en détail..."
+                        placeholder={t('supportPage.messagePlaceholder')}
                         rows={6}
                         className="w-full bg-gray-800 text-white px-4 py-3 rounded-lg border border-gray-700 focus:border-purple-500 focus:outline-none resize-none"
                         required
@@ -500,12 +502,12 @@ export default function SupportPage() {
                         {submitting ? (
                           <>
                             <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                            Envoi en cours...
+                            {t('supportPage.sending')}
                           </>
                         ) : (
                           <>
                             <Send className="w-5 h-5" />
-                            Envoyer le ticket
+                            {t('supportPage.sendTicket')}
                           </>
                         )}
                       </button>
@@ -520,7 +522,7 @@ export default function SupportPage() {
                         }}
                         className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors"
                       >
-                        Annuler
+                        {t('supportPage.cancel')}
                       </button>
                     </div>
                   </form>
@@ -532,16 +534,16 @@ export default function SupportPage() {
             {tickets.length === 0 ? (
               <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-2xl p-12 text-center">
                 <MessageCircle className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-white mb-2">Aucun ticket</h3>
+                <h3 className="text-xl font-semibold text-white mb-2">{t('supportPage.noTickets')}</h3>
                 <p className="text-gray-400 mb-6">
-                  Vous n'avez pas encore créé de ticket de support
+                  {t('supportPage.noTicketsDesc')}
                 </p>
                 <button
                   onClick={() => setShowNewTicket(true)}
                   className="inline-flex items-center gap-2 px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium transition-colors"
                 >
                   <Plus className="w-5 h-5" />
-                  Créer mon premier ticket
+                  {t('supportPage.createFirstTicket')}
                 </button>
               </div>
             ) : (
