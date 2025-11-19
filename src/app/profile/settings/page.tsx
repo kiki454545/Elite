@@ -6,10 +6,12 @@ import { motion } from 'framer-motion'
 import { ArrowLeft, Mail, Lock, Eye, EyeOff, Loader2, Check, X } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function AccountSettingsPage() {
   const router = useRouter()
   const { user, loading: authLoading } = useAuth()
+  const { t } = useLanguage()
 
   // États pour l'email
   const [newEmail, setNewEmail] = useState('')
@@ -43,7 +45,7 @@ export default function AccountSettingsPage() {
     try {
       // Valider l'email
       if (!newEmail || !newEmail.includes('@')) {
-        setEmailError('Veuillez entrer un email valide')
+        setEmailError(t('settingsPage.enterValidEmail'))
         setEmailLoading(false)
         return
       }
@@ -79,13 +81,13 @@ export default function AccountSettingsPage() {
     try {
       // Validations
       if (!newPassword || newPassword.length < 6) {
-        setPasswordError('Le mot de passe doit contenir au moins 6 caractères')
+        setPasswordError(t('settingsPage.passwordMinLength'))
         setPasswordLoading(false)
         return
       }
 
       if (newPassword !== confirmPassword) {
-        setPasswordError('Les mots de passe ne correspondent pas')
+        setPasswordError(t('settingsPage.passwordsDontMatch'))
         setPasswordLoading(false)
         return
       }
@@ -134,14 +136,14 @@ export default function AccountSettingsPage() {
             <ArrowLeft className="w-6 h-6" />
           </button>
           <h1 className="text-3xl font-bold text-white">
-            Paramètres du compte
+            {t('settingsPage.title')}
           </h1>
         </div>
 
         <div className="space-y-6">
           {/* Email actuel */}
           <div className="bg-gray-900/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-800">
-            <p className="text-sm text-gray-400 mb-2">Email actuel</p>
+            <p className="text-sm text-gray-400 mb-2">{t('settingsPage.currentEmail')}</p>
             <p className="text-white font-medium">{user?.email}</p>
           </div>
 
@@ -153,19 +155,19 @@ export default function AccountSettingsPage() {
           >
             <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
               <Mail className="w-5 h-5 text-pink-500" />
-              Modifier l'email
+              {t('settingsPage.updateEmail')}
             </h2>
 
             <form onSubmit={handleEmailUpdate} className="space-y-4">
               <div>
                 <label className="text-sm text-gray-400 mb-2 block">
-                  Nouvel email
+                  {t('settingsPage.newEmail')}
                 </label>
                 <input
                   type="email"
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
-                  placeholder="nouveau@email.com"
+                  placeholder={t('settingsPage.newEmailPlaceholder')}
                   className="w-full bg-gray-800/50 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none transition-colors"
                 />
               </div>
@@ -180,7 +182,7 @@ export default function AccountSettingsPage() {
               {emailSuccess && (
                 <div className="flex items-center gap-2 text-green-500 text-sm bg-green-500/10 rounded-lg p-3">
                   <Check className="w-4 h-4 flex-shrink-0" />
-                  <p>Un email de confirmation a été envoyé à votre nouvelle adresse</p>
+                  <p>{t('settingsPage.confirmationSent')}</p>
                 </div>
               )}
 
@@ -192,10 +194,10 @@ export default function AccountSettingsPage() {
                 {emailLoading ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    Mise à jour...
+                    {t('settingsPage.updating')}
                   </>
                 ) : (
-                  'Mettre à jour l\'email'
+                  t('settingsPage.updateEmailButton')
                 )}
               </button>
             </form>
@@ -210,20 +212,20 @@ export default function AccountSettingsPage() {
           >
             <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
               <Lock className="w-5 h-5 text-pink-500" />
-              Modifier le mot de passe
+              {t('settingsPage.updatePassword')}
             </h2>
 
             <form onSubmit={handlePasswordUpdate} className="space-y-4">
               <div>
                 <label className="text-sm text-gray-400 mb-2 block">
-                  Nouveau mot de passe
+                  {t('settingsPage.newPassword')}
                 </label>
                 <div className="relative">
                   <input
                     type={showNewPassword ? 'text' : 'password'}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Minimum 6 caractères"
+                    placeholder={t('settingsPage.newPasswordPlaceholder')}
                     className="w-full bg-gray-800/50 border border-gray-700 rounded-xl px-4 py-3 pr-12 text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none transition-colors"
                   />
                   <button
@@ -238,14 +240,14 @@ export default function AccountSettingsPage() {
 
               <div>
                 <label className="text-sm text-gray-400 mb-2 block">
-                  Confirmer le mot de passe
+                  {t('settingsPage.confirmPassword')}
                 </label>
                 <div className="relative">
                   <input
                     type={showConfirmPassword ? 'text' : 'password'}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Répéter le mot de passe"
+                    placeholder={t('settingsPage.confirmPasswordPlaceholder')}
                     className="w-full bg-gray-800/50 border border-gray-700 rounded-xl px-4 py-3 pr-12 text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none transition-colors"
                   />
                   <button
@@ -268,7 +270,7 @@ export default function AccountSettingsPage() {
               {passwordSuccess && (
                 <div className="flex items-center gap-2 text-green-500 text-sm bg-green-500/10 rounded-lg p-3">
                   <Check className="w-4 h-4 flex-shrink-0" />
-                  <p>Mot de passe modifié avec succès</p>
+                  <p>{t('settingsPage.passwordUpdatedSuccess')}</p>
                 </div>
               )}
 
@@ -280,10 +282,10 @@ export default function AccountSettingsPage() {
                 {passwordLoading ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    Mise à jour...
+                    {t('settingsPage.updating')}
                   </>
                 ) : (
-                  'Mettre à jour le mot de passe'
+                  t('settingsPage.updatePasswordButton')
                 )}
               </button>
             </form>

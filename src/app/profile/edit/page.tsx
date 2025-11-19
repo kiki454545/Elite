@@ -155,7 +155,7 @@ export default function EditProfilePage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="text-white text-xl">Chargement...</div>
+        <div className="text-white text-xl">{t('editProfilePage.loading')}</div>
       </div>
     )
   }
@@ -272,7 +272,7 @@ export default function EditProfilePage() {
   return (
     <>
       <div className="min-h-screen bg-gray-950 pb-24">
-        <Header title="Éditer le profil" />
+        <Header title={t('editProfilePage.title')} />
 
         <div className="max-w-5xl mx-auto px-4 py-6">
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -288,7 +288,7 @@ export default function EditProfilePage() {
                 <User className="w-6 h-6 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-white">
-                Informations de base
+                {t('editProfilePage.basicInfo')}
               </h2>
             </div>
 
@@ -296,13 +296,13 @@ export default function EditProfilePage() {
               {/* Showname */}
               <div>
                 <label className="text-white text-sm font-medium mb-2 block">
-                  <span className="text-pink-500">*</span> Pseudo
+                  <span className="text-pink-500">*</span> {t('editProfilePage.pseudo')}
                 </label>
                 <input
                   type="text"
                   value={showname}
                   onChange={(e) => setShowname(e.target.value)}
-                  placeholder="Votre pseudo..."
+                  placeholder={t('editProfilePage.pseudoPlaceholder')}
                   className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 transition-all"
                 />
               </div>
