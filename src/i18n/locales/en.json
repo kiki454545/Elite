@@ -921,5 +921,31 @@
       "unknown": "Unknown error",
       "general": "An error occurred while updating the listing"
     }
+  },
+  "comments": {
+    "title": "Comments",
+    "owner": "Owner",
+    "report": "Report",
+    "reply": "Reply",
+    "yourReply": "Your reply...",
+    "send": "Send",
+    "cancel": "Cancel",
+    "addComment": "Add a comment...",
+    "publish": "Publish",
+    "loginToComment": "Log in to leave a comment",
+    "noComments": "No comments yet",
+    "beFirst": "Be the first to comment!",
+    "loading": "Loading...",
+    "loadMore": "Load more comments ({{count}} remaining)",
+    "reportSuccess": "Comment reported successfully!",
+    "reportThisComment": "Report this comment",
+    "fromUser": "from {{username}}",
+    "reportPlaceholder": "Why are you reporting this comment?",
+    "anonymous": "Anonymous",
+    "reportError": "Error reporting comment",
+    "justNow": "Just now",
+    "minutesAgo": "{{minutes}} min ago",
+    "today": "Today",
+    "yesterday": "Yesterday"
   }
 }
