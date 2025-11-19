@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react'
 
 export default function AuthPage() {
@@ -24,6 +25,7 @@ export default function AuthPage() {
 
   const { login, signup } = useAuth()
   const router = useRouter()
+  const { t } = useLanguage()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -33,20 +35,20 @@ export default function AuthPage() {
     if (!isLogin) {
       // Vérifier l'acceptation des conditions
       if (!acceptTerms) {
-        setError('Vous devez accepter le règlement pour vous inscrire')
+        setError(t('authPage.mustAcceptTerms'))
         return
       }
 
       // Vérifier la correspondance des mots de passe
       if (formData.password !== formData.confirmPassword) {
-        setError('Les mots de passe ne correspondent pas')
+        setError(t('authPage.passwordsDontMatch'))
         return
       }
 
       // Vérifier l'âge
       const age = parseInt(formData.age)
       if (isNaN(age) || age < 18) {
-        setError('Vous devez avoir au moins 18 ans')
+        setError(t('authPage.mustBe18'))
         return
       }
     }
@@ -72,7 +74,7 @@ export default function AuthPage() {
         }
       }
     } catch (err) {
-      setError('Une erreur est survenue')
+      setError(t('authPage.errorOccurred'))
     } finally {
       setLoading(false)
     }
@@ -94,7 +96,7 @@ export default function AuthPage() {
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          <span className="text-sm">Retour aux annonces</span>
+          <span className="text-sm">{t('authPage.backToListings')}</span>
         </motion.button>
 
         {/* Logo */}
@@ -102,7 +104,7 @@ export default function AuthPage() {
           <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent mb-2">
             SexElite
           </h1>
-          <p className="text-gray-400">Plateforme d'annonce Libertine</p>
+          <p className="text-gray-400">{t('authPage.platform')}</p>
         </div>
 
         {/* Card */}
@@ -117,7 +119,7 @@ export default function AuthPage() {
                   : 'text-gray-400 hover:text-white'
               }`}
             >
-              Connexion
+              {t('authPage.loginTab')}
             </button>
             <button
               onClick={() => setIsLogin(false)}
@@ -127,7 +129,7 @@ export default function AuthPage() {
                   : 'text-gray-400 hover:text-white'
               }`}
             >
-              Inscription
+              {t('authPage.signupTab')}
             </button>
           </div>
 
@@ -135,7 +137,7 @@ export default function AuthPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Email
+                {t('authPage.email')}
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -146,7 +148,7 @@ export default function AuthPage() {
                     setFormData({ ...formData, email: e.target.value })
                   }
                   className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 pl-11 pr-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                  placeholder="exemple@email.com"
+                  placeholder={t('authPage.emailPlaceholder')}
                   required
                 />
               </div>
@@ -156,7 +158,7 @@ export default function AuthPage() {
               <>
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Pseudo
+                    {t('authPage.username')}
                   </label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -167,7 +169,7 @@ export default function AuthPage() {
                         setFormData({ ...formData, username: e.target.value })
                       }
                       className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 pl-11 pr-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                      placeholder="johndoe"
+                      placeholder={t('authPage.usernamePlaceholder')}
                       required
                     />
                   </div>
@@ -175,7 +177,7 @@ export default function AuthPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Âge
+                    {t('authPage.age')}
                   </label>
                   <input
                     type="number"
@@ -195,7 +197,7 @@ export default function AuthPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Mot de passe
+                {t('authPage.password')}
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -227,7 +229,7 @@ export default function AuthPage() {
             {!isLogin && (
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Confirmer le mot de passe
+                  {t('authPage.confirmPassword')}
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -268,9 +270,9 @@ export default function AuthPage() {
                     required
                   />
                   <span className="text-sm text-gray-300 leading-relaxed">
-                    J'accepte les{' '}
+                    {t('authPage.iAcceptThe')}{' '}
                     <a href="/terms" target="_blank" className="text-pink-500 hover:text-pink-400 underline">
-                      conditions d'utilisation
+                      {t('authPage.termsAndConditions')}
                     </a>
                     {' '}et je confirme avoir au moins 18 ans. Je comprends que cette plateforme est réservée à un contenu pour adultes.
                   </span>
@@ -290,7 +292,7 @@ export default function AuthPage() {
               disabled={loading}
               className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white py-3 rounded-lg font-medium hover:from-pink-600 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Chargement...' : isLogin ? 'Se connecter' : "S'inscrire"}
+              {loading ? t('common.loading') : isLogin ? t('authPage.loginButton') : t('authPage.signupButton')}
             </motion.button>
           </form>
 
@@ -333,12 +335,12 @@ export default function AuthPage() {
 
               {/* Titre */}
               <h3 className="text-2xl font-bold text-white mb-3">
-                Vérifiez votre email
+                {t('authPage.emailConfirmationTitle')}
               </h3>
 
               {/* Message */}
               <p className="text-gray-300 mb-2 leading-relaxed">
-                Un email de confirmation a été envoyé à :
+                {t('authPage.emailConfirmationMessage')} :
               </p>
               <p className="text-pink-400 font-semibold mb-6 break-all">
                 {formData.email}
@@ -346,7 +348,7 @@ export default function AuthPage() {
 
               <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700 mb-6 w-full">
                 <p className="text-gray-400 text-sm leading-relaxed">
-                  Veuillez consulter votre boîte de réception et cliquer sur le lien de confirmation pour activer votre compte.
+                  {t('authPage.emailConfirmationInstructions')}
                 </p>
                 <p className="text-gray-400 text-sm mt-2">
                   💡 <span className="text-gray-300">N'oubliez pas de vérifier vos spams !</span>
@@ -362,13 +364,13 @@ export default function AuthPage() {
                   }}
                   className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white py-3 rounded-xl font-medium hover:from-pink-600 hover:to-purple-700 transition-all"
                 >
-                  Compris, aller à la connexion
+                  {t('authPage.backToLogin')}
                 </button>
                 <button
                   onClick={() => setEmailConfirmationNeeded(false)}
                   className="text-gray-400 hover:text-white text-sm transition-colors"
                 >
-                  Fermer
+                  {t('common.close')}
                 </button>
               </div>
             </div>
