@@ -399,5 +399,24 @@
   "meetingPlaces": {
     "incall": "Incall",
     "outcall": "Outcall"
+  },
+  "searchPage": {
+    "title": "Search",
+    "searchPlaceholder": "Search by username...",
+    "filters": "Filters",
+    "geolocation": "Geolocation",
+    "category": "Category",
+    "all": "All",
+    "clearAllFilters": "Clear all filters",
+    "results": "{{count}} result",
+    "results_plural": "{{count}} results",
+    "loading": "Loading...",
+    "withinRadius": "within a {{radius}} km radius around {{city}}",
+    "noResults": "No results",
+    "noResultsDesc": "Try changing your search criteria",
+    "resetSearch": "Reset search",
+    "online": "Online",
+    "at": "At {{distance}} km",
+    "cannotAddOwnAdToFavorites": "You cannot add your own listing to favorites"
   }
 }

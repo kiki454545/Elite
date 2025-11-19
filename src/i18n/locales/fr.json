@@ -399,5 +399,24 @@
   "meetingPlaces": {
     "incall": "Incall",
     "outcall": "Outcall"
+  },
+  "searchPage": {
+    "title": "Recherche",
+    "searchPlaceholder": "Rechercher par pseudo...",
+    "filters": "Filtres",
+    "geolocation": "Géolocalisation",
+    "category": "Catégorie",
+    "all": "Toutes",
+    "clearAllFilters": "Effacer tous les filtres",
+    "results": "{{count}} résultat",
+    "results_plural": "{{count}} résultats",
+    "loading": "Chargement...",
+    "withinRadius": "dans un rayon de {{radius}} km autour de {{city}}",
+    "noResults": "Aucun résultat",
+    "noResultsDesc": "Essayez de modifier vos critères de recherche",
+    "resetSearch": "Réinitialiser la recherche",
+    "online": "En ligne",
+    "at": "À {{distance}} km",
+    "cannotAddOwnAdToFavorites": "Vous ne pouvez pas ajouter votre propre annonce aux favoris"
   }
 }
