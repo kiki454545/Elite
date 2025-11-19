@@ -418,5 +418,30 @@
     "online": "En ligne",
     "at": "À {{distance}} km",
     "cannotAddOwnAdToFavorites": "Vous ne pouvez pas ajouter votre propre annonce aux favoris"
+  },
+  "authPage": {
+    "backToListings": "Retour aux annonces",
+    "platform": "Plateforme d'annonce Libertine",
+    "loginTab": "Connexion",
+    "signupTab": "Inscription",
+    "email": "Email",
+    "emailPlaceholder": "exemple@email.com",
+    "username": "Nom d'utilisateur",
+    "usernamePlaceholder": "Votre pseudo",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "age": "Âge",
+    "mustAcceptTerms": "Vous devez accepter le règlement pour vous inscrire",
+    "passwordsDontMatch": "Les mots de passe ne correspondent pas",
+    "mustBe18": "Vous devez avoir au moins 18 ans",
+    "errorOccurred": "Une erreur est survenue",
+    "iAcceptThe": "J'accepte le",
+    "termsAndConditions": "règlement",
+    "loginButton": "Se connecter",
+    "signupButton": "S'inscrire",
+    "emailConfirmationTitle": "Vérifiez votre email",
+    "emailConfirmationMessage": "Un email de confirmation a été envoyé à",
+    "emailConfirmationInstructions": "Veuillez cliquer sur le lien dans l'email pour activer votre compte.",
+    "backToLogin": "Retour à la connexion"
   }
 }

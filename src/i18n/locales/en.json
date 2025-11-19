@@ -418,5 +418,30 @@
     "online": "Online",
     "at": "At {{distance}} km",
     "cannotAddOwnAdToFavorites": "You cannot add your own listing to favorites"
+  },
+  "authPage": {
+    "backToListings": "Back to listings",
+    "platform": "Adult Classifieds Platform",
+    "loginTab": "Login",
+    "signupTab": "Sign Up",
+    "email": "Email",
+    "emailPlaceholder": "example@email.com",
+    "username": "Username",
+    "usernamePlaceholder": "Your username",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "age": "Age",
+    "mustAcceptTerms": "You must accept the terms to register",
+    "passwordsDontMatch": "Passwords do not match",
+    "mustBe18": "You must be at least 18 years old",
+    "errorOccurred": "An error occurred",
+    "iAcceptThe": "I accept the",
+    "termsAndConditions": "terms and conditions",
+    "loginButton": "Login",
+    "signupButton": "Sign Up",
+    "emailConfirmationTitle": "Check your email",
+    "emailConfirmationMessage": "A confirmation email has been sent to",
+    "emailConfirmationInstructions": "Please click the link in the email to activate your account.",
+    "backToLogin": "Back to login"
   }
 }
