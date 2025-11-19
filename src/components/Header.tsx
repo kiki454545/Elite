@@ -202,12 +202,12 @@ export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderP
                 <div className="flex items-center gap-2 bg-gray-800/50 px-3 py-1.5 rounded-lg border border-gray-700">
                   <Users className="w-4 h-4 text-blue-500" />
                   <span className="text-white font-semibold text-sm">{stats.totalUsers}</span>
-                  <span className="text-gray-400 text-xs">Utilisateurs</span>
+                  <span className="text-gray-400 text-xs">{t('common.users')}</span>
                 </div>
                 <div className="flex items-center gap-2 bg-gray-800/50 px-3 py-1.5 rounded-lg border border-gray-700">
                   <FileText className="w-4 h-4 text-pink-500" />
                   <span className="text-white font-semibold text-sm">{stats.totalAds}</span>
-                  <span className="text-gray-400 text-xs">Annonces</span>
+                  <span className="text-gray-400 text-xs">{t('common.ads')}</span>
                 </div>
               </>
             )

@@ -8,7 +8,7 @@ export type Language = 'fr' | 'en'
 interface LanguageContextType {
   language: Language
   setLanguage: (lang: Language) => void
-  t: (key: string) => string
+  t: (key: string, options?: any) => string
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
@@ -31,8 +31,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     i18n.changeLanguage(lang)
   }
 
-  const t = (key: string): string => {
-    return i18n.t(key)
+  const t = (key: string, options?: any): string => {
+    return i18n.t(key, options) as string
   }
 
   return (

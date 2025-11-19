@@ -8,6 +8,7 @@ import { ArrowLeft, Crown, Coins, Sparkles, Check, Shield, Eye, TrendingUp, Mess
 import { RANK_CONFIG } from '@/types/profile'
 import { supabase } from '@/lib/supabase'
 import { Notification, NotificationType } from '@/components/Notification'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 // Déclaration TypeScript pour la fonction Dédipass
 declare global {
@@ -158,19 +159,20 @@ const RANK_OFFERS: RankOffer[] = [
 ]
 
 const DURATION_OPTIONS = [
-  { days: 1, label: '1 jour', coinMultiplier: 0.033 },
-  { days: 2, label: '2 jours', coinMultiplier: 0.066 },
-  { days: 3, label: '3 jours', coinMultiplier: 0.095 }, // ~5% de réduction
-  { days: 5, label: '5 jours', coinMultiplier: 0.15 }, // ~10% de réduction
-  { days: 7, label: '7 jours', coinMultiplier: 0.198 }, // ~15% de réduction
-  { days: 10, label: '10 jours', coinMultiplier: 0.267 }, // ~20% de réduction
-  { days: 15, label: '15 jours', coinMultiplier: 0.375 }, // ~25% de réduction
-  { days: 20, label: '20 jours', coinMultiplier: 0.467 }, // ~30% de réduction
-  { days: 30, label: '30 jours', coinMultiplier: 1 }, // Prix de base
+  { days: 1, coinMultiplier: 0.055 }, // +65% plus cher par jour que le mensuel
+  { days: 2, coinMultiplier: 0.105 }, // +58% plus cher par jour
+  { days: 3, coinMultiplier: 0.15 }, // +50% plus cher par jour
+  { days: 5, coinMultiplier: 0.24 }, // +44% plus cher par jour
+  { days: 7, coinMultiplier: 0.32 }, // +37% plus cher par jour
+  { days: 10, coinMultiplier: 0.43 }, // +29% plus cher par jour
+  { days: 15, coinMultiplier: 0.6 }, // +20% plus cher par jour
+  { days: 20, coinMultiplier: 0.75 }, // +12% plus cher par jour
+  { days: 30, coinMultiplier: 1 }, // Meilleur prix (référence)
 ]
 
 export default function ShopPage() {
   const router = useRouter()
+  const { t } = useLanguage()
   const [activeTab, setActiveTab] = useState<'coins' | 'ranks'>('coins')
   const [eliteCoins, setEliteCoins] = useState<number>(0)
   const [selectedDurations, setSelectedDurations] = useState<Record<string, number>>({
@@ -433,7 +435,7 @@ export default function ShopPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 pb-20">
-      <Header title="Boutique Premium" />
+      <Header title={t('shop.title')} />
 
       {/* Notification */}
       <Notification
@@ -453,7 +455,7 @@ export default function ShopPage() {
           className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-6"
         >
           <ArrowLeft className="w-5 h-5" />
-          <span>Retour</span>
+          <span>{t('common.back')}</span>
         </motion.button>
 
         {/* Hero Section */}
@@ -464,19 +466,19 @@ export default function ShopPage() {
         >
           <div className="flex items-center justify-center gap-3 mb-4">
             <Crown className="w-10 h-10 text-yellow-400" />
-            <h1 className="text-4xl font-bold text-white">Boutique Premium</h1>
+            <h1 className="text-4xl font-bold text-white">{t('shop.title')}</h1>
             <Sparkles className="w-10 h-10 text-pink-400" />
           </div>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-6">
-            Boostez votre visibilité et multipliez vos contacts avec nos offres exclusives
+            {t('home.subtitle')}
           </p>
 
           {/* Elite Coins Balance */}
           <div className="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-400/20 to-yellow-500/20 px-6 py-3 rounded-xl border border-amber-400/30 max-w-xs mx-auto">
             <Coins className="w-6 h-6 text-amber-400" />
-            <span className="text-white font-bold text-lg">Votre solde:</span>
+            <span className="text-white font-bold text-lg">{t('shop.yourBalance')}</span>
             <span className="text-amber-400 font-bold text-2xl">{eliteCoins}</span>
-            <span className="text-amber-400 font-bold text-lg">EliteCoins</span>
+            <span className="text-amber-400 font-bold text-lg">{t('shop.eliteCoins')}</span>
           </div>
         </motion.div>
 
@@ -492,7 +494,7 @@ export default function ShopPage() {
           >
             <div className="flex items-center gap-2">
               <Coins className="w-5 h-5" />
-              <span>Acheter des EliteCoins</span>
+              <span>{t('shop.buyCoins')}</span>
             </div>
             {activeTab === 'coins' && (
               <motion.div
@@ -511,7 +513,7 @@ export default function ShopPage() {
           >
             <div className="flex items-center gap-2">
               <Crown className="w-5 h-5" />
-              <span>Acheter un Grade</span>
+              <span>{t('shop.buyRank')}</span>
             </div>
             {activeTab === 'ranks' && (
               <motion.div
@@ -535,24 +537,24 @@ export default function ShopPage() {
                 <div className="w-12 h-12 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
                   <Coins className="w-6 h-6 text-amber-400" />
                 </div>
-                <h3 className="text-white font-bold mb-2">Monnaie universelle</h3>
-                <p className="text-gray-400 text-sm">Utilisez vos EliteCoins pour tous vos achats</p>
+                <h3 className="text-white font-bold mb-2">{t('shop.universalCurrency')}</h3>
+                <p className="text-gray-400 text-sm">{t('shop.universalCurrencyDesc')}</p>
               </div>
 
               <div className="bg-gray-900 rounded-xl p-6 border border-gray-800 text-center">
                 <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
                   <TrendingUp className="w-6 h-6 text-green-400" />
                 </div>
-                <h3 className="text-white font-bold mb-2">Bonus progressifs</h3>
-                <p className="text-gray-400 text-sm">Plus vous achetez, plus vous recevez de bonus</p>
+                <h3 className="text-white font-bold mb-2">{t('shop.progressiveBonuses')}</h3>
+                <p className="text-gray-400 text-sm">{t('shop.progressiveBonusesDesc')}</p>
               </div>
 
               <div className="bg-gray-900 rounded-xl p-6 border border-gray-800 text-center">
                 <div className="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
                   <Shield className="w-6 h-6 text-purple-400" />
                 </div>
-                <h3 className="text-white font-bold mb-2">Paiement sécurisé</h3>
-                <p className="text-gray-400 text-sm">Paiement par carte bancaire via Dédipass</p>
+                <h3 className="text-white font-bold mb-2">{t('shop.securePayment')}</h3>
+                <p className="text-gray-400 text-sm">{t('shop.securePaymentDesc')}</p>
               </div>
             </div>
 
@@ -578,7 +580,11 @@ export default function ShopPage() {
                           ? 'bg-gradient-to-r from-blue-500 to-cyan-500'
                           : 'bg-gradient-to-r from-amber-400 to-yellow-500'
                       } px-3 py-1 rounded-full`}>
-                        <span className="text-xs text-white font-bold">{pkg.badge}</span>
+                        <span className="text-xs text-white font-bold">
+                          {pkg.badge === 'POPULAIRE' ? t('shop.popular') :
+                           pkg.badge === 'BON PLAN' ? t('shop.goodDeal') :
+                           pkg.badge === 'ELITE 1 MOIS' ? t('shop.elite1Month') : pkg.badge}
+                        </span>
                       </div>
                     </div>
                   )}
@@ -593,7 +599,7 @@ export default function ShopPage() {
                         {pkg.coins + (pkg.bonus || 0)}
                       </h3>
                       <p className="text-gray-400 text-sm">
-                        {pkg.coins} {pkg.bonus ? `+ ${pkg.bonus} bonus` : ''} EliteCoins
+                        {pkg.coins} {pkg.bonus ? `+ ${pkg.bonus} ${t('shop.bonus')}` : ''} {t('shop.eliteCoins')}
                       </p>
                     </div>
 
@@ -604,7 +610,7 @@ export default function ShopPage() {
                       </div>
                       {pkg.bonus && (
                         <div className="text-green-400 text-xs mt-1">
-                          +{Math.round((pkg.bonus / pkg.coins) * 100)}% bonus gratuit !
+                          +{Math.round((pkg.bonus / pkg.coins) * 100)}% {t('shop.freeBonus')}
                         </div>
                       )}
                     </div>
@@ -616,7 +622,7 @@ export default function ShopPage() {
                       className="w-full bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-gray-900 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg"
                     >
                       <ShoppingCart className="w-5 h-5" />
-                      <span>Acheter</span>
+                      <span>{t('shop.buy')}</span>
                     </motion.button>
                   </div>
                 </motion.div>
@@ -638,32 +644,32 @@ export default function ShopPage() {
                 <div className="w-12 h-12 bg-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
                   <TrendingUp className="w-6 h-6 text-pink-400" />
                 </div>
-                <h3 className="text-white font-bold mb-2">+300% de vues</h3>
-                <p className="text-gray-400 text-sm">En moyenne pour les profils premium</p>
+                <h3 className="text-white font-bold mb-2">{t('shop.increaseViews')}</h3>
+                <p className="text-gray-400 text-sm">{t('shop.increaseViewsDesc')}</p>
               </div>
 
               <div className="bg-gray-900 rounded-xl p-6 border border-gray-800 text-center">
                 <div className="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
                   <Eye className="w-6 h-6 text-purple-400" />
                 </div>
-                <h3 className="text-white font-bold mb-2">Visibilité max</h3>
-                <p className="text-gray-400 text-sm">Apparaissez en tête des résultats</p>
+                <h3 className="text-white font-bold mb-2">{t('shop.maxVisibility')}</h3>
+                <p className="text-gray-400 text-sm">{t('shop.maxVisibilityDesc')}</p>
               </div>
 
               <div className="bg-gray-900 rounded-xl p-6 border border-gray-800 text-center">
                 <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
                   <MessageCircle className="w-6 h-6 text-blue-400" />
                 </div>
-                <h3 className="text-white font-bold mb-2">Plus de contacts</h3>
-                <p className="text-gray-400 text-sm">Recevez jusqu'à 10x plus de messages</p>
+                <h3 className="text-white font-bold mb-2">{t('shop.moreContacts')}</h3>
+                <p className="text-gray-400 text-sm">{t('shop.moreContactsDesc')}</p>
               </div>
 
               <div className="bg-gray-900 rounded-xl p-6 border border-gray-800 text-center">
                 <div className="w-12 h-12 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
                   <Shield className="w-6 h-6 text-yellow-400" />
                 </div>
-                <h3 className="text-white font-bold mb-2">Badge</h3>
-                <p className="text-gray-400 text-sm">Gagnez la confiance des clients</p>
+                <h3 className="text-white font-bold mb-2">{t('shop.badge')}</h3>
+                <p className="text-gray-400 text-sm">{t('shop.badgeDesc')}</p>
               </div>
             </div>
 
@@ -685,7 +691,10 @@ export default function ShopPage() {
                           ? 'bg-gradient-to-r from-pink-500 to-purple-600'
                           : 'bg-gradient-to-r from-cyan-500 to-blue-600'
                       } px-3 py-1 rounded-full`}>
-                        <span className="text-xs text-white font-bold">{offer.badge}</span>
+                        <span className="text-xs text-white font-bold">
+                          {offer.badge === 'POPULAIRE' ? t('shop.popular') :
+                           offer.badge === 'EXCLUSIF' ? t('shop.exclusive') : offer.badge}
+                        </span>
                       </div>
                     </div>
                   )}
@@ -694,12 +703,16 @@ export default function ShopPage() {
                     {/* Icon & Name */}
                     <div className="text-center mb-6">
                       <div className="text-5xl mb-3">{offer.icon}</div>
-                      <h3 className={`text-2xl font-bold ${offer.color} mb-1`}>{offer.name}</h3>
+                      <h3 className={`text-2xl font-bold ${offer.color} mb-1`}>
+                        {offer.id === 'plus' ? t('shop.plus') :
+                         offer.id === 'vip' ? t('shop.vip') :
+                         offer.id === 'elite' ? t('shop.elite') : offer.name}
+                      </h3>
                     </div>
 
                     {/* Duration Selector */}
                     <div className="mb-6">
-                      <label className="text-gray-400 text-sm mb-2 block text-center">Durée</label>
+                      <label className="text-gray-400 text-sm mb-2 block text-center">{t('shop.duration')}</label>
                       <select
                         value={selectedDurations[offer.id]}
                         onChange={(e) => handleDurationChange(offer.id, parseInt(e.target.value))}
@@ -707,10 +720,16 @@ export default function ShopPage() {
                       >
                         {DURATION_OPTIONS.map((duration) => {
                           const coinPrice = calculateCoinPrice(offer.coinPrice, duration.days)
-                          const discount = duration.days >= 3 ? ` (-${Math.round((1 - duration.coinMultiplier * 30 / duration.days) * 100)}%)` : ''
+                          // Calculer le prix par jour pour cette option
+                          const pricePerDayThisOption = coinPrice / duration.days
+                          // Calculer le prix par jour pour le tarif 1 jour (référence la plus chère)
+                          const oneDayPrice = calculateCoinPrice(offer.coinPrice, 1)
+                          // Calculer la réduction par rapport au tarif journalier
+                          const savingsPercent = Math.round((1 - pricePerDayThisOption / oneDayPrice) * 100)
+                          const discount = savingsPercent > 0 ? ` (-${savingsPercent}%)` : ''
                           return (
                             <option key={duration.days} value={duration.days}>
-                              {duration.label} - {coinPrice} EC{discount}
+                              {t('shop.durationDay', { count: duration.days })} - {coinPrice} EC{discount}
                             </option>
                           )
                         })}
@@ -726,23 +745,44 @@ export default function ShopPage() {
                         </span>
                       </div>
                       <div className="text-gray-400 text-sm">
-                        EliteCoins pour {selectedDurations[offer.id]} jour{selectedDurations[offer.id] > 1 ? 's' : ''}
+                        {t('shop.eliteCoins')} {t('shop.forDays', { count: selectedDurations[offer.id] })}
                       </div>
-                      {selectedDurations[offer.id] >= 3 && (
-                        <div className="text-green-400 text-xs mt-1">
-                          Économisez {Math.round((1 - DURATION_OPTIONS.find(d => d.days === selectedDurations[offer.id])!.coinMultiplier * 30 / selectedDurations[offer.id]) * 100)}%
-                        </div>
-                      )}
+                      {(() => {
+                        const selectedDuration = DURATION_OPTIONS.find(d => d.days === selectedDurations[offer.id])
+                        if (!selectedDuration) return null
+                        const pricePerDay = selectedDuration.coinMultiplier / selectedDuration.days * 30
+                        const savingsPercent = Math.round((1 - pricePerDay) * 100)
+
+                        if (selectedDurations[offer.id] >= 20 && savingsPercent > 0) {
+                          return (
+                            <div className="text-green-400 text-xs mt-1">
+                              {t('shop.save', { percent: savingsPercent })}
+                            </div>
+                          )
+                        } else if (selectedDurations[offer.id] === 30) {
+                          return (
+                            <div className="text-amber-400 text-xs mt-1">
+                              {t('shop.bestValue')}
+                            </div>
+                          )
+                        }
+                        return null
+                      })()}
                     </div>
 
                     {/* Features */}
                     <div className="space-y-3 mb-6">
-                      {offer.features.map((feature, idx) => (
-                        <div key={idx} className="flex items-start gap-2">
-                          <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                          <span className="text-gray-300 text-sm">{feature}</span>
-                        </div>
-                      ))}
+                      {offer.features.map((feature, idx) => {
+                        // Traduire les features dynamiquement
+                        const featureKey = `${offer.id}Feature${idx + 1}`
+                        const translatedFeature = t(`shop.${featureKey}`)
+                        return (
+                          <div key={idx} className="flex items-start gap-2">
+                            <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                            <span className="text-gray-300 text-sm">{translatedFeature}</span>
+                          </div>
+                        )
+                      })}
                     </div>
 
                     {/* Purchase Button */}
@@ -764,8 +804,8 @@ export default function ShopPage() {
                     >
                       <span>
                         {eliteCoins >= calculateCoinPrice(offer.coinPrice, selectedDurations[offer.id])
-                          ? 'Acheter maintenant'
-                          : 'Pas assez d\'EliteCoins'}
+                          ? t('shop.buyNow')
+                          : t('shop.notEnoughCoins')}
                       </span>
                       <ChevronRight className="w-5 h-5" />
                     </motion.button>
@@ -785,10 +825,10 @@ export default function ShopPage() {
         >
           <div className="flex items-center justify-center gap-2 text-gray-400 mb-2">
             <Shield className="w-5 h-5" />
-            <span>Paiement sécurisé par carte bancaire</span>
+            <span>{t('shop.securePaymentBy')}</span>
           </div>
           <p className="text-gray-500 text-sm">
-            Paiement sécurisé via Dédipass. Vos données bancaires sont protégées et cryptées.
+            {t('shop.securePaymentInfo')}
           </p>
         </motion.div>
       </div>
@@ -812,7 +852,7 @@ export default function ShopPage() {
             >
               {/* Header */}
               <div className="flex items-center justify-between mb-5">
-                <h2 className="text-xl font-bold text-white">Paiement sécurisé</h2>
+                <h2 className="text-xl font-bold text-white">{t('shop.paymentSecure')}</h2>
                 <button
                   onClick={() => setShowDedipassModal(false)}
                   className="text-gray-400 hover:text-white transition-colors"
@@ -832,7 +872,7 @@ export default function ShopPage() {
                     </div>
                     <div>
                       <div className="text-amber-400 font-bold text-2xl">{currentPurchase.coins} EC</div>
-                      <div className="text-gray-400 text-sm">EliteCoins</div>
+                      <div className="text-gray-400 text-sm">{t('shop.eliteCoins')}</div>
                     </div>
                   </div>
                   <div className="text-right">
@@ -844,7 +884,7 @@ export default function ShopPage() {
 
               {/* Widget Dédipass */}
               <div className="bg-gray-800/50 rounded-xl p-4 mb-6 max-h-[400px] overflow-y-auto">
-                <h3 className="text-white font-bold mb-3 text-center text-sm">Choisissez votre mode de paiement</h3>
+                <h3 className="text-white font-bold mb-3 text-center text-sm">{t('shop.choosePaymentMethod')}</h3>
                 <div className="bg-white rounded-lg p-2" style={{ maxWidth: '100%', overflow: 'hidden' }}>
                   <div
                     data-dedipass="493e04c66c01aeca43780caecd67b4ff"
@@ -858,14 +898,14 @@ export default function ShopPage() {
                   ></div>
                 </div>
                 <p className="text-gray-400 text-xs text-center mt-2">
-                  Après paiement, entrez le code ci-dessous
+                  {t('shop.afterPaymentEnterCode')}
                 </p>
               </div>
 
               {/* Code Validation Form */}
               <div className="bg-gray-800/50 rounded-xl p-4">
                 <label className="block text-white font-bold mb-2 text-sm">
-                  J'ai reçu mon code
+                  {t('shop.iReceivedMyCode')}
                 </label>
 
                 <div className="flex gap-2">
@@ -891,7 +931,7 @@ export default function ShopPage() {
                     {isValidating ? (
                       <div className="w-5 h-5 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
                     ) : (
-                      'Valider'
+                      t('shop.validate')
                     )}
                   </motion.button>
                 </div>

@@ -9,6 +9,7 @@ import { useFavorites } from '@/contexts/FavoritesContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCountry } from '@/contexts/CountryContext'
 import { useCityFilter } from '@/contexts/CityFilterContext'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { useRouter } from 'next/navigation'
 import { useAds } from '@/hooks/useAds'
 
@@ -34,6 +35,7 @@ export function ProfileGrid() {
   const { toggleFavorite, isFavorite } = useFavorites()
   const { selectedCountry, isDetectingCountry } = useCountry()
   const { selectedCity } = useCityFilter()
+  const { t } = useLanguage()
   const [currentPhotoIndices, setCurrentPhotoIndices] = useState<Record<string, number>>({})
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' | 'info' } | null>(null)
 
@@ -69,7 +71,7 @@ export function ProfileGrid() {
 
     // Vérifier que l'utilisateur ne met pas sa propre annonce en favoris
     if (user?.id === adUserId) {
-      showToast('Vous ne pouvez pas ajouter votre propre annonce aux favoris', 'error')
+      showToast(t('home.cannotAddOwnAdToFavorites'), 'error')
       return
     }
 
@@ -122,7 +124,7 @@ export function ProfileGrid() {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="flex flex-col items-center gap-4">
             <Loader2 className="w-8 h-8 text-pink-500 animate-spin" />
-            <p className="text-gray-400">Chargement des annonces...</p>
+            <p className="text-gray-400">{t('home.loading')}</p>
           </div>
         </div>
       </div>
@@ -135,7 +137,7 @@ export function ProfileGrid() {
       <div className="max-w-screen-xl mx-auto px-4 py-6">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
-            <p className="text-red-500 mb-2">Erreur lors du chargement des annonces</p>
+            <p className="text-red-500 mb-2">{t('home.errorLoadingAds')}</p>
             <p className="text-gray-400 text-sm">{error}</p>
           </div>
         </div>
@@ -149,9 +151,9 @@ export function ProfileGrid() {
       <div className="max-w-screen-xl mx-auto px-4 py-6">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
-            <p className="text-gray-400 text-lg mb-2">Aucune annonce disponible</p>
+            <p className="text-gray-400 text-lg mb-2">{t('home.noAdsAvailable')}</p>
             <p className="text-gray-500 text-sm">
-              {selectedCity ? `Aucune annonce à ${selectedCity}` : `Aucune annonce en ${selectedCountry.name}`}
+              {selectedCity ? `${t('home.noAdsAt')} ${selectedCity}` : `${t('home.noAdsIn')} ${selectedCountry.name}`}
             </p>
           </div>
         </div>

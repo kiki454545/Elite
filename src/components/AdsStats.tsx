@@ -5,11 +5,13 @@ import { MapPin, X } from 'lucide-react'
 import { useAds } from '@/hooks/useAds'
 import { useCountry } from '@/contexts/CountryContext'
 import { useCityFilter } from '@/contexts/CityFilterContext'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { useState, useEffect } from 'react'
 
 export function AdsStats() {
   const { selectedCountry } = useCountry()
   const { selectedCity, setSelectedCity } = useCityFilter()
+  const { t } = useLanguage()
   const [isMobile, setIsMobile] = useState(false)
 
   // Charger les annonces depuis Supabase
@@ -64,10 +66,10 @@ export function AdsStats() {
         {/* Total des annonces */}
         <div className="text-center mb-6">
           <h2 className="text-3xl font-bold text-white mb-2">
-            {totalAds} <span className="text-pink-500">annonces</span> disponibles
+            {totalAds} <span className="text-pink-500">{t('home.adsAvailable')}</span>
           </h2>
           <p className="text-gray-400 text-sm">
-            en {selectedCountry.name}
+            {t('home.in')} {selectedCountry.name}
           </p>
         </div>
 
@@ -95,7 +97,7 @@ export function AdsStats() {
         {topCities.length > 0 && (
           <div>
             <h3 className="text-white font-semibold mb-3 text-center">
-              Villes les plus actives
+              {t('home.mostActiveCities')}
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
               {topCities.map(({ city, count }, index) => (
@@ -119,7 +121,7 @@ export function AdsStats() {
                     </span>
                   </div>
                   <div className="text-gray-400 text-xs">
-                    {count} annonce{count > 1 ? 's' : ''}
+                    {count} {count > 1 ? t('home.ads') : t('home.ad')}
                   </div>
                 </motion.button>
               ))}
