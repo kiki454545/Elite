@@ -104,7 +104,7 @@ export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderP
 
   return (
     <header className="sticky top-0 z-10 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
-      <div className="max-w-screen-xl mx-auto px-0.5 md:px-4 py-2 md:py-4 flex items-center justify-between gap-0.5 md:gap-4">
+      <div className="max-w-screen-xl mx-auto px-2 md:px-4 py-2 md:py-4 flex items-center justify-between gap-2 md:gap-4">
         {/* Left side - Back button (if enabled) or Logo + Country Selector + Stats */}
         <div className="flex items-center gap-1 md:gap-4 flex-shrink-0">
           {showBackButton ? (
@@ -215,7 +215,7 @@ export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderP
         </div>
 
         {/* Right side - EliteCoins + Language Selector */}
-        <div className="flex items-center gap-1.5 md:gap-3 flex-shrink-0">
+        <div className="flex items-center gap-2 md:gap-3 flex-shrink-0 pr-1 md:pr-0">
           {/* EliteCoins Display - Only if logged in */}
           {isLoggedIn && (
             <motion.button
@@ -225,7 +225,7 @@ export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderP
               className="flex items-center gap-1 md:gap-1.5 bg-gradient-to-r from-amber-400/20 to-yellow-500/20 hover:from-amber-400/30 hover:to-yellow-500/30 px-2 md:px-3 py-1 md:py-1.5 rounded-lg border border-amber-400/30 transition-all cursor-pointer"
               title="Acheter des EliteCoins"
             >
-              <Coins className="w-4 h-4 md:w-4 md:h-4 text-amber-400" />
+              <Coins className="w-4 h-4 text-amber-400" />
               <span className="text-amber-400 font-bold text-xs md:text-sm">{eliteCoins}</span>
             </motion.button>
           )}
@@ -240,7 +240,7 @@ export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderP
               }`}
               title={lang.name}
             >
-              <div className="w-4 h-3 md:w-8 md:h-6">
+              <div className="w-5 h-4 md:w-8 md:h-6">
                 {lang.flag}
               </div>
             </button>
