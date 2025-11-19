@@ -100,7 +100,8 @@ export function useAds(country?: string, city?: string) {
           photos: ad.photos || [],
           video: ad.video_url,
           price: ad.price,
-          services: ad.meeting_places || [],
+          services: ad.services || [],
+          meetingPlaces: ad.meeting_places || [],
           availability: '',
           verified: profile?.verified || false,
           rank: profile?.rank || 'standard',
@@ -216,6 +217,11 @@ export function useAdById(id: string) {
           }
         }
 
+        // Debug: Log les données brutes
+        console.log('🔍 DEBUG useAdById - Données brutes de Supabase:')
+        console.log('  services:', data.services)
+        console.log('  meeting_places:', data.meeting_places)
+
         const transformedAd: Ad = {
           id: data.id,
           userId: data.user_id,
@@ -231,7 +237,8 @@ export function useAdById(id: string) {
           photos: data.photos || [],
           video: data.video_url,
           price: data.price,
-          services: data.meeting_places || [],
+          services: data.services || [],
+          meetingPlaces: data.meeting_places || [],
           availability: '',
           verified: profileData?.verified || false,
           rank: profileData?.rank || 'standard',
