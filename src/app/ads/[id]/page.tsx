@@ -794,7 +794,7 @@ export default function AdDetailPage() {
                   key={index}
                   className="bg-gradient-to-r from-blue-500/10 to-cyan-600/10 border border-blue-500/30 text-gray-200 px-3 py-1.5 rounded-full text-xs font-medium"
                 >
-                  {translateAdData(place, language)}
+                  {translateAdData(`meetingPlaces.${place}`, language)}
                 </span>
               ))}
             </div>
@@ -816,7 +816,7 @@ export default function AdDetailPage() {
                   key={index}
                   className="bg-gradient-to-r from-pink-500/10 to-purple-600/10 border border-pink-500/30 text-gray-200 px-3 py-1.5 rounded-full text-xs"
                 >
-                  {translateAdData(service, language)}
+                  {translateAdData(`services.${service}`, language)}
                 </span>
               ))}
             </div>
