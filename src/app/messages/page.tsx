@@ -27,7 +27,7 @@ export default function MessagesPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="text-white">Chargement...</div>
+        <div className="text-white">{t('common.loading')}</div>
       </div>
     )
   }
@@ -45,7 +45,7 @@ export default function MessagesPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 pb-20">
-      <Header title="Messages" showBackButton={true} />
+      <Header title={t('messagesPage.messages')} showBackButton={true} />
 
       <div className="max-w-4xl mx-auto px-4 py-6">
         {/* Search Bar */}
@@ -54,7 +54,7 @@ export default function MessagesPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Rechercher une conversation..."
+              placeholder={t('messagesPage.searchConversation')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-gray-900 text-white pl-10 pr-4 py-3 rounded-xl border border-gray-800 focus:border-pink-500 focus:outline-none text-sm"
@@ -73,16 +73,16 @@ export default function MessagesPage() {
               <MessageCircle className="w-8 h-8 text-gray-400" />
             </div>
             <h3 className="text-xl font-bold text-white mb-2">
-              Aucun message
+              {t('messagesPage.noMessages')}
             </h3>
             <p className="text-gray-400 mb-6">
-              Vos conversations apparaîtront ici
+              {t('messagesPage.conversationsAppearHere')}
             </p>
             <button
               onClick={() => router.push('/')}
               className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:from-pink-600 hover:to-purple-700 transition-all"
             >
-              Découvrir les annonces
+              {t('messagesPage.discoverListings')}
             </button>
           </motion.div>
         ) : (

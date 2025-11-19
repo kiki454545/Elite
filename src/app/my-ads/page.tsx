@@ -9,10 +9,12 @@ import { RANK_CONFIG, RankType } from '@/types/profile'
 import { Header } from '@/components/Header'
 import { supabase } from '@/lib/supabase'
 import { Ad } from '@/types/ad'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function MyAdsPage() {
   const router = useRouter()
   const { user, profile, logout, loading } = useAuth()
+  const { t } = useLanguage()
   const [myAds, setMyAds] = useState<Ad[]>([])
   const [adsLoading, setAdsLoading] = useState(true)
   const [totalViews, setTotalViews] = useState(0)
@@ -130,7 +132,7 @@ export default function MyAdsPage() {
       fetchMyAds()
     } catch (error) {
       console.error('Erreur lors de la suppression:', error)
-      alert('Erreur lors de la suppression de l\'annonce')
+      alert(t('myAdsPage.errorDeleting'))
     }
   }
 
@@ -158,7 +160,7 @@ export default function MyAdsPage() {
       fetchMyAds()
     } catch (error) {
       console.error('Erreur lors du changement de statut:', error)
-      alert('Erreur lors du changement de statut de l\'annonce')
+      alert(t('myAdsPage.errorChangingStatus'))
     }
   }
 
@@ -170,7 +172,7 @@ export default function MyAdsPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="text-white">Chargement...</div>
+        <div className="text-white">{t('common.loading')}</div>
       </div>
     )
   }
@@ -212,7 +214,7 @@ export default function MyAdsPage() {
                   </div>
                 )}
               </div>
-              <p className="text-gray-400">{profile.age} ans</p>
+              <p className="text-gray-400">{profile.age} {t('myAdsPage.years')}</p>
             </div>
 
             {/* Rank Badge */}
@@ -230,15 +232,15 @@ export default function MyAdsPage() {
           <div className="grid grid-cols-3 gap-4 mb-4 p-4 bg-gray-800 rounded-lg">
             <div className="text-center">
               <div className="text-2xl font-bold text-white mb-1">{myAds.length}</div>
-              <div className="text-xs text-gray-400">Annonces</div>
+              <div className="text-xs text-gray-400">{t('myAdsPage.listings')}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-white mb-1">{totalViews}</div>
-              <div className="text-xs text-gray-400">Vues totales</div>
+              <div className="text-xs text-gray-400">{t('myAdsPage.totalViews')}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-white mb-1">{totalFavorites}</div>
-              <div className="text-xs text-gray-400">Favoris</div>
+              <div className="text-xs text-gray-400">{t('myAdsPage.favorites')}</div>
             </div>
           </div>
         </motion.div>
@@ -255,7 +257,7 @@ export default function MyAdsPage() {
               whileTap={{ scale: 0.98 }}
             >
               <Settings className="w-5 h-5" />
-              Éditer le profil
+              {t('myAdsPage.editProfile')}
             </motion.button>
             <motion.button
               initial={{ opacity: 0, y: 20 }}
@@ -266,7 +268,7 @@ export default function MyAdsPage() {
               whileTap={{ scale: 0.98 }}
             >
               <Plus className="w-5 h-5" />
-              Créer une annonce
+              {t('myAdsPage.createListing')}
             </motion.button>
           </div>
         ) : (
@@ -279,7 +281,7 @@ export default function MyAdsPage() {
             whileTap={{ scale: 0.98 }}
           >
             <Settings className="w-5 h-5" />
-            Éditer le profil
+            {t('myAdsPage.editProfile')}
           </motion.button>
         )}
 
@@ -301,10 +303,10 @@ export default function MyAdsPage() {
                 <Plus className="w-8 h-8 text-gray-400" />
               </div>
               <h3 className="text-xl font-bold text-white mb-2">
-                Aucune annonce pour le moment
+                {t('myAdsPage.noListingsYet')}
               </h3>
               <p className="text-gray-400">
-                Créez votre première annonce pour commencer à recevoir des contacts
+                {t('myAdsPage.createFirstListing')}
               </p>
             </motion.div>
 
@@ -337,13 +339,13 @@ export default function MyAdsPage() {
               <div className="p-6 bg-gradient-to-b from-gray-900/80 to-gray-900">
                 <h3 className="text-white font-bold text-xl mb-2 flex items-center gap-2">
                   <Crown className="w-6 h-6 text-yellow-400" />
-                  Boutique Premium
+                  {t('myAdsPage.premiumShop')}
                 </h3>
                 <p className="text-gray-300 text-sm mb-4">
-                  Boostez votre visibilité avec nos offres exclusives
+                  {t('myAdsPage.boostVisibility')}
                 </p>
                 <div className="flex items-center gap-2 text-pink-400 text-sm font-medium">
-                  <span>Voir les offres</span>
+                  <span>{t('myAdsPage.viewOffers')}</span>
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
@@ -365,7 +367,7 @@ export default function MyAdsPage() {
                 {/* Badge de statut */}
                 {ad.status === 'paused' && (
                   <div className="absolute top-3 left-3 bg-orange-500/90 backdrop-blur-sm px-3 py-1 rounded-full z-10">
-                    <span className="text-xs text-white font-medium">En pause</span>
+                    <span className="text-xs text-white font-medium">{t('myAdsPage.paused')}</span>
                   </div>
                 )}
 
@@ -387,7 +389,7 @@ export default function MyAdsPage() {
                           ? 'bg-green-500 hover:bg-green-600'
                           : 'bg-orange-500 hover:bg-orange-600'
                       } text-white p-2 rounded-full transition-colors shadow-lg`}
-                      title={ad.status === 'paused' ? 'Réactiver' : 'Mettre en pause'}
+                      title={ad.status === 'paused' ? t('myAdsPage.reactivate') : t('myAdsPage.pause')}
                     >
                       {ad.status === 'paused' ? (
                         <Play className="w-4 h-4" />
@@ -402,7 +404,7 @@ export default function MyAdsPage() {
                         handleEditAd(ad.id)
                       }}
                       className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full transition-colors shadow-lg"
-                      title="Éditer"
+                      title={t('myAdsPage.edit')}
                     >
                       <Edit className="w-4 h-4" />
                     </motion.button>
@@ -413,7 +415,7 @@ export default function MyAdsPage() {
                         confirmDeleteAd(ad.id)
                       }}
                       className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-full transition-colors shadow-lg"
-                      title="Supprimer"
+                      title={t('myAdsPage.delete')}
                     >
                       <Trash2 className="w-4 h-4" />
                     </motion.button>
@@ -448,7 +450,7 @@ export default function MyAdsPage() {
             >
               <div className="flex items-center gap-2">
                 <Shield className="w-5 h-5 text-blue-400" />
-                <span className="font-medium">Panel Admin</span>
+                <span className="font-medium">{t('myAdsPage.adminPanel')}</span>
               </div>
               <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
             </button>
@@ -457,35 +459,35 @@ export default function MyAdsPage() {
             onClick={() => router.push('/profile/settings')}
             className="w-full px-6 py-4 text-left text-white hover:bg-gray-800/50 transition-colors flex items-center justify-between"
           >
-            <span>Paramètres du compte</span>
+            <span>{t('myAdsPage.accountSettings')}</span>
             <Settings className="w-5 h-5 text-gray-400" />
           </button>
           <button
             onClick={() => router.push('/profile/privacy')}
             className="w-full px-6 py-4 text-left text-white hover:bg-gray-800/50 transition-colors flex items-center justify-between"
           >
-            <span>Préférences de confidentialité</span>
+            <span>{t('myAdsPage.privacyPreferences')}</span>
             <Settings className="w-5 h-5 text-gray-400" />
           </button>
           <button
             onClick={() => router.push('/profile/warnings')}
             className="w-full px-6 py-4 text-left text-white hover:bg-gray-800/50 transition-colors flex items-center justify-between"
           >
-            <span>Mes avertissements</span>
+            <span>{t('myAdsPage.myWarnings')}</span>
             <AlertTriangle className="w-5 h-5 text-yellow-400" />
           </button>
           <button
             onClick={() => router.push('/profile/support')}
             className="w-full px-6 py-4 text-left text-white hover:bg-gray-800/50 transition-colors flex items-center justify-between"
           >
-            <span>Support</span>
+            <span>{t('myAdsPage.support')}</span>
             <MessageCircle className="w-5 h-5 text-gray-400" />
           </button>
           <button
             onClick={handleLogout}
             className="w-full px-6 py-4 text-left text-red-500 hover:bg-gray-800/50 transition-colors flex items-center justify-between"
           >
-            <span>Déconnexion</span>
+            <span>{t('myAdsPage.logout')}</span>
             <LogOut className="w-5 h-5" />
           </button>
         </div>
@@ -517,10 +519,10 @@ export default function MyAdsPage() {
                     <Trash2 className="w-8 h-8 text-red-500" />
                   </div>
                   <h3 className="text-xl font-bold text-white mb-2">
-                    Supprimer l'annonce ?
+                    {t('myAdsPage.deleteListingTitle')}
                   </h3>
                   <p className="text-gray-400 mb-6">
-                    Cette action est irréversible. Votre annonce sera définitivement supprimée.
+                    {t('myAdsPage.deleteListingMessage')}
                   </p>
 
                   <div className="flex gap-3 w-full">
@@ -529,14 +531,14 @@ export default function MyAdsPage() {
                       onClick={() => setDeleteModalOpen(false)}
                       className="flex-1 bg-gray-800 text-white py-3 rounded-xl font-medium hover:bg-gray-700 transition-colors"
                     >
-                      Annuler
+                      {t('myAdsPage.cancel')}
                     </motion.button>
                     <motion.button
                       whileTap={{ scale: 0.98 }}
                       onClick={handleDeleteAd}
                       className="flex-1 bg-gradient-to-r from-red-500 to-pink-600 text-white py-3 rounded-xl font-medium hover:from-red-600 hover:to-pink-700 transition-all"
                     >
-                      Supprimer
+                      {t('myAdsPage.delete')}
                     </motion.button>
                   </div>
                 </div>
@@ -578,12 +580,12 @@ export default function MyAdsPage() {
                     )}
                   </div>
                   <h3 className="text-xl font-bold text-white mb-2">
-                    {adToPause.status === 'paused' ? 'Réactiver l\'annonce ?' : 'Mettre en pause l\'annonce ?'}
+                    {adToPause.status === 'paused' ? t('myAdsPage.reactivateListingTitle') : t('myAdsPage.pauseListingTitle')}
                   </h3>
                   <p className="text-gray-400 mb-6">
                     {adToPause.status === 'paused'
-                      ? 'Votre annonce sera de nouveau visible par tous les utilisateurs.'
-                      : 'Votre annonce ne sera plus visible publiquement. Vous pourrez la réactiver à tout moment.'}
+                      ? t('myAdsPage.reactivateListingMessage')
+                      : t('myAdsPage.pauseListingMessage')}
                   </p>
 
                   <div className="flex gap-3 w-full">
@@ -592,7 +594,7 @@ export default function MyAdsPage() {
                       onClick={() => setPauseModalOpen(false)}
                       className="flex-1 bg-gray-800 text-white py-3 rounded-xl font-medium hover:bg-gray-700 transition-colors"
                     >
-                      Annuler
+                      {t('myAdsPage.cancel')}
                     </motion.button>
                     <motion.button
                       whileTap={{ scale: 0.98 }}
@@ -603,7 +605,7 @@ export default function MyAdsPage() {
                           : 'bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700'
                       } text-white py-3 rounded-xl font-medium transition-all`}
                     >
-                      {adToPause.status === 'paused' ? 'Réactiver' : 'Mettre en pause'}
+                      {adToPause.status === 'paused' ? t('myAdsPage.reactivate') : t('myAdsPage.pause')}
                     </motion.button>
                   </div>
                 </div>

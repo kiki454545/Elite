@@ -11,6 +11,7 @@ import { ScrollToTop } from '@/components/ScrollToTop'
 import { useAuth } from '@/contexts/AuthContext'
 import { useFavoriteAds } from '@/hooks/useFavorites'
 import { useEffect } from 'react'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 function RankBadge({ rank }: { rank: RankType }) {
   if (rank === 'standard') return null
@@ -30,6 +31,7 @@ export default function FavoritesPage() {
   const { user, loading: authLoading } = useAuth()
   const { removeFromFavorites } = useFavorites()
   const { favoriteAds, loading, error, refetch } = useFavoriteAds()
+  const { t } = useLanguage()
 
   // Rediriger si non authentifié (dans un useEffect pour éviter l'erreur côté serveur)
   useEffect(() => {
@@ -42,7 +44,7 @@ export default function FavoritesPage() {
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="text-white">Chargement...</div>
+        <div className="text-white">{t('common.loading')}</div>
       </div>
     )
   }
@@ -69,11 +71,11 @@ export default function FavoritesPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-950 pb-20">
-        <Header title="Mes Favoris" />
+        <Header title={t('favoritesPage.myFavorites')} />
         <div className="flex items-center justify-center py-20">
           <div className="flex flex-col items-center gap-4">
             <Loader2 className="w-8 h-8 text-pink-500 animate-spin" />
-            <p className="text-gray-400">Chargement de vos favoris...</p>
+            <p className="text-gray-400">{t('favoritesPage.loadingFavorites')}</p>
           </div>
         </div>
       </div>
@@ -84,7 +86,7 @@ export default function FavoritesPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-950 pb-20">
-        <Header title="Mes Favoris" />
+        <Header title={t('favoritesPage.myFavorites')} />
         <div className="max-w-screen-xl mx-auto px-4 py-6">
           <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-6 text-center">
             <p className="text-red-400">{error}</p>
@@ -96,7 +98,7 @@ export default function FavoritesPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 pb-20">
-      <Header title="Mes Favoris" />
+      <Header title={t('favoritesPage.myFavorites')} />
 
       <div className="max-w-screen-xl mx-auto px-4 py-6">
         {favoriteAds.length === 0 ? (
@@ -109,22 +111,22 @@ export default function FavoritesPage() {
               <Heart className="w-8 h-8 text-gray-400" />
             </div>
             <h3 className="text-xl font-bold text-white mb-2">
-              Aucun favori
+              {t('favoritesPage.noFavorites')}
             </h3>
             <p className="text-gray-400 mb-6">
-              Ajoutez des annonces à vos favoris pour les retrouver facilement
+              {t('favoritesPage.addFavoritesMessage')}
             </p>
             <button
               onClick={() => router.push('/')}
               className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:from-pink-600 hover:to-purple-700 transition-all"
             >
-              Découvrir les annonces
+              {t('favoritesPage.discoverListings')}
             </button>
           </motion.div>
         ) : (
           <>
             <p className="text-gray-400 mb-6">
-              {favoriteAds.length} annonce{favoriteAds.length > 1 ? 's' : ''} en favoris
+              {t('favoritesPage.favoritesCount', { count: favoriteAds.length })}
             </p>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {favoriteAds.map((ad, index) => (
@@ -152,7 +154,7 @@ export default function FavoritesPage() {
                     {ad.online && (
                       <div className="absolute top-3 right-3 flex items-center gap-1 bg-green-500/90 backdrop-blur-sm px-2 py-1 rounded-full">
                         <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
-                        <span className="text-xs text-white font-medium">En ligne</span>
+                        <span className="text-xs text-white font-medium">{t('favoritesPage.online')}</span>
                       </div>
                     )}
 
@@ -191,7 +193,7 @@ export default function FavoritesPage() {
                           onClick={() => handleViewAd(ad.id)}
                           className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 text-white py-2 rounded-full text-sm font-medium hover:from-pink-600 hover:to-purple-700 transition-all"
                         >
-                          Voir l'annonce
+                          {t('favoritesPage.viewListing')}
                         </motion.button>
                         <motion.button
                           whileTap={{ scale: 0.9 }}
