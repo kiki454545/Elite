@@ -246,10 +246,10 @@ export default function EditProfilePage() {
                 </svg>
               </div>
               <h3 style="font-size: 1.5rem; font-weight: bold; color: white; margin-bottom: 0.5rem;">
-                Profil mis à jour !
+                ${t('editProfilePage.profileUpdated')}
               </h3>
               <p style="color: #9ca3af; font-size: 0.875rem;">
-                Vos modifications ont été enregistrées avec succès
+                ${t('editProfilePage.changesSuccessfullySaved')}
               </p>
             </div>
           </div>
@@ -310,7 +310,7 @@ export default function EditProfilePage() {
               {/* Âge */}
               <div>
                 <label className="text-white text-sm font-medium mb-2 block">
-                  <span className="text-pink-500">*</span> Âge
+                  <span className="text-pink-500">*</span> {t('editProfilePage.age')}
                 </label>
                 <input
                   type="number"
@@ -326,7 +326,7 @@ export default function EditProfilePage() {
               {/* Genre */}
               <div>
                 <label className="text-white text-sm font-medium mb-3 block">
-                  <span className="text-pink-500">*</span> Je suis
+                  <span className="text-pink-500">*</span> {t('editProfilePage.iAm')}
                 </label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {(['female', 'male', 'couple', 'transsexual'] as Gender[]).map((g) => (
@@ -349,7 +349,7 @@ export default function EditProfilePage() {
               {/* Orientation */}
               <div>
                 <label className="text-white text-sm font-medium mb-3 block">
-                  Orientation sexuelle
+                  {t('editProfilePage.sexualOrientation')}
                 </label>
                 <div className="grid grid-cols-3 gap-3">
                   {(['heterosexual', 'bisexual', 'homosexual'] as Orientation[]).map((o) => (
@@ -372,7 +372,7 @@ export default function EditProfilePage() {
               {/* Intéressé à rencontrer */}
               <div>
                 <label className="text-white text-sm font-medium mb-3 block">
-                  Intéressé(e) à rencontrer
+                  {t('editProfilePage.interestedInMeeting')}
                 </label>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {[
@@ -404,14 +404,14 @@ export default function EditProfilePage() {
                 {/* Origine ethnique */}
                 <div>
                   <label className="text-white text-sm font-medium mb-2 block">
-                    Origine ethnique
+                    {t('editProfilePage.ethnicity')}
                   </label>
                   <select
                     value={ethnicity}
                     onChange={(e) => setEthnicity(e.target.value as Ethnicity)}
                     className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20"
                   >
-                    <option value="">Sélectionner...</option>
+                    <option value="">{t('editProfilePage.selectEthnicity')}</option>
                     {(['asian', 'black', 'caucasian', 'latin', 'indian', 'oriental', 'mixed'] as Ethnicity[]).map((e) => (
                       <option key={e} value={e}>{t(`profileForm.${e}`)}</option>
                     ))}
@@ -421,14 +421,14 @@ export default function EditProfilePage() {
                 {/* Nationalité */}
                 <div>
                   <label className="text-white text-sm font-medium mb-2 block">
-                    Nationalité
+                    {t('editProfilePage.nationality')}
                   </label>
                   <select
                     value={nationality}
                     onChange={(e) => setNationality(e.target.value)}
                     className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20"
                   >
-                    <option value="">Sélectionner...</option>
+                    <option value="">{t('editProfilePage.selectEthnicity')}</option>
 
                     {/* Europe de l'Ouest */}
                     <optgroup label="Europe de l'Ouest">
@@ -582,7 +582,7 @@ export default function EditProfilePage() {
                 <Eye className="w-6 h-6 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-white">
-                Apparence physique
+                {t('editProfilePage.physicalAppearance')}
               </h2>
             </div>
 
@@ -591,14 +591,14 @@ export default function EditProfilePage() {
                 {/* Cheveux */}
                 <div>
                   <label className="text-white text-sm font-medium mb-2 block">
-                    Couleur de cheveux
+                    {t('editProfilePage.hairColor')}
                   </label>
                   <select
                     value={hair}
                     onChange={(e) => setHair(e.target.value as HairColor)}
                     className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20"
                   >
-                    <option value="">Sélectionner...</option>
+                    <option value="">{t('editProfilePage.selectEthnicity')}</option>
                     {(['blond', 'chestnut', 'brown', 'red', 'black'] as HairColor[]).map((h) => (
                       <option key={h} value={h}>{t(`profileForm.${h}`)}</option>
                     ))}
@@ -608,14 +608,14 @@ export default function EditProfilePage() {
                 {/* Yeux */}
                 <div>
                   <label className="text-white text-sm font-medium mb-2 block">
-                    Couleur des yeux
+                    {t('editProfilePage.eyeColor')}
                   </label>
                   <select
                     value={eyes}
                     onChange={(e) => setEyes(e.target.value as EyeColor)}
                     className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20"
                   >
-                    <option value="">Sélectionner...</option>
+                    <option value="">{t('editProfilePage.selectEthnicity')}</option>
                     {(['blue', 'gray', 'brown', 'hazel', 'green'] as EyeColor[]).map((e) => (
                       <option key={e} value={e}>{t(`profileForm.${e}`)}</option>
                     ))}
@@ -625,7 +625,7 @@ export default function EditProfilePage() {
                 {/* Taille */}
                 <div>
                   <label className="text-white text-sm font-medium mb-2 block">
-                    Taille (cm)
+                    {t('editProfilePage.heightCm')}
                   </label>
                   <input
                     type="number"
@@ -639,7 +639,7 @@ export default function EditProfilePage() {
                 {/* Poids */}
                 <div>
                   <label className="text-white text-sm font-medium mb-2 block">
-                    Poids (kg)
+                    {t('editProfilePage.weightKg')}
                   </label>
                   <input
                     type="number"
@@ -654,7 +654,7 @@ export default function EditProfilePage() {
               {/* Mensurations */}
               <div>
                 <label className="text-white text-sm font-medium mb-2 block">
-                  Mensurations (Poitrine - Taille - Hanches)
+                  {t('editProfilePage.measurements')}
                 </label>
                 <div className="grid grid-cols-3 gap-3">
                   <input
@@ -685,14 +685,14 @@ export default function EditProfilePage() {
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <label className="text-white text-sm font-medium mb-2 block">
-                    Taille de bonnet
+                    {t('editProfilePage.cupSize')}
                   </label>
                   <select
                     value={breastSize}
                     onChange={(e) => setBreastSize(e.target.value)}
                     className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20"
                   >
-                    <option value="">Sélectionner...</option>
+                    <option value="">{t('editProfilePage.selectEthnicity')}</option>
                     {['A', 'B', 'C', 'D', 'E', 'F', 'G'].map(size => (
                       <option key={size} value={size}>{size}</option>
                     ))}
@@ -701,7 +701,7 @@ export default function EditProfilePage() {
 
                 <div>
                   <label className="text-white text-sm font-medium mb-2 block">
-                    Type de poitrine
+                    {t('editProfilePage.breastType')}
                   </label>
                   <div className="grid grid-cols-2 gap-3">
                     {(['natural', 'silicone'] as BreastType[]).map((b) => (
@@ -725,7 +725,7 @@ export default function EditProfilePage() {
               {/* Épilation */}
               <div>
                 <label className="text-white text-sm font-medium mb-3 block">
-                  Épilation du maillot
+                  {t('editProfilePage.bikiniWaxing')}
                 </label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {([
@@ -753,7 +753,7 @@ export default function EditProfilePage() {
               {/* Tatouage */}
               <div>
                 <label className="text-white text-sm font-medium mb-3 block">
-                  Tatouages
+                  {t('editProfilePage.tattoos')}
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
@@ -765,7 +765,7 @@ export default function EditProfilePage() {
                         : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600'
                     }`}
                   >
-                    {t('profileForm.yes')}
+                    {t('editProfilePage.yes')}
                   </button>
                   <button
                     type="button"
@@ -776,7 +776,7 @@ export default function EditProfilePage() {
                         : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600'
                     }`}
                   >
-                    {t('profileForm.no')}
+                    {t('editProfilePage.no')}
                   </button>
                 </div>
               </div>
@@ -784,7 +784,7 @@ export default function EditProfilePage() {
               {/* Piercings */}
               <div>
                 <label className="text-white text-sm font-medium mb-3 block">
-                  Piercings
+                  {t('editProfilePage.piercings')}
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
@@ -796,7 +796,7 @@ export default function EditProfilePage() {
                         : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600'
                     }`}
                   >
-                    {t('profileForm.yes')}
+                    {t('editProfilePage.yes')}
                   </button>
                   <button
                     type="button"
@@ -807,7 +807,7 @@ export default function EditProfilePage() {
                         : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600'
                     }`}
                   >
-                    {t('profileForm.no')}
+                    {t('editProfilePage.no')}
                   </button>
                 </div>
               </div>
@@ -815,7 +815,7 @@ export default function EditProfilePage() {
               {/* Langues parlées */}
               <div>
                 <label className="text-white text-sm font-medium mb-3 block">
-                  Langues parlées
+                  {t('editProfilePage.spokenLanguages')}
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                   {[
@@ -869,7 +869,7 @@ export default function EditProfilePage() {
                   <Heart className="w-6 h-6 text-white" />
                 </div>
                 <h2 className="text-2xl font-bold text-white">
-                  Disponibilités
+                  {t('editProfilePage.availability')}
                 </h2>
               </div>
 
@@ -913,19 +913,19 @@ export default function EditProfilePage() {
                     : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600'
                 }`}
               >
-                Disponible 24/7
+                {t('editProfilePage.available247')}
               </button>
             </div>
 
             <div className="space-y-4">
               {[
-                { key: 'monday', label: 'Lundi' },
-                { key: 'tuesday', label: 'Mardi' },
-                { key: 'wednesday', label: 'Mercredi' },
-                { key: 'thursday', label: 'Jeudi' },
-                { key: 'friday', label: 'Vendredi' },
-                { key: 'saturday', label: 'Samedi' },
-                { key: 'sunday', label: 'Dimanche' },
+                { key: 'monday', label: t('editProfilePage.monday') },
+                { key: 'tuesday', label: t('editProfilePage.tuesday') },
+                { key: 'wednesday', label: t('editProfilePage.wednesday') },
+                { key: 'thursday', label: t('editProfilePage.thursday') },
+                { key: 'friday', label: t('editProfilePage.friday') },
+                { key: 'saturday', label: t('editProfilePage.saturday') },
+                { key: 'sunday', label: t('editProfilePage.sunday') },
               ].map((day) => (
                 <div key={day.key} className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -954,7 +954,7 @@ export default function EditProfilePage() {
                     {availability[day.key]?.enabled && (
                       <div className="flex items-center gap-3 flex-1">
                         <div className="flex items-center gap-2">
-                          <label className="text-gray-400 text-sm">De</label>
+                          <label className="text-gray-400 text-sm">{t('editProfilePage.from')}</label>
                           <input
                             type="time"
                             value={availability[day.key]?.start || '09:00'}
@@ -971,7 +971,7 @@ export default function EditProfilePage() {
                           />
                         </div>
                         <div className="flex items-center gap-2">
-                          <label className="text-gray-400 text-sm">à</label>
+                          <label className="text-gray-400 text-sm">{t('editProfilePage.to')}</label>
                           <input
                             type="time"
                             value={availability[day.key]?.end || '17:00'}
@@ -1007,7 +1007,7 @@ export default function EditProfilePage() {
                 <Phone className="w-6 h-6 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-white">
-                Coordonnées
+                {t('editProfilePage.contactInfo')}
               </h2>
             </div>
 
@@ -1015,7 +1015,7 @@ export default function EditProfilePage() {
               {/* Numéro de téléphone */}
               <div>
                 <label className="text-white text-sm font-medium mb-2 block">
-                  Numéro de téléphone
+                  {t('editProfilePage.phoneNumber')}
                 </label>
                 <input
                   type="tel"
@@ -1029,7 +1029,7 @@ export default function EditProfilePage() {
               {/* WhatsApp */}
               <div>
                 <label className="text-white text-sm font-medium mb-3 block">
-                  Possédez-vous WhatsApp ?
+                  {t('editProfilePage.haveWhatsapp')}
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
@@ -1041,7 +1041,7 @@ export default function EditProfilePage() {
                         : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600'
                     }`}
                   >
-                    Oui
+                    {t('editProfilePage.yes')}
                   </button>
                   <button
                     type="button"
@@ -1052,7 +1052,7 @@ export default function EditProfilePage() {
                         : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600'
                     }`}
                   >
-                    Non
+                    {t('editProfilePage.no')}
                   </button>
                 </div>
               </div>
@@ -1060,7 +1060,7 @@ export default function EditProfilePage() {
               {/* Email de contact */}
               <div>
                 <label className="text-white text-sm font-medium mb-2 block">
-                  Email de contact
+                  {t('editProfilePage.contactEmail')}
                 </label>
                 <input
                   type="email"
@@ -1074,7 +1074,7 @@ export default function EditProfilePage() {
               {/* Méthode de contact préférée */}
               <div>
                 <label className="text-white text-sm font-medium mb-3 block">
-                  Comment souhaitez-vous être contacté ?
+                  {t('editProfilePage.contactMethod')}
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <button
@@ -1086,7 +1086,7 @@ export default function EditProfilePage() {
                         : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600'
                     }`}
                   >
-                    Seulement SMS
+                    {t('editProfilePage.smsOnly')}
                   </button>
                   <button
                     type="button"
@@ -1097,7 +1097,7 @@ export default function EditProfilePage() {
                         : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600'
                     }`}
                   >
-                    Seulement Appel
+                    {t('editProfilePage.callOnly')}
                   </button>
                   <button
                     type="button"
@@ -1108,7 +1108,7 @@ export default function EditProfilePage() {
                         : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600'
                     }`}
                   >
-                    Appel + SMS
+                    {t('editProfilePage.callAndSms')}
                   </button>
                 </div>
               </div>
