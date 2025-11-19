@@ -62,27 +62,59 @@ export function CountryProvider({ children }: { children: ReactNode }) {
           }
         }
 
-        // Essayer avec l'API ip-api.com (gratuite et supporte CORS)
-        const response = await fetch('https://ipapi.co/json/')
-        const data = await response.json()
+        // Essayer plusieurs APIs de géolocalisation avec fallback
+        let detectedCountryCode: string | null = null
 
-        console.log('📡 Réponse API géolocalisation:', data)
-        console.log('📍 IP détectée:', data.ip)
-        console.log('🌍 Pays détecté:', data.country_code, data.country_name)
+        // API 1: ip-api.com (HTTP, plus fiable)
+        try {
+          console.log('🔍 Tentative avec ip-api.com...')
+          const response1 = await fetch('http://ip-api.com/json/')
+          const data1 = await response1.json()
 
-        if (data.country_code) {
-          const detectedCountry = COUNTRIES.find(c => c.code === data.country_code)
+          console.log('📡 Réponse ip-api.com:', data1)
+          if (data1.status === 'success' && data1.countryCode) {
+            detectedCountryCode = data1.countryCode
+            console.log('✅ Pays détecté avec ip-api.com:', detectedCountryCode, data1.country)
+          }
+        } catch (error) {
+          console.warn('⚠️ ip-api.com a échoué, essai de l\'API de fallback...', error)
+        }
+
+        // API 2: ipapi.co (HTTPS fallback)
+        if (!detectedCountryCode) {
+          try {
+            console.log('🔍 Tentative avec ipapi.co...')
+            const response2 = await fetch('https://ipapi.co/json/')
+            const data2 = await response2.json()
+
+            console.log('📡 Réponse ipapi.co:', data2)
+            if (data2.country_code) {
+              detectedCountryCode = data2.country_code
+              console.log('✅ Pays détecté avec ipapi.co:', detectedCountryCode, data2.country_name)
+            }
+          } catch (error) {
+            console.warn('⚠️ ipapi.co a échoué', error)
+          }
+        }
+
+        if (detectedCountryCode) {
+          const detectedCountry = COUNTRIES.find(c => c.code === detectedCountryCode)
           if (detectedCountry) {
             console.log('✅ Pays détecté et supporté:', detectedCountry.name, `(${detectedCountry.code})`)
             setUserCountry(detectedCountry)
             setSelectedCountryState(detectedCountry)
             console.log('📍 État mis à jour avec:', detectedCountry.name)
           } else {
-            console.warn('⚠️ Pays détecté non supporté:', data.country_code, '- Utilisation de France par défaut')
+            console.warn('⚠️ Pays détecté non supporté:', detectedCountryCode, '- Utilisation de France par défaut')
             // Pays non supporté, utiliser France par défaut
             setUserCountry(COUNTRIES[0])
             setSelectedCountryState(COUNTRIES[0])
           }
+        } else {
+          // Aucune API n'a fonctionné
+          console.warn('⚠️ Toutes les APIs ont échoué - Utilisation de France par défaut')
+          setUserCountry(COUNTRIES[0])
+          setSelectedCountryState(COUNTRIES[0])
         }
       } catch (error) {
         console.error('❌ Erreur détection pays:', error)
