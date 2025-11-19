@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { hasBlacklistAccess, BLACKLIST_RESTRICTED_MESSAGE, BLACKLIST_RESTRICTED_TITLE } from '@/lib/blacklist'
 import type { RankType } from '@/types/profile'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface BlockedUser {
   id: string
@@ -37,6 +38,7 @@ interface VerificationRequest {
 export default function PrivacySettingsPage() {
   const router = useRouter()
   const { user } = useAuth()
+  const { t } = useLanguage()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [acceptsMessages, setAcceptsMessages] = useState(true)
@@ -170,14 +172,14 @@ export default function PrivacySettingsPage() {
         .single()
 
       if (userError || !targetUser) {
-        setBlockError('Utilisateur non trouvé')
+        setBlockError(t('privacyPage.userNotFound'))
         setSaving(false)
         return
       }
 
       // Ne pas se bloquer soi-même
       if (targetUser.id === user.id) {
-        setBlockError('Vous ne pouvez pas vous bloquer vous-même')
+        setBlockError(t('privacyPage.cannotBlockSelf'))
         setSaving(false)
         return
       }
@@ -191,7 +193,7 @@ export default function PrivacySettingsPage() {
         .single()
 
       if (existing) {
-        setBlockError('Cet utilisateur est déjà bloqué')
+        setBlockError(t('privacyPage.alreadyBlocked'))
         setSaving(false)
         return
       }
@@ -288,7 +290,7 @@ export default function PrivacySettingsPage() {
         .single()
 
       if (existing) {
-        setPhoneError('Ce numéro est déjà dans votre liste noire')
+        setPhoneError(t('privacyPage.phoneAlreadyBlacklisted'))
         setSaving(false)
         return
       }
@@ -372,18 +374,18 @@ export default function PrivacySettingsPage() {
 
     // Vérifier le nombre de photos (max 3)
     if (verificationPhotos.length + files.length > 3) {
-      setUploadError('Vous pouvez envoyer maximum 3 photos')
+      setUploadError(t('privacyPage.maxPhotosError'))
       return
     }
 
     // Vérifier la taille des fichiers (max 5MB par photo)
     for (const file of files) {
       if (file.size > 5 * 1024 * 1024) {
-        setUploadError('Chaque photo doit faire moins de 5MB')
+        setUploadError(t('privacyPage.photoSizeError'))
         return
       }
       if (!file.type.startsWith('image/')) {
-        setUploadError('Seules les images sont acceptées')
+        setUploadError(t('privacyPage.imagesOnlyError'))
         return
       }
     }
@@ -468,7 +470,7 @@ export default function PrivacySettingsPage() {
           </button>
           <div className="flex items-center gap-3">
             <Shield className="w-8 h-8 text-pink-500" />
-            <h1 className="text-2xl font-bold text-white">Préférences de confidentialité</h1>
+            <h1 className="text-2xl font-bold text-white">{t('privacyPage.title')}</h1>
           </div>
         </div>
 
@@ -483,9 +485,9 @@ export default function PrivacySettingsPage() {
               <MessageCircle className="w-6 h-6 text-pink-500" />
             </div>
             <div className="flex-1">
-              <h2 className="text-xl font-bold text-white mb-2">Messages privés</h2>
+              <h2 className="text-xl font-bold text-white mb-2">{t('privacyPage.privateMessages')}</h2>
               <p className="text-gray-400 mb-4">
-                Autorisez ou bloquez les autres utilisateurs à vous envoyer des messages privés.
+                {t('privacyPage.privateMessagesDesc')}
               </p>
               <div className="flex items-center gap-3">
                 <button
@@ -503,7 +505,7 @@ export default function PrivacySettingsPage() {
                   />
                 </button>
                 <span className="text-white font-medium">
-                  {acceptsMessages ? 'Activé' : 'Désactivé'}
+                  {acceptsMessages ? t('privacyPage.enabled') : t('privacyPage.disabled')}
                 </span>
               </div>
             </div>
@@ -522,9 +524,9 @@ export default function PrivacySettingsPage() {
               <CheckCircle className="w-6 h-6 text-blue-500" />
             </div>
             <div className="flex-1">
-              <h2 className="text-xl font-bold text-white mb-2">Vérification du compte</h2>
+              <h2 className="text-xl font-bold text-white mb-2">{t('privacyPage.accountVerification')}</h2>
               <p className="text-gray-400">
-                Faites vérifier votre compte pour obtenir le badge vérifié et gagner la confiance des autres utilisateurs.
+                {t('privacyPage.accountVerificationDesc')}
               </p>
             </div>
           </div>
@@ -543,32 +545,32 @@ export default function PrivacySettingsPage() {
                   {verificationRequest.status === 'pending' && (
                     <>
                       <AlertCircle className="w-5 h-5 text-yellow-500" />
-                      <span className="text-yellow-400 font-semibold">Demande en cours de traitement</span>
+                      <span className="text-yellow-400 font-semibold">{t('privacyPage.requestPending')}</span>
                     </>
                   )}
                   {verificationRequest.status === 'approved' && (
                     <>
                       <CheckCircle className="w-5 h-5 text-green-500" />
-                      <span className="text-green-400 font-semibold">Compte vérifié !</span>
+                      <span className="text-green-400 font-semibold">{t('privacyPage.accountVerified')}</span>
                     </>
                   )}
                   {verificationRequest.status === 'rejected' && (
                     <>
                       <X className="w-5 h-5 text-red-500" />
-                      <span className="text-red-400 font-semibold">Demande refusée</span>
+                      <span className="text-red-400 font-semibold">{t('privacyPage.requestRejected')}</span>
                     </>
                   )}
                 </div>
                 <p className="text-gray-300 text-sm">
-                  Demande envoyée le {new Date(verificationRequest.created_at).toLocaleDateString('fr-FR')}
+                  {t('privacyPage.requestSentOn')} {new Date(verificationRequest.created_at).toLocaleDateString('fr-FR')}
                 </p>
                 {verificationRequest.rejection_reason && (
                   <div className="mt-3 p-3 bg-gray-800 rounded-lg">
                     <p className="text-sm text-gray-300">
-                      <span className="font-semibold text-red-400">Raison du refus :</span> {verificationRequest.rejection_reason}
+                      <span className="font-semibold text-red-400">{t('privacyPage.rejectionReason')}</span> {verificationRequest.rejection_reason}
                     </p>
                     <p className="text-xs text-gray-400 mt-2">
-                      Vous pouvez soumettre une nouvelle demande en respectant les consignes ci-dessous.
+                      {t('privacyPage.canResubmit')}
                     </p>
                   </div>
                 )}
@@ -580,7 +582,7 @@ export default function PrivacySettingsPage() {
                   onClick={() => setVerificationRequest(null)}
                   className="w-full px-6 py-3 bg-blue-500 text-white rounded-xl font-medium hover:bg-blue-600 transition-colors"
                 >
-                  Soumettre une nouvelle demande
+                  {t('privacyPage.submitNewRequest')}
                 </button>
               )}
             </div>
@@ -590,36 +592,36 @@ export default function PrivacySettingsPage() {
               <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
                 <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
                   <AlertTriangle className="w-5 h-5 text-blue-400" />
-                  Instructions importantes
+                  {t('privacyPage.importantInstructions')}
                 </h3>
                 <ul className="space-y-2 text-sm text-gray-300">
                   <li className="flex gap-2">
                     <span className="text-blue-400">•</span>
-                    <span>Prenez une photo de vous tenant une pancarte avec les informations suivantes :</span>
+                    <span>{t('privacyPage.instruction1')}</span>
                   </li>
                   <li className="flex gap-2 ml-6">
                     <span className="text-pink-400">-</span>
-                    <span>Votre pseudonyme : <span className="font-mono text-white">{user?.user_metadata?.username || 'N/A'}</span></span>
+                    <span>{t('privacyPage.instruction2')} <span className="font-mono text-white">{user?.user_metadata?.username || 'N/A'}</span></span>
                   </li>
                   <li className="flex gap-2 ml-6">
                     <span className="text-pink-400">-</span>
-                    <span>La date du jour : <span className="font-mono text-white">{new Date().toLocaleDateString('fr-FR')}</span></span>
+                    <span>{t('privacyPage.instruction3')} <span className="font-mono text-white">{new Date().toLocaleDateString('fr-FR')}</span></span>
                   </li>
                   <li className="flex gap-2 ml-6">
                     <span className="text-pink-400">-</span>
-                    <span>Le texte : <span className="font-mono text-white">SexElite.eu</span></span>
+                    <span>{t('privacyPage.instruction4')} <span className="font-mono text-white">SexElite.eu</span></span>
                   </li>
                   <li className="flex gap-2">
                     <span className="text-blue-400">•</span>
-                    <span>Votre visage doit être clairement visible</span>
+                    <span>{t('privacyPage.instruction5')}</span>
                   </li>
                   <li className="flex gap-2">
                     <span className="text-blue-400">•</span>
-                    <span>La pancarte et les informations doivent être lisibles</span>
+                    <span>{t('privacyPage.instruction6')}</span>
                   </li>
                   <li className="flex gap-2">
                     <span className="text-blue-400">•</span>
-                    <span>Vous pouvez envoyer jusqu'à 3 photos (max 5MB chacune)</span>
+                    <span>{t('privacyPage.instruction7')}</span>
                   </li>
                 </ul>
               </div>
@@ -640,10 +642,10 @@ export default function PrivacySettingsPage() {
                       <div className="text-center">
                         <Upload className="w-12 h-12 text-gray-400 mx-auto mb-3" />
                         <p className="text-white font-medium mb-1">
-                          Cliquez pour ajouter des photos
+                          {t('privacyPage.clickToAddPhotos')}
                         </p>
                         <p className="text-gray-400 text-sm">
-                          {verificationPhotos.length}/3 photos ajoutées
+                          {verificationPhotos.length}/3 {t('privacyPage.photosAdded')}
                         </p>
                       </div>
                     </div>
@@ -684,12 +686,12 @@ export default function PrivacySettingsPage() {
                   {uploadingVerification ? (
                     <>
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Envoi en cours...
+                      {t('privacyPage.uploading')}
                     </>
                   ) : (
                     <>
                       <CheckCircle className="w-5 h-5" />
-                      Soumettre la demande de vérification
+                      {t('privacyPage.submitVerificationRequest')}
                     </>
                   )}
                 </button>
@@ -710,9 +712,9 @@ export default function PrivacySettingsPage() {
               <UserX className="w-6 h-6 text-red-500" />
             </div>
             <div className="flex-1">
-              <h2 className="text-xl font-bold text-white mb-2">Utilisateurs bloqués</h2>
+              <h2 className="text-xl font-bold text-white mb-2">{t('privacyPage.blockedUsers')}</h2>
               <p className="text-gray-400">
-                Les utilisateurs bloqués ne peuvent plus voir votre profil ni vous contacter.
+                {t('privacyPage.blockedUsersDesc')}
               </p>
             </div>
           </div>
@@ -724,7 +726,7 @@ export default function PrivacySettingsPage() {
                 type="text"
                 value={blockUsername}
                 onChange={(e) => setBlockUsername(e.target.value)}
-                placeholder="Nom d'utilisateur à bloquer"
+                placeholder={t('privacyPage.usernameToBlock')}
                 className="flex-1 px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-pink-500"
               />
               <button
@@ -732,7 +734,7 @@ export default function PrivacySettingsPage() {
                 disabled={saving || !blockUsername.trim()}
                 className="px-6 py-3 bg-red-500 text-white rounded-xl font-medium hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Bloquer
+                {t('privacyPage.blockButton')}
               </button>
             </div>
             {blockError && (
@@ -751,14 +753,14 @@ export default function PrivacySettingsPage() {
                   <div>
                     <p className="text-white font-medium">@{blocked.blocked_username}</p>
                     <p className="text-gray-500 text-sm">
-                      Bloqué le {new Date(blocked.blocked_at).toLocaleDateString('fr-FR')}
+                      {t('privacyPage.blockedOn')} {new Date(blocked.blocked_at).toLocaleDateString('fr-FR')}
                     </p>
                   </div>
                   <button
                     onClick={() => handleUnblockUser(blocked.blocked_user_id)}
                     disabled={saving}
                     className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-50"
-                    title="Débloquer"
+                    title={t('privacyPage.unblockButton')}
                   >
                     <Trash2 className="w-5 h-5" />
                   </button>
@@ -767,7 +769,7 @@ export default function PrivacySettingsPage() {
             </div>
           ) : (
             <p className="text-gray-500 text-center py-8">
-              Aucun utilisateur bloqué
+              {t('privacyPage.noBlockedUsers')}
             </p>
           )}
         </motion.div>
@@ -793,7 +795,7 @@ export default function PrivacySettingsPage() {
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
-                <h2 className="text-xl font-bold text-white">Liste noire des numéros</h2>
+                <h2 className="text-xl font-bold text-white">{t('privacyPage.phoneBlacklist')}</h2>
                 {!hasBlacklistAccess(userRank) && (
                   <span className="px-2 py-1 bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-xs font-bold rounded-full flex items-center gap-1">
                     <Crown className="w-3 h-3" />
@@ -802,7 +804,7 @@ export default function PrivacySettingsPage() {
                 )}
               </div>
               <p className="text-gray-400">
-                Signalez les numéros de téléphone problématiques pour avertir les autres utilisateurs.
+                {t('privacyPage.phoneBlacklistDesc')}
               </p>
               {!hasBlacklistAccess(userRank) && (
                 <div className="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
@@ -814,7 +816,7 @@ export default function PrivacySettingsPage() {
                     onClick={() => router.push('/shop')}
                     className="mt-2 text-sm text-blue-400 hover:text-blue-300 underline"
                   >
-                    Découvrir les offres Premium →
+                    {t('privacyPage.discoverPremiumOffers')}
                   </button>
                 </div>
               )}
@@ -829,13 +831,13 @@ export default function PrivacySettingsPage() {
                   type="tel"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
-                  placeholder="Numéro de téléphone (ex: +33612345678)"
+                  placeholder={t('privacyPage.phonePlaceholder')}
                   className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-pink-500"
                 />
                 <textarea
                   value={phoneReason}
                   onChange={(e) => setPhoneReason(e.target.value)}
-                  placeholder="Raison du signalement..."
+                  placeholder={t('privacyPage.reportReasonPlaceholder')}
                   rows={3}
                   className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-pink-500 resize-none"
                 />
@@ -844,7 +846,7 @@ export default function PrivacySettingsPage() {
                   disabled={saving || !phoneNumber.trim() || !phoneReason.trim()}
                   className="w-full px-6 py-3 bg-orange-500 text-white rounded-xl font-medium hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Ajouter à la liste noire
+                  {t('privacyPage.addToBlacklist')}
                 </button>
               </div>
               {phoneError && (
@@ -856,7 +858,7 @@ export default function PrivacySettingsPage() {
           {/* Mes signalements */}
           {blacklist.length > 0 && (
             <div className="mb-6">
-              <h3 className="text-white font-semibold mb-3">Mes signalements</h3>
+              <h3 className="text-white font-semibold mb-3">{t('privacyPage.myReports')}</h3>
               <div className="space-y-3">
                 {blacklist.map((entry) => (
                   <div
@@ -867,14 +869,14 @@ export default function PrivacySettingsPage() {
                       <div>
                         <p className="text-white font-mono font-medium">{entry.phone_number}</p>
                         <p className="text-gray-500 text-sm">
-                          Signalé le {new Date(entry.created_at).toLocaleDateString('fr-FR')}
+                          {t('privacyPage.reportedOn')} {new Date(entry.created_at).toLocaleDateString('fr-FR')}
                         </p>
                       </div>
                       <button
                         onClick={() => handleRemovePhoneFromBlacklist(entry.id)}
                         disabled={saving}
                         className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-50"
-                        title="Supprimer"
+                        title={t('privacyPage.deleteButton')}
                       >
                         <Trash2 className="w-5 h-5" />
                       </button>
@@ -891,7 +893,7 @@ export default function PrivacySettingsPage() {
             <div className="border-t border-gray-700 pt-6">
               <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
                 <Search className="w-5 h-5" />
-                Rechercher un numéro
+                {t('privacyPage.searchNumber')}
               </h3>
               <form onSubmit={handleSearchPhone} className="mb-4">
                 <div className="flex gap-3">
@@ -899,7 +901,7 @@ export default function PrivacySettingsPage() {
                     type="tel"
                     value={searchPhone}
                     onChange={(e) => setSearchPhone(e.target.value)}
-                    placeholder="Numéro à rechercher..."
+                    placeholder={t('privacyPage.searchPlaceholder')}
                     className="flex-1 px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-pink-500"
                   />
                   <button
@@ -907,7 +909,7 @@ export default function PrivacySettingsPage() {
                     disabled={searching || !searchPhone.trim()}
                     className="px-6 py-3 bg-pink-500 text-white rounded-xl font-medium hover:bg-pink-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {searching ? 'Recherche...' : 'Rechercher'}
+                    {searching ? t('privacyPage.searching') : t('privacyPage.searchButton')}
                   </button>
                 </div>
               </form>
@@ -918,7 +920,7 @@ export default function PrivacySettingsPage() {
                   <div className="flex items-center gap-2 text-orange-400 mb-2">
                     <AlertTriangle className="w-5 h-5" />
                     <p className="font-semibold">
-                      {searchResults.length} signalement{searchResults.length > 1 ? 's' : ''} trouvé{searchResults.length > 1 ? 's' : ''}
+                      {t('privacyPage.reportsFound', { count: searchResults.length })}
                     </p>
                   </div>
                   {searchResults.map((result, index) => (
@@ -938,7 +940,7 @@ export default function PrivacySettingsPage() {
                 </div>
               ) : searchPhone && !searching ? (
                 <p className="text-gray-500 text-center py-4">
-                  Aucun signalement trouvé pour ce numéro
+                  {t('privacyPage.noReportsFound')}
                 </p>
               ) : null}
             </div>

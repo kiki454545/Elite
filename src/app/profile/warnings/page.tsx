@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { Header } from '@/components/Header'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface UserWarning {
   id: string
@@ -23,6 +24,7 @@ interface UserWarning {
 export default function WarningsPage() {
   const router = useRouter()
   const { user, loading } = useAuth()
+  const { t } = useLanguage()
   const [warnings, setWarnings] = useState<UserWarning[]>([])
   const [loadingWarnings, setLoadingWarnings] = useState(true)
 
@@ -61,14 +63,14 @@ export default function WarningsPage() {
   if (loading || loadingWarnings) {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="text-white">Chargement...</div>
+        <div className="text-white">{t('warningsPage.loading')}</div>
       </div>
     )
   }
 
   return (
     <div className="min-h-screen bg-gray-950 pb-20">
-      <Header title="Mes avertissements" showBackButton={true} backUrl="/my-ads" />
+      <Header title={t('warningsPage.title')} showBackButton={true} backUrl="/my-ads" />
 
       <div className="max-w-4xl mx-auto px-4 py-6">
         {/* Info Card */}
@@ -80,10 +82,9 @@ export default function WarningsPage() {
           <div className="flex items-start gap-3">
             <AlertCircle className="w-6 h-6 text-yellow-500 flex-shrink-0 mt-1" />
             <div>
-              <h2 className="text-white font-semibold mb-2">À propos des avertissements</h2>
+              <h2 className="text-white font-semibold mb-2">{t('warningsPage.aboutWarnings')}</h2>
               <p className="text-sm text-yellow-200">
-                Les avertissements sont émis par notre équipe de modération lorsque votre activité ne respecte pas nos règles.
-                Trop d'avertissements peuvent entraîner des restrictions sur votre compte.
+                {t('warningsPage.aboutWarningsDesc')}
               </p>
             </div>
           </div>
@@ -102,8 +103,8 @@ export default function WarningsPage() {
                 <AlertTriangle className="w-6 h-6 text-yellow-500" />
               </div>
               <div>
-                <h3 className="text-white font-semibold text-lg">Total d'avertissements</h3>
-                <p className="text-sm text-gray-400">Historique complet</p>
+                <h3 className="text-white font-semibold text-lg">{t('warningsPage.totalWarnings')}</h3>
+                <p className="text-sm text-gray-400">{t('warningsPage.completeHistory')}</p>
               </div>
             </div>
             <div className="text-4xl font-bold text-yellow-500">{warnings.length}</div>
@@ -124,8 +125,8 @@ export default function WarningsPage() {
                   <AlertTriangle className="w-8 h-8 text-green-500" />
                 </div>
                 <div>
-                  <h3 className="text-white font-semibold text-lg mb-2">Aucun avertissement</h3>
-                  <p className="text-gray-400">Vous n'avez reçu aucun avertissement. Continuez ainsi !</p>
+                  <h3 className="text-white font-semibold text-lg mb-2">{t('warningsPage.noWarnings')}</h3>
+                  <p className="text-gray-400">{t('warningsPage.noWarningsDesc')}</p>
                 </div>
               </div>
             </motion.div>
@@ -156,7 +157,7 @@ export default function WarningsPage() {
                       <div className="flex flex-wrap items-center gap-4 text-sm">
                         <div className="flex items-center gap-2 text-gray-400">
                           <Shield className="w-4 h-4" />
-                          <span>Par: {warning.admin?.username || 'Support'}</span>
+                          <span>{t('warningsPage.by')} {warning.admin?.username || t('warningsPage.support')}</span>
                         </div>
                         <div className="flex items-center gap-2 text-gray-400">
                           <Calendar className="w-4 h-4" />
@@ -187,15 +188,15 @@ export default function WarningsPage() {
             transition={{ delay: 0.3 + warnings.length * 0.05 }}
             className="bg-gray-900 rounded-2xl p-6 border border-gray-800 mt-6"
           >
-            <h3 className="text-white font-semibold mb-3">Besoin d'aide ?</h3>
+            <h3 className="text-white font-semibold mb-3">{t('warningsPage.needHelp')}</h3>
             <p className="text-gray-400 text-sm mb-4">
-              Si vous pensez qu'un avertissement a été émis par erreur, vous pouvez contacter notre équipe de support.
+              {t('warningsPage.needHelpDesc')}
             </p>
             <button
               onClick={() => router.push('/profile/support')}
               className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-all"
             >
-              Contacter le support
+              {t('warningsPage.contactSupport')}
             </button>
           </motion.div>
         )}
