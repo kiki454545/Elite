@@ -11,6 +11,7 @@ import { Upload, X, MapPin, Phone, MessageCircle, Mail, Clock } from 'lucide-rea
 import LocationSelector from '@/components/LocationSelector'
 import { searchCities } from '@/data/cities'
 import { supabase } from '@/lib/supabase'
+import { translateAdData } from '@/i18n/config'
 
 export default function CreateAdPage() {
   const router = useRouter()
@@ -533,7 +534,7 @@ export default function CreateAdPage() {
                         }`}
                       >
                         <span className="text-2xl">{AD_CATEGORIES[cat].icon}</span>
-                        <span className="text-sm">{AD_CATEGORIES[cat].label}</span>
+                        <span className="text-sm">{translateAdData(`categories.${cat}`, language)}</span>
                       </button>
                     ))}
                   </div>
@@ -720,7 +721,7 @@ export default function CreateAdPage() {
                             : 'bg-gray-800/50 text-gray-400 hover:text-white border-gray-700 hover:border-gray-600'
                         }`}
                       >
-                        {place}
+                        {translateAdData(`meetingPlaces.${place}`, language)}
                       </button>
                     ))}
                   </div>
@@ -743,7 +744,7 @@ export default function CreateAdPage() {
                               : 'bg-gray-800/50 text-gray-400 hover:text-white border-gray-700 hover:border-gray-600 hover:bg-gray-700/50'
                           }`}
                         >
-                          {service}
+                          {translateAdData(`services.${service}`, language)}
                         </button>
                       ))}
                     </div>

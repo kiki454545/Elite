@@ -747,5 +747,13 @@
     "success": "Succès",
     "adPublishedSuccess": "Votre annonce a été publiée avec succès !",
     "adCreationError": "Une erreur est survenue lors de la création de l'annonce"
+  },
+  "locationSelector": {
+    "country": "Pays",
+    "city": "Ville",
+    "startTyping": "(commencez à taper)",
+    "cityPlaceholder": "Ville en {{country}}...",
+    "citySelected": "Ville sélectionnée:",
+    "selectCountry": "Sélectionner un pays"
   }
 }

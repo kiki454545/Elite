@@ -747,5 +747,13 @@
     "success": "Success",
     "adPublishedSuccess": "Your ad has been successfully published!",
     "adCreationError": "An error occurred while creating the ad"
+  },
+  "locationSelector": {
+    "country": "Country",
+    "city": "City",
+    "startTyping": "(start typing)",
+    "cityPlaceholder": "City in {{country}}...",
+    "citySelected": "City selected:",
+    "selectCountry": "Select a country"
   }
 }

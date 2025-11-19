@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { MapPin, ChevronDown, X } from 'lucide-react'
 import { COUNTRIES, Country } from '@/contexts/CountryContext'
 import { searchCities } from '@/data/cities'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface LocationSelectorProps {
   onLocationChange: (country: string, city: string) => void
@@ -16,6 +17,7 @@ export default function LocationSelector({
   initialCountry = 'FR',
   initialCity = ''
 }: LocationSelectorProps) {
+  const { t } = useLanguage()
   const [selectedCountry, setSelectedCountry] = useState<Country>(
     COUNTRIES.find(c => c.code === initialCountry) || COUNTRIES[0]
   )
@@ -98,7 +100,7 @@ export default function LocationSelector({
       {/* Country Selector */}
       <div>
         <label className="block text-sm font-medium text-gray-300 mb-2">
-          Pays
+          {t('locationSelector.country')}
         </label>
         <div className="relative">
           <button
@@ -139,7 +141,7 @@ export default function LocationSelector({
       {/* City Autocomplete */}
       <div>
         <label className="block text-sm font-medium text-gray-300 mb-2">
-          Ville <span className="text-xs text-gray-500">(commencez à taper)</span>
+          {t('locationSelector.city')} <span className="text-xs text-gray-500">{t('locationSelector.startTyping')}</span>
         </label>
         <div className="relative">
           <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -154,7 +156,7 @@ export default function LocationSelector({
               }
             }}
             className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 pl-11 pr-10 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500"
-            placeholder={`Ville en ${selectedCountry.name}...`}
+            placeholder={t('locationSelector.cityPlaceholder', { country: selectedCountry.name })}
             autoComplete="off"
           />
           {cityQuery && (
@@ -200,7 +202,7 @@ export default function LocationSelector({
           <div className="mt-2 flex items-center gap-2 text-sm">
             <span className="text-green-400">✓</span>
             <span className="text-gray-300">
-              Ville sélectionnée: <span className="text-white font-medium">{selectedCity}, {selectedCountry.name}</span>
+              {t('locationSelector.citySelected')} <span className="text-white font-medium">{selectedCity}, {selectedCountry.name}</span>
             </span>
           </div>
         )}
