@@ -63,20 +63,22 @@ export function CountryProvider({ children }: { children: ReactNode }) {
         }
 
         // Essayer avec l'API ip-api.com (gratuite et supporte CORS)
-        const response = await fetch('http://ip-api.com/json/')
+        const response = await fetch('https://ipapi.co/json/')
         const data = await response.json()
 
         console.log('📡 Réponse API géolocalisation:', data)
+        console.log('📍 IP détectée:', data.ip)
+        console.log('🌍 Pays détecté:', data.country_code, data.country_name)
 
-        if (data.countryCode) {
-          const detectedCountry = COUNTRIES.find(c => c.code === data.countryCode)
+        if (data.country_code) {
+          const detectedCountry = COUNTRIES.find(c => c.code === data.country_code)
           if (detectedCountry) {
             console.log('✅ Pays détecté et supporté:', detectedCountry.name, `(${detectedCountry.code})`)
             setUserCountry(detectedCountry)
             setSelectedCountryState(detectedCountry)
             console.log('📍 État mis à jour avec:', detectedCountry.name)
           } else {
-            console.warn('⚠️ Pays détecté non supporté:', data.countryCode, '- Utilisation de France par défaut')
+            console.warn('⚠️ Pays détecté non supporté:', data.country_code, '- Utilisation de France par défaut')
             // Pays non supporté, utiliser France par défaut
             setUserCountry(COUNTRIES[0])
             setSelectedCountryState(COUNTRIES[0])
