@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
-import { CreateAdFormData, AdCategory, AD_CATEGORIES, MEETING_PLACES, DAYS_OF_WEEK, ContactInfo, Availability } from '@/types/ad'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { CreateAdFormData, AdCategory, AD_CATEGORIES, MEETING_PLACES, ESCORT_SERVICES, DAYS_OF_WEEK, ContactInfo, Availability } from '@/types/ad'
 import { RANK_CONFIG } from '@/types/profile'
 import { Upload, X, MapPin, Phone, MessageCircle, Mail, Clock } from 'lucide-react'
 import LocationSelector from '@/components/LocationSelector'
@@ -14,6 +15,7 @@ import { supabase } from '@/lib/supabase'
 export default function CreateAdPage() {
   const router = useRouter()
   const { user, profile, loading } = useAuth()
+  const { t, language } = useLanguage()
   const [step, setStep] = useState(1)
   const [formData, setFormData] = useState<CreateAdFormData>({
     title: '', // Sera ignoré et remplacé par le username au moment de la création
@@ -69,7 +71,7 @@ export default function CreateAdPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="text-white">Chargement...</div>
+        <div className="text-white">{t('createAdPage.loading')}</div>
       </div>
     )
   }
@@ -166,6 +168,7 @@ export default function CreateAdPage() {
           nearby_cities: filteredNearbyCities,
           categories: formData.categories,
           meeting_places: formData.meetingPlaces,
+          services: formData.services,
           price: formData.price,
           photos: photoUrls,
           video_url: videoUrl,
@@ -185,7 +188,7 @@ export default function CreateAdPage() {
       console.log('✅ Annonce créée:', ad)
 
       // 4. Afficher un message de succès
-      setSuccessMessage('Votre annonce a été publiée avec succès !')
+      setSuccessMessage(t('createAdPage.adPublishedSuccess'))
 
       // Attendre 2 secondes puis rediriger
       setTimeout(() => {
@@ -194,7 +197,7 @@ export default function CreateAdPage() {
 
     } catch (error: any) {
       console.error('❌ Erreur:', error)
-      setErrorMessage(error.message || 'Une erreur est survenue lors de la création de l\'annonce')
+      setErrorMessage(error.message || t('createAdPage.adCreationError'))
       setIsSubmitting(false)
     }
   }
@@ -214,6 +217,15 @@ export default function CreateAdPage() {
       meetingPlaces: prev.meetingPlaces.includes(place)
         ? prev.meetingPlaces.filter((p) => p !== place)
         : [...prev.meetingPlaces, place],
+    }))
+  }
+
+  const toggleService = (service: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      services: prev.services.includes(service)
+        ? prev.services.filter((s) => s !== service)
+        : [...prev.services, service],
     }))
   }
 
@@ -332,7 +344,7 @@ export default function CreateAdPage() {
     // Limiter selon le grade
     if (photoFiles.length + newFiles.length > maxPhotos) {
       const rankLabel = RANK_CONFIG[userRank].label || 'Standard'
-      alert(`Avec votre grade ${rankLabel}, vous ne pouvez ajouter que ${maxPhotos} photos maximum. Passez à un grade supérieur pour plus de photos !`)
+      alert(t('createAdPage.photoLimitAlert', { rank: rankLabel, max: maxPhotos }))
       return
     }
 
@@ -340,7 +352,7 @@ export default function CreateAdPage() {
     const maxSize = 10 * 1024 * 1024 // 10MB en bytes
     const invalidFiles = newFiles.filter(file => file.size > maxSize)
     if (invalidFiles.length > 0) {
-      alert('Certaines photos dépassent 10MB. Veuillez choisir des photos plus petites.')
+      alert(t('createAdPage.photoSizeAlert'))
       return
     }
 
@@ -390,14 +402,14 @@ export default function CreateAdPage() {
 
     // Vérifier que c'est une vidéo
     if (!file.type.startsWith('video/')) {
-      alert('Veuillez sélectionner un fichier vidéo (MP4, MOV, WebM)')
+      alert(t('createAdPage.videoTypeAlert'))
       return
     }
 
     // Vérifier la taille (max 50MB)
     const maxSize = 50 * 1024 * 1024 // 50MB
     if (file.size > maxSize) {
-      alert('La vidéo ne doit pas dépasser 50 MB')
+      alert(t('createAdPage.videoSizeAlert'))
       return
     }
 
@@ -410,7 +422,7 @@ export default function CreateAdPage() {
       const duration = video.duration
 
       if (duration > 30) {
-        alert('La vidéo ne doit pas dépasser 30 secondes')
+        alert(t('createAdPage.videoDurationAlert'))
         return
       }
 
@@ -474,9 +486,9 @@ export default function CreateAdPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">
-            Créer une annonce
+            {t('createAdPage.title')}
           </h1>
-          <p className="text-gray-400">Étape {step} sur 3</p>
+          <p className="text-gray-400">{t('createAdPage.stepIndicator', { step })}</p>
           <div className="mt-4 flex gap-2">
             {[1, 2, 3].map((s) => (
               <div
@@ -500,13 +512,13 @@ export default function CreateAdPage() {
           >
             <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
               <h2 className="text-xl font-semibold text-white mb-6">
-                Informations de base
+                {t('createAdPage.step1Title')}
               </h2>
 
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Catégories <span className="text-xs text-gray-500">(choix multiple possible)</span>
+                    {t('createAdPage.categoriesLabel')} <span className="text-xs text-gray-500">{t('createAdPage.multipleChoice')}</span>
                   </label>
                   <div className="grid grid-cols-3 gap-3">
                     {(Object.keys(AD_CATEGORIES) as AdCategory[]).map((cat) => (
@@ -527,7 +539,7 @@ export default function CreateAdPage() {
                   </div>
                   {formData.categories.length > 0 && (
                     <p className="text-xs text-gray-400 mt-2">
-                      {formData.categories.length} catégorie(s) sélectionnée(s)
+                      {t('createAdPage.categoriesSelected', { count: formData.categories.length })}
                     </p>
                   )}
                 </div>
@@ -537,12 +549,12 @@ export default function CreateAdPage() {
                   <div className="flex items-start gap-3">
                     <div className="text-blue-400">ℹ️</div>
                     <div>
-                      <p className="text-sm text-blue-200 font-medium">Titre de votre annonce</p>
+                      <p className="text-sm text-blue-200 font-medium">{t('createAdPage.adTitleInfo')}</p>
                       <p className="text-xs text-blue-300 mt-1">
-                        Le titre de votre annonce sera automatiquement votre pseudo : <span className="font-semibold">{profile?.username || user?.email || 'Votre pseudo'}</span>
+                        {t('createAdPage.adTitleDesc')} <span className="font-semibold">{profile?.username || user?.email || t('createAdPage.yourUsername')}</span>
                       </p>
                       <p className="text-xs text-blue-300/80 mt-1">
-                        Pour le modifier, changez votre pseudo dans les paramètres de votre profil.
+                        {t('createAdPage.changePseudoInfo')}
                       </p>
                     </div>
                   </div>
@@ -558,41 +570,41 @@ export default function CreateAdPage() {
                 {city.toLowerCase() === 'paris' && (
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Arrondissement <span className="text-xs text-gray-500">(optionnel)</span>
+                      {t('createAdPage.arrondissementLabel')} <span className="text-xs text-gray-500">{t('createAdPage.optional')}</span>
                     </label>
                     <select
                       value={arrondissement}
                       onChange={(e) => setArrondissement(e.target.value)}
                       className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-pink-500"
                     >
-                      <option value="">Sélectionner un arrondissement</option>
-                      <option value="1er">1er arrondissement</option>
-                      <option value="2ème">2ème arrondissement</option>
-                      <option value="3ème">3ème arrondissement</option>
-                      <option value="4ème">4ème arrondissement</option>
-                      <option value="5ème">5ème arrondissement</option>
-                      <option value="6ème">6ème arrondissement</option>
-                      <option value="7ème">7ème arrondissement</option>
-                      <option value="8ème">8ème arrondissement</option>
-                      <option value="9ème">9ème arrondissement</option>
-                      <option value="10ème">10ème arrondissement</option>
-                      <option value="11ème">11ème arrondissement</option>
-                      <option value="12ème">12ème arrondissement</option>
-                      <option value="13ème">13ème arrondissement</option>
-                      <option value="14ème">14ème arrondissement</option>
-                      <option value="15ème">15ème arrondissement</option>
-                      <option value="16ème">16ème arrondissement</option>
-                      <option value="17ème">17ème arrondissement</option>
-                      <option value="18ème">18ème arrondissement</option>
-                      <option value="19ème">19ème arrondissement</option>
-                      <option value="20ème">20ème arrondissement</option>
+                      <option value="">{t('createAdPage.selectArrondissement')}</option>
+                      <option value="1er">{t('createAdPage.arrondissement1')}</option>
+                      <option value="2ème">{t('createAdPage.arrondissement2')}</option>
+                      <option value="3ème">{t('createAdPage.arrondissement3')}</option>
+                      <option value="4ème">{t('createAdPage.arrondissement4')}</option>
+                      <option value="5ème">{t('createAdPage.arrondissement5')}</option>
+                      <option value="6ème">{t('createAdPage.arrondissement6')}</option>
+                      <option value="7ème">{t('createAdPage.arrondissement7')}</option>
+                      <option value="8ème">{t('createAdPage.arrondissement8')}</option>
+                      <option value="9ème">{t('createAdPage.arrondissement9')}</option>
+                      <option value="10ème">{t('createAdPage.arrondissement10')}</option>
+                      <option value="11ème">{t('createAdPage.arrondissement11')}</option>
+                      <option value="12ème">{t('createAdPage.arrondissement12')}</option>
+                      <option value="13ème">{t('createAdPage.arrondissement13')}</option>
+                      <option value="14ème">{t('createAdPage.arrondissement14')}</option>
+                      <option value="15ème">{t('createAdPage.arrondissement15')}</option>
+                      <option value="16ème">{t('createAdPage.arrondissement16')}</option>
+                      <option value="17ème">{t('createAdPage.arrondissement17')}</option>
+                      <option value="18ème">{t('createAdPage.arrondissement18')}</option>
+                      <option value="19ème">{t('createAdPage.arrondissement19')}</option>
+                      <option value="20ème">{t('createAdPage.arrondissement20')}</option>
                     </select>
                   </div>
                 )}
 
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Zones de déplacement <span className="text-xs text-gray-500">(optionnel, max 4)</span>
+                    {t('createAdPage.travelZonesLabel')} <span className="text-xs text-gray-500">{t('createAdPage.optionalMax4')}</span>
                   </label>
 
                   <div className="space-y-3">
@@ -604,7 +616,7 @@ export default function CreateAdPage() {
                           value={nearbyCityInputs[index]}
                           onChange={(e) => handleNearbyCityInput(index, e.target.value)}
                           className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 pl-11 pr-10 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                          placeholder={`Ville ${index + 1}`}
+                          placeholder={t('createAdPage.cityPlaceholder', { index: index + 1 })}
                           autoComplete="off"
                         />
                         {nearbyCityInputs[index] && (
@@ -643,7 +655,7 @@ export default function CreateAdPage() {
                   </div>
 
                   <p className="text-xs text-gray-500 mt-2">
-                    Indiquez les villes où vous vous déplacez (commencez à taper pour voir les suggestions)
+                    {t('createAdPage.travelZonesHelp')}
                   </p>
                 </div>
               </div>
@@ -654,7 +666,7 @@ export default function CreateAdPage() {
               disabled={!city || formData.categories.length === 0}
               className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white py-4 rounded-lg font-medium hover:from-pink-600 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Continuer
+              {t('createAdPage.continue')}
             </button>
           </motion.div>
         )}
@@ -668,13 +680,13 @@ export default function CreateAdPage() {
           >
             <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
               <h2 className="text-xl font-semibold text-white mb-6">
-                Description et lieux de rencontre
+                {t('createAdPage.step2Title')}
               </h2>
 
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Description
+                    {t('createAdPage.descriptionLabel')}
                   </label>
                   <textarea
                     value={formData.description}
@@ -682,19 +694,19 @@ export default function CreateAdPage() {
                       setFormData({ ...formData, description: e.target.value })
                     }
                     className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 px-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 resize-none"
-                    placeholder="Décrivez vos services, votre personnalité..."
+                    placeholder={t('createAdPage.descriptionPlaceholder')}
                     rows={6}
                     maxLength={5000}
                     required
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    {formData.description.length}/5000 caractères
+                    {t('createAdPage.charactersCount', { count: formData.description.length })}
                   </p>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Lieux de rencontre <span className="text-xs text-gray-500">(choix multiple possible)</span>
+                    {t('createAdPage.meetingPlacesLabel')} <span className="text-xs text-gray-500">{t('createAdPage.multipleChoice')}</span>
                   </label>
                   <div className="grid grid-cols-2 gap-3">
                     {MEETING_PLACES.map((place) => (
@@ -713,6 +725,35 @@ export default function CreateAdPage() {
                     ))}
                   </div>
                 </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-3">
+                    {t('createAdPage.servicesOfferedLabel')} <span className="text-xs text-gray-500">{t('createAdPage.servicesMultipleChoice')}</span>
+                  </label>
+                  <div className="bg-gray-800/30 rounded-lg p-4 max-h-96 overflow-y-auto">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {ESCORT_SERVICES.map((service) => (
+                        <button
+                          key={service}
+                          type="button"
+                          onClick={() => toggleService(service)}
+                          className={`py-2 px-3 rounded-lg font-medium transition-all text-xs text-left border ${
+                            formData.services.includes(service)
+                              ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white border-transparent shadow-md'
+                              : 'bg-gray-800/50 text-gray-400 hover:text-white border-gray-700 hover:border-gray-600 hover:bg-gray-700/50'
+                          }`}
+                        >
+                          {service}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {formData.services.length > 0 && (
+                    <p className="text-xs text-pink-400 mt-2">
+                      {t('createAdPage.servicesSelected', { count: formData.services.length, plural: formData.services.length > 1 ? 's' : '' })}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -721,14 +762,14 @@ export default function CreateAdPage() {
                 onClick={() => setStep(1)}
                 className="flex-1 bg-gray-800 text-white py-4 rounded-lg font-medium hover:bg-gray-700 transition-all"
               >
-                Retour
+                {t('createAdPage.back')}
               </button>
               <button
                 onClick={() => setStep(3)}
                 disabled={!formData.description}
                 className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 text-white py-4 rounded-lg font-medium hover:from-pink-600 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Continuer
+                {t('createAdPage.continue')}
               </button>
             </div>
           </motion.div>
@@ -743,10 +784,10 @@ export default function CreateAdPage() {
           >
             <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
               <h2 className="text-xl font-semibold text-white mb-2">
-                Photos et Vidéo
+                {t('createAdPage.step3Title')}
               </h2>
               <p className="text-gray-400 mb-6">
-                Ajoutez au moins 3 photos (recommandé, maximum {maxPhotos} avec votre grade) + 1 vidéo optionnelle (max 30s)
+                {t('createAdPage.photosSubtitle', { max: maxPhotos })}
               </p>
 
               {/* Zone d'upload photos */}
@@ -764,10 +805,10 @@ export default function CreateAdPage() {
               >
                 <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-white mb-2">
-                  Cliquez pour ajouter des photos
+                  {t('createAdPage.clickToAddPhotos')}
                 </p>
                 <p className="text-sm text-gray-400">
-                  PNG, JPG jusqu'à 10MB par photo
+                  {t('createAdPage.photoUploadDetails')}
                 </p>
               </label>
 
@@ -775,7 +816,7 @@ export default function CreateAdPage() {
               {photoPreviews.length > 0 && (
                 <div className="mt-6">
                   <p className="text-sm text-gray-400 mb-3">
-                    {photoPreviews.length} photo{photoPreviews.length > 1 ? 's' : ''} ajoutée{photoPreviews.length > 1 ? 's' : ''}
+                    {t('createAdPage.photosAdded', { count: photoPreviews.length, plural: photoPreviews.length > 1 ? 's' : '' })}
                   </p>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                     {photoPreviews.map((preview, index) => (
@@ -791,7 +832,7 @@ export default function CreateAdPage() {
                           type="button"
                           onClick={() => removePhoto(index)}
                           className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
-                          title="Supprimer cette photo"
+                          title={t('createAdPage.removePhoto')}
                         >
                           <X className="w-4 h-4" />
                         </button>
@@ -799,16 +840,16 @@ export default function CreateAdPage() {
                         {/* Badge photo principale OU bouton pour définir comme principale */}
                         {index === 0 ? (
                           <div className="absolute bottom-2 left-2 bg-pink-500 text-white text-xs px-2 py-1 rounded">
-                            Photo principale
+                            {t('createAdPage.mainPhoto')}
                           </div>
                         ) : (
                           <button
                             type="button"
                             onClick={() => setAsMainPhoto(index)}
                             className="absolute bottom-2 left-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded hover:bg-pink-500 transition-colors opacity-0 group-hover:opacity-100"
-                            title="Définir comme photo principale"
+                            title={t('createAdPage.setAsMainPhoto')}
                           >
-                            Définir comme principale
+                            {t('createAdPage.setAsMain')}
                           </button>
                         )}
                       </div>
@@ -818,17 +859,17 @@ export default function CreateAdPage() {
               )}
 
               <p className="text-xs text-gray-500 mt-4">
-                Les photos seront vérifiées avant publication. La première photo sera votre photo principale.
+                {t('createAdPage.photosInfo')}
               </p>
             </div>
 
             {/* Section Vidéo */}
             <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
               <h2 className="text-xl font-semibold text-white mb-2">
-                Vidéo (optionnel)
+                {t('createAdPage.videoOptional')}
               </h2>
               <p className="text-gray-400 mb-6">
-                Ajoutez une vidéo de présentation de maximum 30 secondes
+                {t('createAdPage.videoSubtitle')}
               </p>
 
               {!videoPreview ? (
@@ -846,10 +887,10 @@ export default function CreateAdPage() {
                   >
                     <Upload className="w-12 h-12 text-purple-400 mx-auto mb-4" />
                     <p className="text-white mb-2">
-                      Cliquez pour ajouter une vidéo
+                      {t('createAdPage.clickToAddVideo')}
                     </p>
                     <p className="text-sm text-gray-400">
-                      MP4, MOV, WebM - Max 30 secondes et 50MB
+                      {t('createAdPage.videoUploadDetails')}
                     </p>
                   </label>
                 </>
@@ -861,13 +902,13 @@ export default function CreateAdPage() {
                       controls
                       className="w-full rounded-lg border border-gray-700"
                     >
-                      Votre navigateur ne supporte pas la lecture de vidéos.
+                      {t('createAdPage.browserNoVideoSupport')}
                     </video>
                     <button
                       type="button"
                       onClick={removeVideo}
                       className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors"
-                      title="Supprimer la vidéo"
+                      title={t('createAdPage.removeVideo')}
                     >
                       <X className="w-5 h-5" />
                     </button>
@@ -876,7 +917,7 @@ export default function CreateAdPage() {
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    Vidéo ajoutée avec succès
+                    {t('createAdPage.videoAddedSuccess')}
                   </p>
                 </div>
               )}
@@ -887,14 +928,14 @@ export default function CreateAdPage() {
                 onClick={() => setStep(2)}
                 className="flex-1 bg-gray-800 text-white py-4 rounded-lg font-medium hover:bg-gray-700 transition-all"
               >
-                Retour
+                {t('createAdPage.back')}
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={photoPreviews.length === 0 || isSubmitting}
                 className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 text-white py-4 rounded-lg font-medium hover:from-pink-600 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? 'Création en cours...' : 'Publier l\'annonce'}
+                {isSubmitting ? t('createAdPage.creating') : t('createAdPage.publishAd')}
               </button>
             </div>
           </motion.div>
@@ -909,10 +950,10 @@ export default function CreateAdPage() {
           >
             <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
               <h2 className="text-xl font-semibold text-white mb-2">
-                Disponibilité et Contact
+                {t('createAdPage.step4Title')}
               </h2>
               <p className="text-gray-400 mb-6">
-                Indiquez vos horaires et moyens de contact
+                {t('createAdPage.step4Subtitle')}
               </p>
 
               <div className="space-y-6">
@@ -929,8 +970,8 @@ export default function CreateAdPage() {
                       <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-pink-800 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-600"></div>
                     </div>
                     <div>
-                      <span className="text-white font-medium">Disponible 24h/24 - 7j/7</span>
-                      <p className="text-sm text-gray-400">Coche automatiquement tous les jours</p>
+                      <span className="text-white font-medium">{t('createAdPage.available247')}</span>
+                      <p className="text-sm text-gray-400">{t('createAdPage.available247Help')}</p>
                     </div>
                   </label>
                 </div>
@@ -938,7 +979,7 @@ export default function CreateAdPage() {
                 {/* Jours de la semaine */}
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-3">
-                    Jours de disponibilité
+                    {t('createAdPage.daysAvailability')}
                   </label>
                   <div className="grid grid-cols-2 gap-3">
                     {DAYS_OF_WEEK.map((day) => (
@@ -962,7 +1003,7 @@ export default function CreateAdPage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
                     <Clock className="w-4 h-4 inline mr-2" />
-                    Horaires
+                    {t('createAdPage.scheduleLabel')}
                   </label>
                   <input
                     type="text"
@@ -976,10 +1017,10 @@ export default function CreateAdPage() {
                       }
                     }))}
                     className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 px-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                    placeholder="Ex: 9h-23h ou En soirée uniquement"
+                    placeholder={t('createAdPage.schedulePlaceholder')}
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    Précisez vos plages horaires
+                    {t('createAdPage.scheduleHelp')}
                   </p>
                 </div>
 
@@ -987,7 +1028,7 @@ export default function CreateAdPage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
                     <Phone className="w-4 h-4 inline mr-2" />
-                    Téléphone (optionnel)
+                    {t('createAdPage.phoneLabel')}
                   </label>
                   <input
                     type="tel"
@@ -997,14 +1038,14 @@ export default function CreateAdPage() {
                       phone: e.target.value
                     }))}
                     className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 px-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                    placeholder="06 12 34 56 78"
+                    placeholder={t('createAdPage.phonePlaceholder')}
                   />
                 </div>
 
                 {/* Moyens de contact */}
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-3">
-                    Moyens de contact préférés
+                    {t('createAdPage.preferredContactMethods')}
                   </label>
                   <div className="space-y-3">
                     <label className="flex items-center gap-3 cursor-pointer">
@@ -1072,14 +1113,14 @@ export default function CreateAdPage() {
                 onClick={() => setStep(3)}
                 className="flex-1 bg-gray-800 text-white py-4 rounded-lg font-medium hover:bg-gray-700 transition-all"
               >
-                Retour
+                {t('createAdPage.back')}
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
                 className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 text-white py-4 rounded-lg font-medium hover:from-pink-600 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? 'Publication en cours...' : 'Publier l\'annonce'}
+                {isSubmitting ? t('createAdPage.publishing') : t('createAdPage.publishAd')}
               </button>
             </div>
           </motion.div>
@@ -1100,7 +1141,7 @@ export default function CreateAdPage() {
                 <X className="w-6 h-6 text-white" />
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-bold text-white mb-1">Erreur</h3>
+                <h3 className="text-lg font-bold text-white mb-1">{t('createAdPage.error')}</h3>
                 <p className="text-sm text-gray-300">{errorMessage}</p>
               </div>
               <button
@@ -1130,7 +1171,7 @@ export default function CreateAdPage() {
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-bold text-white mb-1">Succès</h3>
+                  <h3 className="text-lg font-bold text-white mb-1">{t('createAdPage.success')}</h3>
                   <p className="text-sm text-gray-300">{successMessage}</p>
                 </div>
               </div>
