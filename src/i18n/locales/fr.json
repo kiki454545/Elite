@@ -335,23 +335,23 @@
     "noAdsAt": "Aucune annonce à",
     "seo": {
       "hero": {
-        "title": "Annonces Escortes & Libertines Premium",
-        "description": "Découvrez <strong>SexElite</strong>, la plateforme N°1 d'annonces d'<strong>escortes</strong> et de rencontres <strong>libertines</strong>.",
-        "profilesAvailable": "Plus de {{count}} profils vérifiés d'escorts de luxe, accompagnatrices et libertines vous attendent.",
+        "title": "Annonces & Rencontres Libertines Premium",
+        "description": "Découvrez <strong>SexElite</strong>, la plateforme N°1 d'annonces et de rencontres <strong>libertines</strong>.",
+        "profilesAvailable": "Plus de {{count}} profils vérifiés de luxe, accompagnatrices et libertines vous attendent.",
         "loadingProfiles": "Chargement des profils..."
       },
       "whyChoose": {
         "title": "🌟 Pourquoi choisir SexElite ?",
-        "verifiedProfiles": "Profils vérifiés - Toutes nos escortes sont authentiques",
+        "verifiedProfiles": "Profils vérifiés - Tous nos profils sont authentiques",
         "absoluteDiscretion": "Discrétion absolue - Confidentialité garantie",
         "largeSelection": "Large sélection - Plus de {{count}} annonces disponibles",
-        "premiumEscorts": "Escorts premium - Accompagnatrices de luxe",
+        "premiumEscorts": "Profils premium - Accompagnatrices de luxe",
         "dailyUpdate": "Mise à jour quotidienne - Nouvelles annonces chaque jour",
         "loading": "Chargement..."
       },
       "topCities": {
         "title": "📍 Villes principales",
-        "description": "Trouvez des <strong>escortes</strong> et rencontres <strong>libertines</strong> dans toutes les principales villes :",
+        "description": "Trouvez des rencontres <strong>libertines</strong> dans toutes les principales villes :",
         "mostActive": "La plus active",
         "andMore": "et plus encore...",
         "loadingCities": "Chargement des villes...",
@@ -359,9 +359,9 @@
         "listings": "annonces"
       },
       "aboutSection": {
-        "title": "💎 Rencontres libertines et escorts de luxe",
-        "description1": "<strong>SexElite</strong> est votre destination privilégiée pour trouver des <strong>escortes premium</strong> et des rencontres <strong>libertines</strong>. Notre plateforme met en relation des clients exigeants avec des <strong>accompagnatrices professionnelles</strong> qui offrent des services haut de gamme.",
-        "description2": "Que vous recherchiez une <strong>escort girl</strong> pour un dîner d'affaires, une soirée mondaine ou un moment d'intimité, nos profils vérifiés vous garantissent des rencontres de qualité dans un cadre totalement discret et sécurisé."
+        "title": "💎 Rencontres libertines de luxe",
+        "description1": "<strong>SexElite</strong> est votre destination privilégiée pour trouver des rencontres <strong>libertines premium</strong>. Notre plateforme met en relation des clients exigeants avec des <strong>accompagnatrices professionnelles</strong> qui offrent des services haut de gamme.",
+        "description2": "Que vous recherchiez une <strong>compagnie</strong> pour un dîner d'affaires, une soirée mondaine ou un moment d'intimité, nos profils vérifiés vous garantissent des rencontres de qualité dans un cadre totalement discret et sécurisé."
       }
     }
   },

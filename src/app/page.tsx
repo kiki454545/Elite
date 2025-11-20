@@ -8,29 +8,25 @@ import { DynamicMetadata } from '@/components/DynamicMetadata'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'SexElite - Annonces Escortes & Libertines Premium | Plus de 270 Profils',
-  description: 'SexElite : Plateforme N°1 d\'annonces escortes et libertines. Découvrez plus de 270 profils vérifiés d\'escorts de luxe, accompagnatrices et libertines. Discrétion absolue garantie.',
+  title: 'SexElite - Annonces & Rencontres Libertines Premium | Plus de 270 Profils',
+  description: 'SexElite : Plateforme N°1 d\'annonces et rencontres libertines. Découvrez plus de 270 profils vérifiés de luxe, accompagnatrices et libertines. Discrétion absolue garantie.',
   keywords: [
     'sexelite',
-    'escorte',
-    'escort',
     'libertine',
-    'annonces escortes',
-    'escort premium',
-    'escorts vérifiées',
-    'accompagnatrice',
-    'rencontre libertine',
     'annonces libertines',
-    'escort girl',
-    'plateforme escort',
+    'rencontre libertine',
+    'accompagnatrice',
+    'profils premium',
+    'accompagnatrice de luxe',
+    'plateforme rencontres',
     'la valette',
     'st julians',
     'sliema',
     'malte'
   ],
   openGraph: {
-    title: 'SexElite - Annonces Escortes & Libertines Premium',
-    description: 'Plus de 270 profils vérifiés d\'escorts et libertines de luxe',
+    title: 'SexElite - Annonces & Rencontres Libertines Premium',
+    description: 'Plus de 270 profils vérifiés de luxe et libertines',
     type: 'website',
     url: 'https://sexelite.eu',
     siteName: 'SexElite',
