@@ -11,8 +11,20 @@ import { AgeVerificationModal } from '@/components/AgeVerificationModal'
 import { Footer } from '@/components/Footer'
 
 export const metadata: Metadata = {
-  title: 'SexElite',
-  description: 'Plateforme d\'annonce Libertine',
+  title: 'SexElite - Annonces d\'Escorts de Luxe',
+  description: 'Plateforme d\'annonces libertines premium. Découvrez des profils vérifiés d\'escorts de luxe à Malte.',
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: 'any' }
+    ],
+    apple: '/favicon.svg',
+  },
+  openGraph: {
+    title: 'SexElite - Annonces d\'Escorts de Luxe',
+    description: 'Plateforme d\'annonces libertines premium',
+    type: 'website',
+  },
 }
 
 export default function RootLayout({
