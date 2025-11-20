@@ -6,7 +6,9 @@ import { CountryProvider } from '@/contexts/CountryContext'
 import { LanguageProvider } from '@/contexts/LanguageContext'
 import { MessagesProvider } from '@/contexts/MessagesContext'
 import { CityFilterProvider } from '@/contexts/CityFilterContext'
+import { AdsProvider } from '@/contexts/AdsContext'
 import { AgeVerificationModal } from '@/components/AgeVerificationModal'
+import { Footer } from '@/components/Footer'
 
 export const metadata: Metadata = {
   title: 'SexElite',
@@ -20,15 +22,20 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr">
-      <body className="antialiased overflow-x-hidden">
+      <body className="antialiased overflow-x-hidden flex flex-col min-h-screen">
         <AuthProvider>
           <LanguageProvider>
             <FavoritesProvider>
               <MessagesProvider>
                 <CountryProvider>
                   <CityFilterProvider>
-                    <AgeVerificationModal />
-                    {children}
+                    <AdsProvider>
+                      <AgeVerificationModal />
+                      <div className="flex-1">
+                        {children}
+                      </div>
+                      <Footer />
+                    </AdsProvider>
                   </CityFilterProvider>
                 </CountryProvider>
               </MessagesProvider>

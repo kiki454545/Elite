@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { MapPin, X } from 'lucide-react'
-import { useAds } from '@/hooks/useAds'
+import { useAdsContext } from '@/contexts/AdsContext'
 import { useCountry } from '@/contexts/CountryContext'
 import { useCityFilter } from '@/contexts/CityFilterContext'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -14,8 +14,8 @@ export function AdsStats() {
   const { t } = useLanguage()
   const [isMobile, setIsMobile] = useState(false)
 
-  // Charger les annonces depuis Supabase
-  const { ads } = useAds(selectedCountry.code)
+  // Utiliser le contexte partagé des annonces
+  const { ads, loading } = useAdsContext()
 
   // Détecter si on est sur mobile
   useEffect(() => {
@@ -66,7 +66,13 @@ export function AdsStats() {
         {/* Total des annonces */}
         <div className="text-center mb-6">
           <h2 className="text-3xl font-bold text-white mb-2">
-            {totalAds} <span className="text-pink-500">{t('home.adsAvailable')}</span>
+            {loading ? (
+              <span className="text-gray-400">Chargement...</span>
+            ) : (
+              <>
+                {totalAds} <span className="text-pink-500">{t('home.adsAvailable')}</span>
+              </>
+            )}
           </h2>
           <p className="text-gray-400 text-sm">
             {t('home.in')} {selectedCountry.name}
@@ -94,7 +100,7 @@ export function AdsStats() {
         )}
 
         {/* Top villes */}
-        {topCities.length > 0 && (
+        {!loading && topCities.length > 0 && (
           <div>
             <h3 className="text-white font-semibold mb-3 text-center">
               {t('home.mostActiveCities')}

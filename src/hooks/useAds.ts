@@ -66,7 +66,7 @@ export function useAds(country?: string, city?: string) {
 
       const { data: profilesData, error: profilesError} = await supabase
         .from('profiles')
-        .select('id, username, age, rank')
+        .select('id, username, age, rank, verified')
         .in('id', userIds)
 
       if (profilesError) {

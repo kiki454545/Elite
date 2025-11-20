@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { Heart, MapPin, Eye, ChevronLeft, ChevronRight, Loader2, X, Check, MessageCircle } from 'lucide-react'
 import { RANK_CONFIG, RankType } from '@/types/profile'
@@ -11,7 +11,7 @@ import { useCountry } from '@/contexts/CountryContext'
 import { useCityFilter } from '@/contexts/CityFilterContext'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useRouter } from 'next/navigation'
-import { useAds } from '@/hooks/useAds'
+import { useAdsContext } from '@/contexts/AdsContext'
 
 function RankBadge({ rank }: { rank: RankType }) {
   if (!rank || rank === 'standard') return null
@@ -45,16 +45,21 @@ export function ProfileGrid() {
     setTimeout(() => setToast(null), 3000)
   }
 
-  // Charger les annonces depuis Supabase - attendre que la détection du pays soit terminée
-  const { ads, loading, error } = useAds(
-    isDetectingCountry ? undefined : selectedCountry.code,
-    selectedCity || undefined
-  )
+  // Utiliser le contexte partagé des annonces
+  const { ads: allAds, loading, error } = useAdsContext()
+
+  // Filtrer par ville si une ville est sélectionnée
+  const filteredAds = useMemo(() => {
+    if (!selectedCity) return allAds
+    return allAds.filter(ad => ad.location === selectedCity)
+  }, [allAds, selectedCity])
 
   // Trier par rank (Elite > VIP > Plus > Standard)
-  const sortedAds = [...ads].sort((a, b) => {
-    return RANK_CONFIG[b.rank].priority - RANK_CONFIG[a.rank].priority
-  })
+  const sortedAds = useMemo(() => {
+    return [...filteredAds].sort((a, b) => {
+      return RANK_CONFIG[b.rank].priority - RANK_CONFIG[a.rank].priority
+    })
+  }, [filteredAds])
 
   const handleViewAd = (adId: string) => {
     router.push(`/ads/${adId}`)
