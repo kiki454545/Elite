@@ -233,13 +233,13 @@ export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderP
           {/* Language Selector - Toggle button */}
           <button
             onClick={() => setLanguage(language === 'fr' ? 'en' : 'fr')}
-            className="flex items-center gap-1 bg-gray-800/50 hover:bg-gray-700/50 px-2 py-1 rounded-lg border border-gray-700 transition-colors"
+            className="flex items-center gap-1.5 bg-gray-800/50 hover:bg-gray-700/50 px-2 py-1 rounded-lg border border-gray-700 transition-colors"
             title={language === 'fr' ? 'Switch to English' : 'Passer en Français'}
           >
-            <div className="w-5 h-4 md:w-6 md:h-5">
+            <div className="w-5 h-4 md:w-7 md:h-5">
               {language === 'fr' ? <FrenchFlag className="w-8 h-6" /> : <BritishFlag className="w-8 h-6" />}
             </div>
-            <ChevronDown className="w-3 h-3 text-gray-400" />
+            <ChevronDown className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-300" />
           </button>
         </div>
       </div>
