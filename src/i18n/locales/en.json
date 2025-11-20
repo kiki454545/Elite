@@ -335,23 +335,23 @@
     "noAdsAt": "No listings at",
     "seo": {
       "hero": {
-        "title": "Premium Libertine Listings & Encounters",
-        "description": "Discover <strong>SexElite</strong>, the #1 platform for <strong>libertine</strong> listings and encounters.",
-        "profilesAvailable": "Over {{count}} verified luxury profiles, companions and libertines await you.",
+        "title": "Premium Escort & Libertine Listings",
+        "description": "Discover <strong>SexElite</strong>, the #1 platform for <strong>escort</strong> and <strong>libertine</strong> listings.",
+        "profilesAvailable": "Over {{count}} verified profiles of luxury escorts, companions and libertines await you.",
         "loadingProfiles": "Loading profiles..."
       },
       "whyChoose": {
         "title": "🌟 Why choose SexElite?",
-        "verifiedProfiles": "Verified profiles - All our profiles are authentic",
+        "verifiedProfiles": "Verified profiles - All our escorts are authentic",
         "absoluteDiscretion": "Absolute discretion - Confidentiality guaranteed",
         "largeSelection": "Large selection - Over {{count}} listings available",
-        "premiumEscorts": "Premium profiles - Luxury companions",
+        "premiumEscorts": "Premium escorts - Luxury companions",
         "dailyUpdate": "Daily updates - New listings every day",
         "loading": "Loading..."
       },
       "topCities": {
         "title": "📍 Top Cities",
-        "description": "Find <strong>libertine</strong> encounters in all major cities:",
+        "description": "Find <strong>escorts</strong> and <strong>libertine</strong> encounters in all major cities:",
         "mostActive": "Most active",
         "andMore": "and more...",
         "loadingCities": "Loading cities...",
@@ -359,9 +359,9 @@
         "listings": "listings"
       },
       "aboutSection": {
-        "title": "💎 Luxury libertine encounters",
-        "description1": "<strong>SexElite</strong> is your preferred destination to find <strong>premium libertine</strong> encounters. Our platform connects discerning clients with <strong>professional companions</strong> offering high-end services.",
-        "description2": "Whether you're looking for <strong>companionship</strong> for a business dinner, a social event, or an intimate moment, our verified profiles guarantee quality encounters in a completely discreet and secure environment."
+        "title": "💎 Libertine encounters and luxury escorts",
+        "description1": "<strong>SexElite</strong> is your preferred destination to find <strong>premium escorts</strong> and <strong>libertine</strong> encounters. Our platform connects discerning clients with <strong>professional companions</strong> offering high-end services.",
+        "description2": "Whether you're looking for an <strong>escort girl</strong> for a business dinner, a social event, or an intimate moment, our verified profiles guarantee quality encounters in a completely discreet and secure environment."
       }
     }
   },
