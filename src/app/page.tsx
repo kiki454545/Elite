@@ -2,25 +2,26 @@ import { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'ServerBoost - Publicité Premium pour Serveurs Minecraft',
+  title: 'SexElite MinecraftBoost - Publicité Premium pour Serveurs Minecraft',
   description: 'Boostez la visibilité de votre serveur Minecraft avec nos packages publicitaires. Des milliers de joueurs actifs chaque jour. Résultats garantis !',
   keywords: [
     'minecraft',
     'serveur minecraft',
     'publicité minecraft',
     'promotion serveur',
-    'serverboost',
+    'sexelite',
+    'minecraftboost',
     'pub serveur minecraft',
     'minecraft advertising',
     'serveur pvp',
     'serveur survie',
   ],
   openGraph: {
-    title: 'ServerBoost - Publicité Premium pour Serveurs Minecraft',
+    title: 'SexElite MinecraftBoost - Publicité Premium pour Serveurs Minecraft',
     description: 'Boostez votre serveur Minecraft avec nos packages publicitaires premium',
     type: 'website',
     url: 'https://sexelite.eu',
-    siteName: 'ServerBoost',
+    siteName: 'SexElite MinecraftBoost',
   },
   alternates: {
     canonical: '/',
@@ -39,7 +40,10 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <span className="text-3xl">⛏️</span>
-            <h1 className="text-2xl font-bold text-white">ServerBoost</h1>
+            <div>
+              <h1 className="text-2xl font-bold text-white">SexElite</h1>
+              <p className="text-xs text-green-400 font-semibold">MinecraftBoost</p>
+            </div>
           </div>
           <Link
             href="/payment"
@@ -97,10 +101,201 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Featured Servers */}
+      <section className="max-w-7xl mx-auto px-4 py-16">
+        <div className="flex items-center justify-between mb-8">
+          <h3 className="text-3xl font-bold text-white">
+            🔥 Serveurs en Vedette
+          </h3>
+          <Link
+            href="/payment"
+            className="text-green-400 hover:text-green-300 font-semibold text-sm"
+          >
+            Être en vedette →
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Server 1 - Featured */}
+          <div className="bg-gradient-to-b from-yellow-900/20 to-gray-800 p-6 rounded-lg border-2 border-yellow-500 relative hover:border-yellow-400 transition-all">
+            <div className="absolute -top-3 right-4 bg-yellow-500 text-black px-3 py-1 rounded-full text-xs font-bold">
+              ⭐ FEATURED
+            </div>
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h4 className="text-xl font-bold text-white mb-1">MegaCraft Network</h4>
+                <p className="text-sm text-gray-400">play.megacraft.net</p>
+              </div>
+              <div className="bg-green-600 px-2 py-1 rounded text-xs font-bold text-white">
+                ONLINE
+              </div>
+            </div>
+            <p className="text-gray-300 text-sm mb-4">
+              Serveur PvP/Faction avec économie avancée. Rejoignez 500+ joueurs actifs ! Events quotidiens et récompenses exclusives.
+            </p>
+            <div className="flex flex-wrap gap-2 mb-4">
+              <span className="bg-gray-700 px-2 py-1 rounded text-xs text-gray-300">🎮 PvP</span>
+              <span className="bg-gray-700 px-2 py-1 rounded text-xs text-gray-300">⚔️ Faction</span>
+              <span className="bg-gray-700 px-2 py-1 rounded text-xs text-gray-300">📦 1.20.4</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-400">👥 587 joueurs</span>
+              <button className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded font-semibold text-white transition-colors">
+                Rejoindre
+              </button>
+            </div>
+          </div>
+
+          {/* Server 2 - Premium */}
+          <div className="bg-gray-800 p-6 rounded-lg border border-green-500 hover:border-green-400 transition-all">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h4 className="text-xl font-bold text-white mb-1">SkyLegends</h4>
+                <p className="text-sm text-gray-400">skylegends.fr</p>
+              </div>
+              <div className="bg-green-600 px-2 py-1 rounded text-xs font-bold text-white">
+                ONLINE
+              </div>
+            </div>
+            <p className="text-gray-300 text-sm mb-4">
+              Le meilleur serveur Skyblock francophone ! Île personnalisable, quêtes uniques et boss raids. Communauté active.
+            </p>
+            <div className="flex flex-wrap gap-2 mb-4">
+              <span className="bg-gray-700 px-2 py-1 rounded text-xs text-gray-300">☁️ Skyblock</span>
+              <span className="bg-gray-700 px-2 py-1 rounded text-xs text-gray-300">🏆 Compétitif</span>
+              <span className="bg-gray-700 px-2 py-1 rounded text-xs text-gray-300">📦 1.19.4</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-400">👥 342 joueurs</span>
+              <button className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded font-semibold text-white transition-colors">
+                Rejoindre
+              </button>
+            </div>
+          </div>
+
+          {/* Server 3 - Pro */}
+          <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 hover:border-green-500 transition-all">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h4 className="text-xl font-bold text-white mb-1">UltraVanilla</h4>
+                <p className="text-sm text-gray-400">ultra-vanilla.net</p>
+              </div>
+              <div className="bg-green-600 px-2 py-1 rounded text-xs font-bold text-white">
+                ONLINE
+              </div>
+            </div>
+            <p className="text-gray-300 text-sm mb-4">
+              Serveur Survie 100% Vanilla. Pas de mods, juste du Minecraft pur ! Communauté mature et bienveillante.
+            </p>
+            <div className="flex flex-wrap gap-2 mb-4">
+              <span className="bg-gray-700 px-2 py-1 rounded text-xs text-gray-300">🌲 Survie</span>
+              <span className="bg-gray-700 px-2 py-1 rounded text-xs text-gray-300">✨ Vanilla</span>
+              <span className="bg-gray-700 px-2 py-1 rounded text-xs text-gray-300">📦 1.20.2</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-400">👥 156 joueurs</span>
+              <button className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded font-semibold text-white transition-colors">
+                Rejoindre
+              </button>
+            </div>
+          </div>
+
+          {/* Server 4 */}
+          <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 hover:border-green-500 transition-all">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h4 className="text-xl font-bold text-white mb-1">PrisonEscape</h4>
+                <p className="text-sm text-gray-400">prison-escape.eu</p>
+              </div>
+              <div className="bg-green-600 px-2 py-1 rounded text-xs font-bold text-white">
+                ONLINE
+              </div>
+            </div>
+            <p className="text-gray-300 text-sm mb-4">
+              Mode Prison unique avec système de prestige. Mine, vends et deviens le plus riche ! Cellules personnalisables.
+            </p>
+            <div className="flex flex-wrap gap-2 mb-4">
+              <span className="bg-gray-700 px-2 py-1 rounded text-xs text-gray-300">🔒 Prison</span>
+              <span className="bg-gray-700 px-2 py-1 rounded text-xs text-gray-300">💰 Économie</span>
+              <span className="bg-gray-700 px-2 py-1 rounded text-xs text-gray-300">📦 1.20.1</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-400">👥 289 joueurs</span>
+              <button className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded font-semibold text-white transition-colors">
+                Rejoindre
+              </button>
+            </div>
+          </div>
+
+          {/* Server 5 */}
+          <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 hover:border-green-500 transition-all">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h4 className="text-xl font-bold text-white mb-1">ArcadeGames+</h4>
+                <p className="text-sm text-gray-400">arcadegames.net</p>
+              </div>
+              <div className="bg-green-600 px-2 py-1 rounded text-xs font-bold text-white">
+                ONLINE
+              </div>
+            </div>
+            <p className="text-gray-300 text-sm mb-4">
+              Hub de mini-jeux : BedWars, SkyWars, BuildBattle, Murder Mystery et plus ! Nouveaux jeux chaque mois.
+            </p>
+            <div className="flex flex-wrap gap-2 mb-4">
+              <span className="bg-gray-700 px-2 py-1 rounded text-xs text-gray-300">🎪 Mini-jeux</span>
+              <span className="bg-gray-700 px-2 py-1 rounded text-xs text-gray-300">🏃 Rapide</span>
+              <span className="bg-gray-700 px-2 py-1 rounded text-xs text-gray-300">📦 1.19.2</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-400">👥 421 joueurs</span>
+              <button className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded font-semibold text-white transition-colors">
+                Rejoindre
+              </button>
+            </div>
+          </div>
+
+          {/* Server 6 */}
+          <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 hover:border-green-500 transition-all">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h4 className="text-xl font-bold text-white mb-1">Pixelmon FR</h4>
+                <p className="text-sm text-gray-400">pixelmon-fr.com</p>
+              </div>
+              <div className="bg-green-600 px-2 py-1 rounded text-xs font-bold text-white">
+                ONLINE
+              </div>
+            </div>
+            <p className="text-gray-300 text-sm mb-4">
+              Serveur Pixelmon français #1. Capture tous les Pokémon dans Minecraft ! Arènes, events et économie équilibrée.
+            </p>
+            <div className="flex flex-wrap gap-2 mb-4">
+              <span className="bg-gray-700 px-2 py-1 rounded text-xs text-gray-300">⚡ Pixelmon</span>
+              <span className="bg-gray-700 px-2 py-1 rounded text-xs text-gray-300">🎮 Moddé</span>
+              <span className="bg-gray-700 px-2 py-1 rounded text-xs text-gray-300">📦 1.16.5</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-400">👥 198 joueurs</span>
+              <button className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded font-semibold text-white transition-colors">
+                Rejoindre
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="text-center mt-8">
+          <Link
+            href="/payment"
+            className="inline-block bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-bold transition-colors shadow-lg"
+          >
+            🚀 Promouvoir Mon Serveur
+          </Link>
+        </div>
+      </section>
+
       {/* Why Choose Us */}
       <section className="max-w-7xl mx-auto px-4 py-16">
         <h3 className="text-3xl font-bold text-white text-center mb-12">
-          ⭐ Pourquoi ServerBoost ?
+          ⭐ Pourquoi SexElite MinecraftBoost ?
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="bg-gray-800 p-8 rounded-lg border border-gray-700">
