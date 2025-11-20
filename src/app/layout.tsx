@@ -32,8 +32,28 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'SexElite',
+    url: 'https://sexelite.eu',
+    description: 'Plateforme N°1 d\'annonces escortes et libertines à Malte',
+    inLanguage: 'fr',
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: 'https://sexelite.eu/search?q={search_term_string}',
+      'query-input': 'required name=search_term_string'
+    }
+  }
+
   return (
     <html lang="fr">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body className="antialiased overflow-x-hidden flex flex-col min-h-screen">
         <AuthProvider>
           <LanguageProvider>
