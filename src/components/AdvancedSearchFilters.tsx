@@ -109,10 +109,10 @@ const PUBIC_HAIR_OPTIONS = [
 ]
 
 const MEETING_PLACES = [
-  { value: 'home', label: 'Chez vous', icon: '🏠' },
+  { value: 'home', label: 'Outcall', icon: '🏠' },
   { value: 'hotel', label: 'Hôtel', icon: '🏨' },
   { value: 'car', label: 'Plan voiture', icon: '🚗' },
-  { value: 'escort', label: "Chez l'escorte", icon: '🏡' },
+  { value: 'escort', label: "Incall", icon: '🏡' },
 ]
 
 const LANGUAGE_OPTIONS = [

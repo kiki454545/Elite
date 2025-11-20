@@ -126,10 +126,10 @@
     },
 
     "meeting": {
-      "atHome": "Chez vous",
+      "atHome": "Outcall",
       "atHotel": "Hôtel",
       "inCar": "Plan voiture",
-      "atEscort": "Chez l'escorte"
+      "atEscort": "Incall"
     },
 
     "languagesList": {

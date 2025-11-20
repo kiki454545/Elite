@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS public.ads (
 
   -- Catégories et services
   categories TEXT[] NOT NULL,
-  meeting_places TEXT[], -- Domicile, Hôtel, Chez vous, Plan voiture
+  meeting_places TEXT[], -- Incall, Hôtel, Outcall, Plan voiture
 
   -- Prix
   price INTEGER,

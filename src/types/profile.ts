@@ -89,10 +89,10 @@ export interface Profile {
   pubic_hair?: 'rasee' | 'taillee' | 'naturelle' | 'epilee'
 
   // Lieux de rendez-vous
-  meeting_at_home?: boolean // Chez vous
+  meeting_at_home?: boolean // Outcall
   meeting_at_hotel?: boolean // Hôtel
   meeting_in_car?: boolean // Plan voiture
-  meeting_at_escort?: boolean // Chez l'escorte
+  meeting_at_escort?: boolean // Incall
 
   // Autres
   accepts_couples?: boolean
