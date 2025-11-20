@@ -1,0 +1,11 @@
+# Fichier robots.txt pour SexElite
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /auth/verify-email
+Disallow: /messages/
+
+# Sitemap
+Sitemap: https://votre-domaine.com/sitemap.xml
