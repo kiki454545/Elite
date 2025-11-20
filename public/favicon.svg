@@ -1,29 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Minecraft Grass Block style favicon -->
   <defs>
-    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#ec4899;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#db2777;stop-opacity:1" />
-    </linearGradient>
+    <style>
+      .grass-top { fill: #7CBD6B; }
+      .dirt-side { fill: #8B6F47; }
+      .grass-side { fill: #5E9C4B; }
+    </style>
   </defs>
 
-  <!-- Cercle de fond -->
-  <circle cx="50" cy="50" r="48" fill="#1a1a1a" stroke="url(#grad1)" stroke-width="2"/>
+  <!-- Top face (grass) -->
+  <polygon class="grass-top" points="32,10 60,24 32,38 4,24"/>
 
-  <!-- Couronne stylisée -->
-  <g transform="translate(50,50)">
-    <!-- Base de la couronne -->
-    <path d="M -20,15 L -15,8 L -10,15 L -5,8 L 0,15 L 5,8 L 10,15 L 15,8 L 20,15 L 20,20 L -20,20 Z"
-          fill="url(#grad1)" stroke="#ec4899" stroke-width="0.5"/>
+  <!-- Left face (dirt with grass stripe) -->
+  <polygon class="dirt-side" points="4,24 4,52 32,66 32,38"/>
+  <polygon class="grass-side" points="4,24 4,28 32,42 32,38"/>
 
-    <!-- Pointes de la couronne -->
-    <path d="M -15,8 L -13,0 L -11,8 Z M -5,8 L -3,0 L -1,8 Z M 5,8 L 7,0 L 9,8 Z M 15,8 L 17,0 L 19,8 Z"
-          fill="#fbbf24" stroke="#f59e0b" stroke-width="0.5"/>
-
-    <!-- Diamant central -->
-    <path d="M 0,-10 L 5,-5 L 0,5 L -5,-5 Z"
-          fill="#fbbf24" stroke="#f59e0b" stroke-width="0.5" opacity="0.9"/>
-
-    <!-- Lettre E stylisée -->
-    <text x="-8" y="5" font-family="serif" font-size="24" font-weight="bold" fill="#ffffff">E</text>
-  </g>
+  <!-- Right face (dirt with grass stripe) -->
+  <polygon class="dirt-side" points="32,38 32,66 60,52 60,24"/>
+  <polygon class="grass-side" points="32,38 32,42 60,28 60,24"/>
 </svg>

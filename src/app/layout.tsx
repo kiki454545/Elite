@@ -7,12 +7,9 @@ import { LanguageProvider } from '@/contexts/LanguageContext'
 import { MessagesProvider } from '@/contexts/MessagesContext'
 import { CityFilterProvider } from '@/contexts/CityFilterContext'
 import { AdsProvider } from '@/contexts/AdsContext'
-import { AgeVerificationModal } from '@/components/AgeVerificationModal'
-import { Footer } from '@/components/Footer'
-
 export const metadata: Metadata = {
-  title: 'SexElite - Annonces d\'Escorts de Luxe',
-  description: 'Plateforme d\'annonces libertines premium. Découvrez des profils vérifiés d\'escorts de luxe à Malte.',
+  title: 'SexElite MinecraftBoost - Publicité Premium pour Serveurs Minecraft',
+  description: 'Boostez la visibilité de votre serveur Minecraft avec nos packages publicitaires premium. Atteignez des milliers de joueurs en quelques heures.',
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },
@@ -21,8 +18,8 @@ export const metadata: Metadata = {
     apple: '/favicon.svg',
   },
   openGraph: {
-    title: 'SexElite - Annonces d\'Escorts de Luxe',
-    description: 'Plateforme d\'annonces libertines premium',
+    title: 'SexElite MinecraftBoost - Publicité Premium pour Serveurs Minecraft',
+    description: 'Boostez la visibilité de votre serveur Minecraft',
     type: 'website',
   },
 }
@@ -35,9 +32,9 @@ export default function RootLayout({
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: 'SexElite',
+    name: 'SexElite MinecraftBoost',
     url: 'https://sexelite.eu',
-    description: 'Plateforme N°1 d\'annonces escortes et libertines à Malte',
+    description: 'Plateforme de publicité premium pour serveurs Minecraft',
     inLanguage: 'fr',
     potentialAction: {
       '@type': 'SearchAction',
@@ -62,11 +59,9 @@ export default function RootLayout({
                 <CountryProvider>
                   <CityFilterProvider>
                     <AdsProvider>
-                      <AgeVerificationModal />
                       <div className="flex-1">
                         {children}
                       </div>
-                      <Footer />
                     </AdsProvider>
                   </CityFilterProvider>
                 </CountryProvider>
