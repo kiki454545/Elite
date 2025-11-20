@@ -1,21 +1,23 @@
 'use client'
 
 import { useAllAds } from '@/hooks/useAllAds'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export function SeoHero() {
   const { totalAds, loading } = useAllAds()
+  const { t } = useLanguage()
 
   return (
     <section className="max-w-7xl mx-auto px-4 py-8 text-center">
       <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
-        Annonces Escortes & Libertines Premium
+        {t('home.seo.hero.title')}
       </h1>
       <p className="text-lg text-gray-300 mb-6 max-w-3xl mx-auto">
-        Découvrez <strong className="text-pink-400">SexElite</strong>, la plateforme N°1 d'annonces d'<strong>escortes</strong> et de rencontres <strong>libertines</strong>.
+        <span dangerouslySetInnerHTML={{ __html: t('home.seo.hero.description') }} />
         {loading ? (
-          <> Chargement des profils...</>
+          <> {t('home.seo.hero.loadingProfiles')}</>
         ) : (
-          <> Plus de {totalAds} profils vérifiés d'escorts de luxe, accompagnatrices et libertines vous attendent.</>
+          <> {t('home.seo.hero.profilesAvailable', { count: totalAds })}</>
         )}
       </p>
     </section>
@@ -24,45 +26,46 @@ export function SeoHero() {
 
 export function SeoFooterContent() {
   const { totalAds, topCities, loading } = useAllAds()
+  const { t } = useLanguage()
 
   return (
     <section className="max-w-7xl mx-auto px-4 py-12 text-gray-300">
       <div className="grid md:grid-cols-2 gap-8 mb-12">
         <div>
           <h2 className="text-2xl font-bold text-white mb-4">
-            🌟 Pourquoi choisir SexElite ?
+            {t('home.seo.whyChoose.title')}
           </h2>
           <ul className="space-y-3">
-            <li>✅ <strong>Profils vérifiés</strong> - Toutes nos escortes sont authentiques</li>
-            <li>✅ <strong>Discrétion absolue</strong> - Confidentialité garantie</li>
+            <li>✅ {t('home.seo.whyChoose.verifiedProfiles')}</li>
+            <li>✅ {t('home.seo.whyChoose.absoluteDiscretion')}</li>
             {loading ? (
-              <li>✅ <strong>Large sélection</strong> - Chargement...</li>
+              <li>✅ {t('home.seo.whyChoose.loading')}</li>
             ) : (
-              <li>✅ <strong>Large sélection</strong> - Plus de {totalAds} annonces disponibles</li>
+              <li>✅ {t('home.seo.whyChoose.largeSelection', { count: totalAds })}</li>
             )}
-            <li>✅ <strong>Escorts premium</strong> - Accompagnatrices de luxe</li>
-            <li>✅ <strong>Mise à jour quotidienne</strong> - Nouvelles annonces chaque jour</li>
+            <li>✅ {t('home.seo.whyChoose.premiumEscorts')}</li>
+            <li>✅ {t('home.seo.whyChoose.dailyUpdate')}</li>
           </ul>
         </div>
 
         <div>
           <h2 className="text-2xl font-bold text-white mb-4">
-            📍 Villes principales
+            {t('home.seo.topCities.title')}
           </h2>
           <p className="mb-4">
-            Trouvez des <strong>escortes</strong> et rencontres <strong>libertines</strong> dans toutes les principales villes :
+            <span dangerouslySetInnerHTML={{ __html: t('home.seo.topCities.description') }} />
           </p>
           {loading ? (
-            <p className="text-gray-400">Chargement des villes...</p>
+            <p className="text-gray-400">{t('home.seo.topCities.loadingCities')}</p>
           ) : (
             <ul className="space-y-2">
               {topCities.map(({ city, count }, index) => (
                 <li key={city}>
-                  • <strong>{city}</strong> - {count} {count > 1 ? 'annonces' : 'annonce'}
-                  {index === 0 && ' - La plus active'}
+                  • <strong>{city}</strong> - {count} {count > 1 ? t('home.seo.topCities.listings') : t('home.seo.topCities.listing')}
+                  {index === 0 && ` - ${t('home.seo.topCities.mostActive')}`}
                 </li>
               ))}
-              {topCities.length > 0 && <li className="text-gray-500">et plus encore...</li>}
+              {topCities.length > 0 && <li className="text-gray-500">{t('home.seo.topCities.andMore')}</li>}
             </ul>
           )}
         </div>
@@ -70,15 +73,13 @@ export function SeoFooterContent() {
 
       <div className="bg-gray-900 p-6 rounded-lg">
         <h2 className="text-2xl font-bold text-white mb-4">
-          💎 Rencontres libertines et escorts de luxe
+          {t('home.seo.aboutSection.title')}
         </h2>
         <p className="mb-4">
-          <strong>SexElite</strong> est votre destination privilégiée pour trouver des <strong>escortes premium</strong> et des rencontres <strong>libertines</strong>.
-          Notre plateforme met en relation des clients exigeants avec des <strong>accompagnatrices professionnelles</strong> qui offrent des services haut de gamme.
+          <span dangerouslySetInnerHTML={{ __html: t('home.seo.aboutSection.description1') }} />
         </p>
         <p>
-          Que vous recherchiez une <strong>escort girl</strong> pour un dîner d'affaires, une soirée mondaine ou un moment d'intimité,
-          nos profils vérifiés vous garantissent des rencontres de qualité dans un cadre totalement discret et sécurisé.
+          <span dangerouslySetInnerHTML={{ __html: t('home.seo.aboutSection.description2') }} />
         </p>
       </div>
     </section>
