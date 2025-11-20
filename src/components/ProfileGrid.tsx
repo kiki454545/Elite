@@ -110,7 +110,7 @@ export function ProfileGrid() {
 
   const getCurrentPhotoIndex = (adId: string) => currentPhotoIndices[adId] || 0
 
-  const getPhotoUrl = (ad: typeof ads[0], index: number) => {
+  const getPhotoUrl = (ad: typeof allAds[0], index: number) => {
     // Utiliser les vraies photos si disponibles, sinon photos de placeholder
     if (ad.photos && ad.photos.length > 0) {
       return ad.photos[index] || ad.photos[0]
@@ -118,7 +118,7 @@ export function ProfileGrid() {
     return `https://picsum.photos/seed/${ad.id}-${index}/400/600`
   }
 
-  const getPhotoCount = (ad: typeof ads[0]) => {
+  const getPhotoCount = (ad: typeof allAds[0]) => {
     return ad.photos.length > 0 ? ad.photos.length : 3 // Default à 3 photos si pas de photos définies
   }
 
