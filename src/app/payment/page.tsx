@@ -8,6 +8,7 @@ const packages = {
   starter: {
     name: 'Starter',
     price: 5,
+    coinPrice: 75,
     duration: '24 heures',
     icon: '🌱',
     features: [
@@ -20,6 +21,7 @@ const packages = {
   pro: {
     name: 'Pro',
     price: 12,
+    coinPrice: 180,
     duration: '3 jours',
     icon: '🔥',
     features: [
@@ -33,6 +35,7 @@ const packages = {
   premium: {
     name: 'Premium',
     price: 20,
+    coinPrice: 300,
     duration: '7 jours',
     icon: '👑',
     features: [
@@ -148,6 +151,7 @@ function PaymentContent() {
                             <div className="text-2xl mb-1">{pkg.icon}</div>
                             <div className="text-sm font-bold text-white">{pkg.name}</div>
                             <div className="text-xs text-gray-400">{pkg.price}€</div>
+                            <div className="text-xs text-amber-400">💰 {pkg.coinPrice} EC</div>
                           </button>
                         ))}
                       </div>
@@ -353,18 +357,20 @@ function PaymentContent() {
               </div>
 
               <div className="border-t border-gray-700 pt-4 mb-4">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-gray-400">Sous-total</span>
-                  <span className="text-white">{currentPackage.price}€</span>
-                </div>
                 <div className="flex justify-between items-center mb-4">
-                  <span className="text-gray-400">TVA (20%)</span>
-                  <span className="text-white">{(currentPackage.price * 0.2).toFixed(2)}€</span>
+                  <span className="text-gray-400">Prix en €</span>
+                  <span className="text-white font-bold">{currentPackage.price}€</span>
                 </div>
-                <div className="flex justify-between items-center text-lg font-bold border-t border-gray-700 pt-4">
-                  <span className="text-white">Total</span>
-                  <span className="text-green-400">{(currentPackage.price * 1.2).toFixed(2)}€</span>
+                <div className="flex justify-between items-center mb-4 text-lg font-bold border-t border-gray-700 pt-4">
+                  <span className="text-amber-400">Prix en EliteCoins</span>
+                  <span className="text-amber-400">💰 {currentPackage.coinPrice} EC</span>
                 </div>
+                <Link
+                  href="/shop"
+                  className="block w-full text-center bg-amber-600 hover:bg-amber-700 text-white py-2 rounded-lg font-semibold transition-colors mb-2"
+                >
+                  Acheter des EliteCoins
+                </Link>
               </div>
 
               <div className="bg-green-900/20 border border-green-700 p-3 rounded-lg">
