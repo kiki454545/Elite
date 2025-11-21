@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Coins, Sparkles, ShoppingCart, Shield, TrendingUp } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
 
 interface CoinPackage {
   id: string
@@ -69,12 +70,71 @@ const COIN_PACKAGES: CoinPackage[] = [
 export default function ShopPage() {
   const router = useRouter()
   const [eliteCoins, setEliteCoins] = useState<number>(0)
-  const [showPaymentModal, setShowPaymentModal] = useState(false)
-  const [currentPurchase, setCurrentPurchase] = useState<{ packageId: string, price: number, coins: number } | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchUserCoins = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('elite_coins')
+          .eq('id', user.id)
+          .single()
+
+        if (profile) {
+          setEliteCoins(profile.elite_coins || 0)
+        }
+      }
+    }
+
+    fetchUserCoins()
+  }, [])
 
   const handleBuyCoins = async (packageId: string, price: number, coins: number) => {
-    setCurrentPurchase({ packageId, price, coins })
-    setShowPaymentModal(true)
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      // Vérifier que l'utilisateur est connecté
+      const { data: { user } } = await supabase.auth.getUser()
+
+      if (!user) {
+        setError('Vous devez être connecté pour acheter des EliteCoins')
+        router.push('/auth')
+        return
+      }
+
+      // Créer une session Stripe Checkout
+      const response = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          packageId,
+          userId: user.id,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erreur lors de la création du paiement')
+      }
+
+      // Rediriger vers Stripe Checkout
+      if (data.url) {
+        window.location.href = data.url
+      }
+    } catch (err: any) {
+      console.error('Payment error:', err)
+      setError(err.message || 'Une erreur est survenue')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -219,52 +279,22 @@ export default function ShopPage() {
                 <motion.button
                   whileTap={{ scale: 0.95 }}
                   onClick={() => handleBuyCoins(pkg.id, pkg.price, pkg.coins + (pkg.bonus || 0))}
-                  className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 rounded-lg font-bold transition-all flex items-center justify-center gap-2 shadow-lg"
+                  disabled={isLoading}
+                  className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 rounded-lg font-bold transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <ShoppingCart className="w-5 h-5" />
-                  <span>Acheter</span>
+                  <span>{isLoading ? 'Chargement...' : 'Acheter'}</span>
                 </motion.button>
               </div>
             </motion.div>
           ))}
         </div>
 
-        {/* Payment Modal */}
-        {showPaymentModal && currentPurchase && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-gray-900 rounded-2xl border-2 border-gray-700 max-w-md w-full p-8"
-            >
-              <div className="text-center mb-6">
-                <Coins className="w-16 h-16 text-amber-400 mx-auto mb-4" />
-                <h2 className="text-2xl font-bold text-white mb-2">
-                  Achat de {currentPurchase.coins} EliteCoins
-                </h2>
-                <p className="text-gray-400">
-                  Prix: <span className="text-white font-bold">{currentPurchase.price}€</span>
-                </p>
-              </div>
-
-              {/* Dedipass Widget Placeholder */}
-              <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 mb-6">
-                <p className="text-center text-gray-300 mb-4">
-                  Paiement sécurisé via Dedipass
-                </p>
-                <div className="text-center text-sm text-gray-400">
-                  Le widget de paiement Dedipass apparaîtra ici
-                </div>
-              </div>
-
-              {/* Close Button */}
-              <button
-                onClick={() => setShowPaymentModal(false)}
-                className="w-full bg-gray-800 hover:bg-gray-700 text-white py-3 rounded-lg font-bold transition-colors"
-              >
-                Annuler
-              </button>
-            </motion.div>
+        {/* Error Message */}
+        {error && (
+          <div className="fixed bottom-4 right-4 bg-red-900 border border-red-700 text-white px-6 py-4 rounded-lg shadow-lg max-w-md">
+            <p className="font-bold mb-1">Erreur</p>
+            <p className="text-sm">{error}</p>
           </div>
         )}
 
