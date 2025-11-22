@@ -102,16 +102,23 @@ export default function CreateAdPage() {
         const fileExt = file.name.split('.').pop()
         const fileName = `${user.id}/${Date.now()}_${i}.${fileExt}`
 
-        const { data, error } = await supabase.storage
-          .from('ad-photos')
-          .upload(fileName, file, {
-            cacheControl: '3600',
-            upsert: false
-          })
+        // Utiliser fetch directement pour éviter le problème multipart
+        const uploadUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/ad-photos/${fileName}`
 
-        if (error) {
-          console.error('Erreur upload photo:', error)
-          throw new Error(`Erreur lors de l'upload de la photo ${i + 1}: ${error.message}. Vérifiez que le bucket 'ad-photos' existe et que vous avez les bonnes permissions.`)
+        const uploadResponse = await fetch(uploadUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+            'Content-Type': file.type,
+            'x-upsert': 'false'
+          },
+          body: file
+        })
+
+        if (!uploadResponse.ok) {
+          const errorText = await uploadResponse.text()
+          console.error('Erreur upload photo:', errorText)
+          throw new Error(`Erreur lors de l'upload de la photo ${i + 1}: ${errorText}`)
         }
 
         // Récupérer l'URL publique
@@ -131,16 +138,23 @@ export default function CreateAdPage() {
         const fileExt = videoFile.name.split('.').pop()
         const videoFileName = `${user.id}/${Date.now()}_video.${fileExt}`
 
-        const { data, error } = await supabase.storage
-          .from('ad-videos')
-          .upload(videoFileName, videoFile, {
-            cacheControl: '3600',
-            upsert: false
-          })
+        // Utiliser fetch directement pour éviter le problème multipart
+        const uploadUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/ad-videos/${videoFileName}`
 
-        if (error) {
-          console.error('Erreur upload vidéo:', error)
-          throw new Error(`Erreur lors de l'upload de la vidéo: ${error.message}`)
+        const uploadResponse = await fetch(uploadUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+            'Content-Type': videoFile.type,
+            'x-upsert': 'false'
+          },
+          body: videoFile
+        })
+
+        if (!uploadResponse.ok) {
+          const errorText = await uploadResponse.text()
+          console.error('Erreur upload vidéo:', errorText)
+          throw new Error(`Erreur lors de l'upload de la vidéo: ${errorText}`)
         }
 
         // Récupérer l'URL publique
