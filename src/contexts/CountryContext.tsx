@@ -24,7 +24,8 @@ export const COUNTRIES: Country[] = [
 ]
 
 // Pays avec restrictions strictes (ne peuvent voir que leur propre pays)
-const RESTRICTED_COUNTRIES = ['FR']
+// TEMPORAIREMENT DÉSACTIVÉ : Les utilisateurs français peuvent naviguer librement
+const RESTRICTED_COUNTRIES: string[] = []
 
 interface CountryContextType {
   selectedCountry: Country
