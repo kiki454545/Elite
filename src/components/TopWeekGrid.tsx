@@ -128,7 +128,7 @@ export function TopWeekGrid() {
             description: item.description || '',
             verified: item.verified || false,
             online: false,
-            views: item.weekly_views || 0, // Afficher les vues hebdomadaires
+            views: item.views || 0, // Afficher les vues totales (les weekly_views sont uniquement pour le classement)
             favorites: item.favorites_count || 0,
             rank: (profile?.rank || 'standard') as RankType,
             video: item.video_url,
