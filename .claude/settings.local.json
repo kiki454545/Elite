@@ -130,7 +130,9 @@
       "Bash(node scripts/check_ads_cities.mjs:*)",
       "Bash(node scripts/create_cities_table.mjs:*)",
       "Bash(c:/Users/ekino/OneDrive/Bureau/site-modern/src/components/ProfileGrid.tsx.bak)",
-      "Bash(node scripts/setup_weekly_views.mjs:*)"
+      "Bash(node scripts/setup_weekly_views.mjs:*)",
+      "Bash(node scripts/check_premium_users.mjs:*)",
+      "Bash(node scripts/reset_specific_ranks.mjs)"
     ],
     "deny": [],
     "ask": []

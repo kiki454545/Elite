@@ -26,7 +26,9 @@
     "favorites": "Favoris",
     "profile": "Profil",
     "login": "Connexion/Inscription",
-    "myAds": "Mes annonces"
+    "myAds": "Mes annonces",
+    "topWeek": "Top de la semaine",
+    "premium": "Premium"
   },
   "auth": {
     "login": "Connexion",
@@ -149,6 +151,7 @@
     "about": "À propos"
   },
   "countries": {
+    "ALL": "Choix du Pays",
     "FR": "France",
     "BE": "Belgique",
     "CH": "Suisse",
@@ -159,6 +162,10 @@
     "NL": "Pays-Bas",
     "PT": "Portugal",
     "MT": "Malte"
+  },
+  "topWeek": {
+    "title": "Top de la Semaine",
+    "description": "Découvrez les 20 escortes les plus populaires de la semaine, tous pays confondus"
   },
   "buttons": {
     "contact": "Contacter",

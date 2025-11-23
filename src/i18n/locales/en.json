@@ -26,7 +26,9 @@
     "favorites": "Favorites",
     "profile": "Profile",
     "login": "Login/Sign Up",
-    "myAds": "My listings"
+    "myAds": "My listings",
+    "topWeek": "Top of the week",
+    "premium": "Premium"
   },
   "auth": {
     "login": "Login",
@@ -149,6 +151,7 @@
     "about": "About"
   },
   "countries": {
+    "ALL": "Choose Country",
     "FR": "France",
     "BE": "Belgium",
     "CH": "Switzerland",
@@ -159,6 +162,10 @@
     "NL": "Netherlands",
     "PT": "Portugal",
     "MT": "Malta"
+  },
+  "topWeek": {
+    "title": "Top of the Week",
+    "description": "Discover the 20 most popular escorts of the week, all countries combined"
   },
   "buttons": {
     "contact": "Contact",

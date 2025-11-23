@@ -17,12 +17,38 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<Language>('fr')
 
   useEffect(() => {
-    // Charger la langue depuis localStorage
-    const savedLanguage = localStorage.getItem('language') as Language
-    if (savedLanguage && (savedLanguage === 'fr' || savedLanguage === 'en')) {
-      setLanguageState(savedLanguage)
-      i18n.changeLanguage(savedLanguage)
+    // Détection automatique de la langue basée sur la géolocalisation
+    const detectLanguage = async () => {
+      try {
+        // Détecter le pays via l'API ipapi.co
+        const response = await fetch('https://ipapi.co/json/')
+        const data = await response.json()
+        const countryCode = data.country_code
+
+        console.log('🌍 Pays détecté:', countryCode)
+
+        // Pays francophones : FR, BE, CH, LU
+        const francophoneCountries = ['FR', 'BE', 'CH', 'LU']
+
+        if (francophoneCountries.includes(countryCode)) {
+          setLanguageState('fr')
+          i18n.changeLanguage('fr')
+          console.log('🇫🇷 Langue définie : Français')
+        } else {
+          setLanguageState('en')
+          i18n.changeLanguage('en')
+          console.log('🇬🇧 Langue définie : Anglais')
+        }
+      } catch (error) {
+        // En cas d'erreur, utiliser le français par défaut
+        console.error('Erreur détection langue:', error)
+        setLanguageState('fr')
+        i18n.changeLanguage('fr')
+        console.log('🇫🇷 Langue par défaut : Français (erreur détection)')
+      }
     }
+
+    detectLanguage()
   }, [])
 
   const setLanguage = (lang: Language) => {

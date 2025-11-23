@@ -124,7 +124,7 @@ export function LocationSearch({ onLocationChange, className = '' }: LocationSea
 
         {/* Dropdown avec la liste des villes */}
         {showDropdown && searchQuery.length >= 2 && (
-          <div className="absolute z-50 w-full mt-2 bg-gray-800 border border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+          <div className="absolute z-[9999] w-full mt-2 bg-gray-800 border border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto">
             {filteredCities.length === 0 ? (
               <div className="p-4 text-center text-gray-400 text-sm">
                 Aucune ville trouvée

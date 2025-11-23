@@ -103,16 +103,6 @@ export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderP
     { code: 'en' as Language, name: 'English', flag: <BritishFlag className="w-8 h-6" /> }
   ]
 
-  // Définir les onglets de navigation
-  const tabs = [
-    {
-      name: language === 'fr' ? 'Top Semaine' : 'Top Week',
-      icon: Flame,
-      path: '/top-week',
-      active: pathname === '/top-week'
-    }
-  ]
-
   return (
     <header className="sticky top-0 z-10 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
       <div className="max-w-screen-xl mx-auto px-2 md:px-4 py-2 md:py-4 flex items-center justify-between gap-2 md:gap-4">
@@ -255,36 +245,6 @@ export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderP
         </div>
       </div>
 
-      {/* Navigation Tabs - Only show on main pages (not on back button pages) */}
-      {!showBackButton && (
-        <div className="max-w-screen-xl mx-auto px-2 md:px-4">
-          <div className="flex items-center gap-1 md:gap-2 border-t border-gray-800 pt-2 pb-2 overflow-x-auto scrollbar-hide">
-            {tabs.map((tab) => {
-              const Icon = tab.icon
-              return (
-                <motion.button
-                  key={tab.path}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => router.push(tab.path)}
-                  className={`flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-lg transition-all whitespace-nowrap ${
-                    tab.active
-                      ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg shadow-pink-500/20'
-                      : 'bg-gray-800/50 text-gray-400 hover:text-white hover:bg-gray-700/50'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span className="text-xs md:text-sm font-medium">{tab.name}</span>
-                  {tab.path === '/top-week' && (
-                    <span className="text-[10px] md:text-xs bg-orange-500/20 text-orange-400 px-1.5 py-0.5 rounded">
-                      🔥
-                    </span>
-                  )}
-                </motion.button>
-              )
-            })}
-          </div>
-        </div>
-      )}
     </header>
   )
 }

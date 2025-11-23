@@ -11,6 +11,7 @@ export type Country = {
 }
 
 export const COUNTRIES: Country[] = [
+  { code: 'ALL', name: 'Choix du Pays', flag: '🌍' },
   { code: 'FR', name: 'France', flag: '🇫🇷' },
   { code: 'BE', name: 'Belgique', flag: '🇧🇪' },
   { code: 'CH', name: 'Suisse', flag: '🇨🇭' },
@@ -40,95 +41,15 @@ const CountryContext = createContext<CountryContextType | undefined>(undefined)
 
 export function CountryProvider({ children }: { children: ReactNode }) {
   const [userCountry, setUserCountry] = useState<Country | null>(null)
-  const [selectedCountry, setSelectedCountryState] = useState<Country>(COUNTRIES[0]) // France par défaut
-  const [isDetectingCountry, setIsDetectingCountry] = useState(true)
+  const [selectedCountry, setSelectedCountryState] = useState<Country>(COUNTRIES[0]) // "Choix du Pays" par défaut
+  const [isDetectingCountry, setIsDetectingCountry] = useState(false) // Désactiver la détection automatique
   const [showRestrictionModal, setShowRestrictionModal] = useState(false)
 
-  // Détecter le pays de l'utilisateur via l'API de géolocalisation
+  // Détection automatique DÉSACTIVÉE - Par défaut sur "Choix du Pays"
+  // L'utilisateur choisit manuellement son pays
   useEffect(() => {
-    const detectUserCountry = async () => {
-      try {
-        console.log('🔍 Début de la détection du pays...')
-
-        // Mode test : vérifier le localStorage pour forcer un pays (développement uniquement)
-        const forcedCountry = typeof window !== 'undefined' ? localStorage.getItem('test_country') : null
-        if (forcedCountry) {
-          const testCountry = COUNTRIES.find(c => c.code === forcedCountry)
-          if (testCountry) {
-            console.log('🧪 MODE TEST : Pays forcé à', testCountry.name)
-            setUserCountry(testCountry)
-            setSelectedCountryState(testCountry)
-            setIsDetectingCountry(false)
-            return
-          }
-        }
-
-        // Essayer plusieurs APIs de géolocalisation avec fallback
-        let detectedCountryCode: string | null = null
-
-        // API 1: ip-api.com (HTTP, plus fiable)
-        try {
-          console.log('🔍 Tentative avec ip-api.com...')
-          const response1 = await fetch('http://ip-api.com/json/')
-          const data1 = await response1.json()
-
-          console.log('📡 Réponse ip-api.com:', data1)
-          if (data1.status === 'success' && data1.countryCode) {
-            detectedCountryCode = data1.countryCode
-            console.log('✅ Pays détecté avec ip-api.com:', detectedCountryCode, data1.country)
-          }
-        } catch (error) {
-          console.warn('⚠️ ip-api.com a échoué, essai de l\'API de fallback...', error)
-        }
-
-        // API 2: ipapi.co (HTTPS fallback)
-        if (!detectedCountryCode) {
-          try {
-            console.log('🔍 Tentative avec ipapi.co...')
-            const response2 = await fetch('https://ipapi.co/json/')
-            const data2 = await response2.json()
-
-            console.log('📡 Réponse ipapi.co:', data2)
-            if (data2.country_code) {
-              detectedCountryCode = data2.country_code
-              console.log('✅ Pays détecté avec ipapi.co:', detectedCountryCode, data2.country_name)
-            }
-          } catch (error) {
-            console.warn('⚠️ ipapi.co a échoué', error)
-          }
-        }
-
-        if (detectedCountryCode) {
-          const detectedCountry = COUNTRIES.find(c => c.code === detectedCountryCode)
-          if (detectedCountry) {
-            console.log('✅ Pays détecté et supporté:', detectedCountry.name, `(${detectedCountry.code})`)
-            setUserCountry(detectedCountry)
-            setSelectedCountryState(detectedCountry)
-            console.log('📍 État mis à jour avec:', detectedCountry.name)
-          } else {
-            console.warn('⚠️ Pays détecté non supporté:', detectedCountryCode, '- Utilisation de France par défaut')
-            // Pays non supporté, utiliser France par défaut
-            setUserCountry(COUNTRIES[0])
-            setSelectedCountryState(COUNTRIES[0])
-          }
-        } else {
-          // Aucune API n'a fonctionné
-          console.warn('⚠️ Toutes les APIs ont échoué - Utilisation de France par défaut')
-          setUserCountry(COUNTRIES[0])
-          setSelectedCountryState(COUNTRIES[0])
-        }
-      } catch (error) {
-        console.error('❌ Erreur détection pays:', error)
-        // Par défaut France si erreur
-        setUserCountry(COUNTRIES[0])
-        setSelectedCountryState(COUNTRIES[0])
-      } finally {
-        console.log('🏁 Détection du pays terminée')
-        setIsDetectingCountry(false)
-      }
-    }
-
-    detectUserCountry()
+    // Garder "Choix du Pays" par défaut
+    console.log('🌍 Pays par défaut : Choix du Pays')
   }, [])
 
   const isRestricted = useMemo(() => {
