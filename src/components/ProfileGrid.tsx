@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { Heart, MapPin, Eye, ChevronLeft, ChevronRight, Loader2, X, Check, MessageCircle } from 'lucide-react'
-import { RANK_CONFIG, RankType } from '@/types/profile'
+import { RANK_CONFIG } from '@/types/profile'
 import { Watermark } from './Watermark'
 import { useFavorites } from '@/contexts/FavoritesContext'
 import { useAuth } from '@/contexts/AuthContext'
@@ -13,18 +13,45 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import { useRouter } from 'next/navigation'
 import { useAdsContext } from '@/contexts/AdsContext'
 
-function RankBadge({ rank }: { rank: RankType }) {
-  if (!rank || rank === 'standard') return null
+function RankBadge() {
+  // Badges de rang désactivés
+  return null
+}
 
-  const config = RANK_CONFIG[rank]
-  if (!config) return null
+function NewBadge({ createdAt }: { createdAt: Date }) {
+  const { language } = useLanguage()
 
+  // Vérifier si l'annonce a été créée dans les derniers 7 jours
+  const isNew = () => {
+    const now = new Date()
+    const created = new Date(createdAt)
+    const diffInHours = (now.getTime() - created.getTime()) / (1000 * 60 * 60)
+    return diffInHours <= 168 // 7 jours = 168 heures
+  }
+
+  if (!isNew()) return null
+
+  // Badge pour anglais
+  if (language === 'en') {
+    return (
+      <div className="absolute top-0 right-0 overflow-hidden w-24 h-24 pointer-events-none">
+        <div className="absolute top-3 right-[-32px] bg-gradient-to-r from-rose-600 to-pink-600 text-white text-center py-1 px-8 rotate-45 shadow-lg shadow-pink-600/60">
+          <span className="text-[11px] font-bold tracking-wider uppercase">
+            {'\u2009\u2009\u2009\u2009NEW\u2009\u2009\u2009\u2009\u2009\u2009'}
+          </span>
+        </div>
+      </div>
+    )
+  }
+
+  // Badge pour français
   return (
-    <div className={`absolute top-3 left-3 flex items-center gap-1 ${config.bgColor} px-2 py-1 rounded-full border ${config.borderColor} ${config.glowColor} transition-all`}>
-      <span className="text-xs">{config.icon}</span>
-      <span className={`text-[10px] font-bold ${config.textColor} tracking-wide uppercase`}>
-        {config.label}
-      </span>
+    <div className="absolute top-0 right-0 overflow-hidden w-24 h-24 pointer-events-none">
+      <div className="absolute top-3 right-[-32px] bg-gradient-to-r from-rose-600 to-pink-600 text-white text-center py-1 px-8 rotate-45 shadow-lg shadow-pink-600/60">
+        <span className="text-[11px] font-bold tracking-wider uppercase">
+          Nouveau
+        </span>
+      </div>
     </div>
   )
 }
@@ -259,7 +286,7 @@ export function ProfileGrid() {
               </div>
 
               {/* Rank Badge */}
-              <RankBadge rank={ad.rank} />
+              <RankBadge />
 
               {/* Online indicator */}
               {ad.online && (
@@ -268,6 +295,9 @@ export function ProfileGrid() {
                   <span className="text-xs text-white font-medium">En ligne</span>
                 </div>
               )}
+
+              {/* New Badge - Ruban diagonal en haut à droite */}
+              <NewBadge createdAt={ad.createdAt} />
 
               {/* Ad info */}
               <div className="absolute bottom-0 left-0 right-0 p-3">

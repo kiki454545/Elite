@@ -109,7 +109,21 @@
       "Bash(temp_fix_price.sql)",
       "Bash(node scripts/delete-duplicate-st-julians.mjs:*)",
       "Bash(node scripts/find-st-julians-duplicates.mjs:*)",
-      "Bash(git tag:*)"
+      "Bash(git tag:*)",
+      "Bash(vercel --version:*)",
+      "Bash(vercel:*)",
+      "Bash(node scripts/setup_ad_photos_storage.mjs:*)",
+      "Bash(node scripts/check_ad_photos.mjs:*)",
+      "Bash(node scripts/debug_edit_page.mjs:*)",
+      "Bash(node scripts/check_storage_structure.mjs:*)",
+      "Bash(node scripts/find_ad_by_user.mjs:*)",
+      "Bash(node scripts/test_photo_urls.mjs:*)",
+      "Bash(node scripts/check_storage_files.mjs:*)",
+      "Bash(node scripts/fix_bucket_config.mjs:*)",
+      "Bash(node scripts/fix_photos_metadata.mjs:*)",
+      "Bash(node scripts/clean_user_photos.mjs:*)",
+      "Bash(node scripts/set_ella2_plus.mjs:*)",
+      "Bash(node scripts/set_multiple_ranks.mjs:*)"
     ],
     "deny": [],
     "ask": []

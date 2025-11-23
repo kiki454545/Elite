@@ -119,7 +119,7 @@ export const RANK_CONFIG = {
     maxPhotos: 100,
   },
   vip: {
-    label: 'VIP',
+    label: '\u2009\u2009VIP',
     color: 'from-purple-500 to-pink-600',
     bgColor: 'bg-gradient-to-r from-purple-500 to-pink-600',
     borderColor: 'border-transparent',
