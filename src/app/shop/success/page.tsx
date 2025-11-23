@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Header } from '@/components/Header'
@@ -8,7 +8,7 @@ import { CheckCircle, Coins, ArrowRight, Sparkles } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useLanguage } from '@/contexts/LanguageContext'
 
-export default function SuccessPage() {
+function SuccessContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { t } = useLanguage()
@@ -220,5 +220,20 @@ export default function SuccessPage() {
         </motion.div>
       </div>
     </div>
+  )
+}
+
+export default function SuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-400">Chargement...</p>
+        </div>
+      </div>
+    }>
+      <SuccessContent />
+    </Suspense>
   )
 }
