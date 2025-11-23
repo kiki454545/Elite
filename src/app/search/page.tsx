@@ -19,12 +19,8 @@ import { AdvancedSearchFilters, AdvancedSearchFiltersData } from '@/components/A
 import { supabase } from '@/lib/supabase'
 
 interface City {
-  id: string
   name: string
-  department: string
-  department_code: string
-  latitude: number
-  longitude: number
+  country: string
 }
 
 interface AdWithDistance extends Ad {
@@ -90,11 +86,9 @@ export default function SearchPage() {
   // Filtres avancés
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedSearchFiltersData>({})
 
-  // Géolocalisation
+  // Sélection de ville
   const [selectedCity, setSelectedCity] = useState<City | null>(null)
   const [selectedRadius, setSelectedRadius] = useState<number | null>(null)
-  const [locationAds, setLocationAds] = useState<AdWithDistance[]>([])
-  const [loadingLocationAds, setLoadingLocationAds] = useState(false)
 
   // Toutes les annonces de la base de données
   const [allAds, setAllAds] = useState<AdWithDistance[]>([])
@@ -110,15 +104,6 @@ export default function SearchPage() {
   useEffect(() => {
     loadAllAds()
   }, [selectedCountry])
-
-  // Charger les annonces par géolocalisation
-  useEffect(() => {
-    if (selectedCity) {
-      loadAdsByLocation()
-    } else {
-      setLocationAds([])
-    }
-  }, [selectedCity, selectedRadius])
 
   async function loadAllAds() {
     try {
@@ -195,82 +180,6 @@ export default function SearchPage() {
       console.error('Erreur:', error)
     } finally {
       setLoadingAllAds(false)
-    }
-  }
-
-  async function loadAdsByLocation() {
-    if (!selectedCity) return
-
-    try {
-      setLoadingLocationAds(true)
-
-      const { data, error } = await supabase
-        .rpc('search_ads_by_distance', {
-          search_lat: selectedCity.latitude,
-          search_lon: selectedCity.longitude,
-          max_distance_km: selectedRadius,
-          limit_count: 100,
-          offset_count: 0
-        })
-
-      if (error) {
-        console.error('Erreur lors de la recherche par distance:', error)
-        return
-      }
-
-      console.log('📍 Résultats de la recherche:', data)
-
-      if (!data || data.length === 0) {
-        setLocationAds([])
-        return
-      }
-
-      // Récupérer les profils des utilisateurs
-      const userIds = data.map((item: any) => item.user_id)
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, username, rank')
-        .in('id', userIds)
-
-      if (profilesError) {
-        console.error('Erreur lors du chargement des profils:', profilesError)
-      }
-
-      // Créer un index des profils pour recherche rapide
-      const profilesMap = new Map()
-      profiles?.forEach(profile => {
-        profilesMap.set(profile.id, profile)
-      })
-
-      // Convertir les données de Supabase en format Ad
-      const adsWithDistance: AdWithDistance[] = (data || []).map((item: any) => {
-        const profile = profilesMap.get(item.user_id)
-        return {
-          id: item.id,
-          userId: item.user_id,
-          username: profile?.username || item.title || 'Utilisateur',
-          age: item.age || 25,
-          location: item.location,
-          photos: item.photos || [],
-          category: (item.categories && item.categories[0]) || 'escort',
-          services: [],
-          description: item.description || '',
-          verified: item.verified || false,
-          online: false,
-          views: item.views || 0,
-          favorites: item.favorites_count || 0,
-          rank: (profile?.rank || 'standard') as RankType,
-          video: false,
-          country: item.country || selectedCountry.code,
-          distance_km: item.distance_km
-        }
-      })
-
-      setLocationAds(adsWithDistance)
-    } catch (error) {
-      console.error('Erreur:', error)
-    } finally {
-      setLoadingLocationAds(false)
     }
   }
 
@@ -367,6 +276,10 @@ export default function SearchPage() {
     const matchesCategory = selectedCategory === '' ||
       ad.category === selectedCategory
 
+    // Ville
+    const matchesCity = !selectedCity ||
+      ad.location?.toLowerCase() === selectedCity.name.toLowerCase()
+
     // Téléphone (pas encore chargé dans ad, skip pour l'instant)
     const matchesPhone = !advancedFilters.phoneNumber
 
@@ -442,7 +355,7 @@ export default function SearchPage() {
     // Commentaires
     const matchesHasComments = !advancedFilters.hasComments || (ad as any).has_comments
 
-      return matchesSearch && matchesCategory && matchesPhone &&
+      return matchesSearch && matchesCategory && matchesCity && matchesPhone &&
         matchesGender && matchesAgeMin && matchesAgeMax &&
         matchesEthnicity && matchesNationality &&
         matchesCupSize && matchesHeightMin && matchesHeightMax &&
@@ -452,13 +365,10 @@ export default function SearchPage() {
         matchesMeetingPlaces && matchesLanguages &&
         matchesVerified && matchesHasComments
     })
-  }, [allAds, searchQuery, selectedCategory, advancedFilters])
+  }, [allAds, searchQuery, selectedCategory, selectedCity, advancedFilters])
 
-  // Utiliser les annonces de géolocalisation si disponibles, sinon toutes les annonces filtrées
-  const adsToDisplay: AdWithDistance[] = useMemo(() =>
-    selectedCity ? locationAds : filteredAds,
-    [selectedCity, locationAds, filteredAds]
-  )
+  // Afficher les annonces filtrées
+  const adsToDisplay: AdWithDistance[] = filteredAds
 
   // Trier par distance si géolocalisation active, sinon par rank - avec useMemo
   const sortedAds = useMemo(() => [...adsToDisplay].sort((a, b) => {
@@ -606,7 +516,7 @@ export default function SearchPage() {
       <div className="max-w-screen-xl mx-auto px-4 py-6">
         {/* Results Count */}
         <p className="text-gray-400 mb-4 text-sm">
-          {(loadingLocationAds || loadingAllAds) ? (
+          {loadingAllAds ? (
             t('searchPage.loading')
           ) : (
             <>
