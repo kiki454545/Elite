@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Heart, MapPin, Eye, ChevronLeft, ChevronRight, Loader2, X, Check, MessageCircle } from 'lucide-react'
-import { RankType } from '@/types/profile'
+import { RankType, RANK_CONFIG } from '@/types/profile'
 import { Watermark } from './Watermark'
 import { useFavorites } from '@/contexts/FavoritesContext'
 import { useAuth } from '@/contexts/AuthContext'
@@ -11,6 +11,23 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Ad } from '@/types/ad'
+
+function RankBadge({ rank }: { rank: RankType }) {
+  if (!rank || rank === 'standard') return null
+  const config = RANK_CONFIG[rank]
+  if (!config) return null
+
+  return (
+    <div className="absolute top-0 left-0 overflow-hidden w-32 h-32 pointer-events-none">
+      <div className={`absolute top-4 left-[-38px] ${config.bgColor} text-white text-center py-1.5 px-10 -rotate-45 shadow-lg ${config.glowColor}`}>
+        <span className="text-[13px] font-bold tracking-wider uppercase flex items-center gap-1.5">
+          <span className="text-base">{config.icon}</span>
+          <span className={config.textColor}>{config.label}</span>
+        </span>
+      </div>
+    </div>
+  )
+}
 
 function NewBadge({ createdAt }: { createdAt: Date }) {
   const { language } = useLanguage()
@@ -140,6 +157,8 @@ export function TopWeekGrid() {
           }
         })
 
+        // Le tri est déjà fait par la requête SQL (order by weekly_views)
+        // Pas besoin de trier à nouveau par rang ici
         setTopWeeklyAds(formattedAds)
       } catch (error) {
         console.error('Erreur:', error)
@@ -354,6 +373,9 @@ export function TopWeekGrid() {
                   <span className="text-xs text-white font-medium">En ligne</span>
                 </div>
               )}
+
+              {/* Rank Badge - Ruban diagonal en haut à gauche */}
+              <RankBadge rank={ad.rank} />
 
               {/* New Badge - Ruban diagonal en haut à droite */}
               <NewBadge createdAt={ad.createdAt} />

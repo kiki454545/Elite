@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { Heart, MapPin, Eye, ChevronLeft, ChevronRight, Loader2, X, Check, MessageCircle } from 'lucide-react'
-import { RANK_CONFIG } from '@/types/profile'
+import { RankType, RANK_CONFIG } from '@/types/profile'
 import { Watermark } from './Watermark'
 import { useFavorites } from '@/contexts/FavoritesContext'
 import { useAuth } from '@/contexts/AuthContext'
@@ -13,9 +13,21 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import { useRouter } from 'next/navigation'
 import { useAdsContext } from '@/contexts/AdsContext'
 
-function RankBadge() {
-  // Badges de rang désactivés
-  return null
+function RankBadge({ rank }: { rank: RankType }) {
+  if (!rank || rank === 'standard') return null
+  const config = RANK_CONFIG[rank]
+  if (!config) return null
+
+  return (
+    <div className="absolute top-0 left-0 overflow-hidden w-32 h-32 pointer-events-none">
+      <div className={`absolute top-4 left-[-38px] ${config.bgColor} text-white text-center py-1.5 px-10 -rotate-45 shadow-lg ${config.glowColor}`}>
+        <span className="text-[13px] font-bold tracking-wider uppercase flex items-center gap-1.5">
+          <span className="text-base">{config.icon}</span>
+          <span className={config.textColor}>{config.label}</span>
+        </span>
+      </div>
+    </div>
+  )
 }
 
 function NewBadge({ createdAt }: { createdAt: Date }) {
@@ -285,8 +297,8 @@ export function ProfileGrid() {
                 ))}
               </div>
 
-              {/* Rank Badge */}
-              <RankBadge />
+              {/* Rank Badge - Ruban diagonal en haut à gauche */}
+              <RankBadge rank={ad.rank} />
 
               {/* Online indicator */}
               {ad.online && (

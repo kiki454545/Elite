@@ -14,6 +14,23 @@ import { supabase } from '@/lib/supabase'
 import { Ad } from '@/types/ad'
 import { RANK_CONFIG } from '@/types/profile'
 
+function RankBadge({ rank }: { rank: RankType }) {
+  if (!rank || rank === 'standard') return null
+  const config = RANK_CONFIG[rank]
+  if (!config) return null
+
+  return (
+    <div className="absolute top-0 left-0 overflow-hidden w-32 h-32 pointer-events-none">
+      <div className={`absolute top-4 left-[-38px] ${config.bgColor} text-white text-center py-1.5 px-10 -rotate-45 shadow-lg ${config.glowColor}`}>
+        <span className="text-[13px] font-bold tracking-wider uppercase flex items-center gap-1.5">
+          <span className="text-base">{config.icon}</span>
+          <span className={config.textColor}>{config.label}</span>
+        </span>
+      </div>
+    </div>
+  )
+}
+
 function NewBadge({ createdAt }: { createdAt: Date }) {
   const { language } = useLanguage()
 
@@ -150,6 +167,13 @@ export function PremiumGrid() {
               updatedAt: item.updated_at ? new Date(item.updated_at) : new Date(item.created_at),
             }
           })
+
+        // Trier par priorité de rang (Elite > VIP > Plus > Standard)
+        premiumAdsData.sort((a, b) => {
+          const priorityA = RANK_CONFIG[a.rank]?.priority || 0
+          const priorityB = RANK_CONFIG[b.rank]?.priority || 0
+          return priorityB - priorityA
+        })
 
         setPremiumAds(premiumAdsData)
       } catch (error) {
@@ -365,6 +389,9 @@ export function PremiumGrid() {
                   <span className="text-xs text-white font-medium">En ligne</span>
                 </div>
               )}
+
+              {/* Rank Badge - Ruban diagonal en haut à gauche */}
+              <RankBadge rank={ad.rank} />
 
               {/* New Badge - Ruban diagonal en haut à droite */}
               <NewBadge createdAt={ad.createdAt} />

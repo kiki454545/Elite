@@ -66,7 +66,7 @@ export function useAds(country?: string, city?: string) {
 
       const { data: profilesData, error: profilesError} = await supabase
         .from('profiles')
-        .select('id, username, age, rank, verified')
+        .select('id, username, age, rank')
         .in('id', userIds)
 
       if (profilesError) {
@@ -103,7 +103,7 @@ export function useAds(country?: string, city?: string) {
           services: ad.services || [],
           meetingPlaces: ad.meeting_places || [],
           availability: '',
-          verified: profile?.verified || false,
+          verified: ad.verified || false,
           rank: profile?.rank || 'standard',
           online: profile?.online || false,
           views: ad.views || 0,
