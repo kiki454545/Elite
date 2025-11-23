@@ -123,7 +123,12 @@
       "Bash(node scripts/fix_photos_metadata.mjs:*)",
       "Bash(node scripts/clean_user_photos.mjs:*)",
       "Bash(node scripts/set_ella2_plus.mjs:*)",
-      "Bash(node scripts/set_multiple_ranks.mjs:*)"
+      "Bash(node scripts/set_multiple_ranks.mjs:*)",
+      "Bash(node scripts/create_test_tickets.mjs:*)",
+      "Bash(README.md)",
+      "Bash(npm uninstall:*)",
+      "Bash(node scripts/check_ads_cities.mjs:*)",
+      "Bash(node scripts/create_cities_table.mjs:*)"
     ],
     "deny": [],
     "ask": []
