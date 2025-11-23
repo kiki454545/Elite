@@ -1,12 +1,13 @@
 'use client'
 
-import { Home, Search, MessageCircle, Heart, User, LogIn, Flame, Crown } from 'lucide-react'
+import { Home, Search, MessageCircle, Heart, User, LogIn, Flame, Crown, Coins } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useMessages } from '@/contexts/MessagesContext'
+import { supabase } from '@/lib/supabase'
 
 type NavItem = {
   id: string
@@ -21,6 +22,55 @@ export function BottomNavigation() {
   const { isAuthenticated } = useAuth()
   const { t } = useLanguage()
   const { unreadCount } = useMessages()
+  const [eliteCoins, setEliteCoins] = useState<number>(0)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  // Récupérer le solde EliteCoin de l'utilisateur
+  useEffect(() => {
+    const fetchUserCoins = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+
+      if (user) {
+        setIsLoggedIn(true)
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('elite_coins')
+          .eq('id', user.id)
+          .single()
+
+        if (profile) {
+          setEliteCoins(profile.elite_coins || 0)
+        }
+      } else {
+        setIsLoggedIn(false)
+        setEliteCoins(0)
+      }
+    }
+
+    fetchUserCoins()
+
+    // S'abonner aux changements du solde
+    const channel = supabase
+      .channel('elite_coins_changes_nav')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles'
+        },
+        (payload: any) => {
+          if (payload.new.elite_coins !== undefined) {
+            setEliteCoins(payload.new.elite_coins)
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [])
 
   // Menu mobile (en bas)
   const mobileNavItems: NavItem[] = [
@@ -169,6 +219,17 @@ export function BottomNavigation() {
               </motion.button>
             )
           })}
+
+          {/* EliteCoins Display - Desktop only */}
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => router.push(isLoggedIn ? '/shop' : '/auth')}
+            className="relative flex flex-row items-center gap-2 py-2 px-4 transition-colors bg-gradient-to-r from-amber-400/20 to-yellow-500/20 hover:from-amber-400/30 hover:to-yellow-500/30 rounded-xl border border-amber-400/30"
+            title={isLoggedIn ? "Acheter des EliteCoins" : "Connectez-vous pour voir vos EliteCoins"}
+          >
+            <Coins className="w-5 h-5 text-amber-400" />
+            <span className="text-sm font-medium text-amber-400">{eliteCoins}</span>
+          </motion.button>
         </div>
       </div>
     </nav>

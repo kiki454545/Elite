@@ -70,6 +70,7 @@ export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderP
         }
       } else {
         setIsLoggedIn(false)
+        setEliteCoins(0)
       }
     }
 
@@ -215,22 +216,8 @@ export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderP
           )}
         </div>
 
-        {/* Right side - EliteCoins + Language Selector */}
+        {/* Right side - Language Selector only */}
         <div className="flex items-center gap-2 md:gap-3 flex-shrink-0 pr-1 md:pr-0">
-          {/* EliteCoins Display - Only if logged in */}
-          {isLoggedIn && (
-            <motion.button
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              onClick={() => router.push('/shop')}
-              className="flex items-center gap-1 md:gap-1.5 bg-gradient-to-r from-amber-400/20 to-yellow-500/20 hover:from-amber-400/30 hover:to-yellow-500/30 px-2 md:px-3 py-1 md:py-1.5 rounded-lg border border-amber-400/30 transition-all cursor-pointer"
-              title="Acheter des EliteCoins"
-            >
-              <Coins className="w-4 h-4 text-amber-400" />
-              <span className="text-amber-400 font-bold text-xs md:text-sm">{eliteCoins}</span>
-            </motion.button>
-          )}
-
           {/* Language Selector - Toggle button */}
           <button
             onClick={() => setLanguage(language === 'fr' ? 'en' : 'fr')}
@@ -242,6 +229,68 @@ export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderP
             </div>
             <ChevronDown className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-300" />
           </button>
+        </div>
+      </div>
+
+      {/* Barre de navigation Top Week / Premium / EliteCoins - Mobile uniquement */}
+      <div className="md:hidden border-t border-gray-800">
+        <div className="flex items-center justify-around px-2 py-2">
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => router.push('/top-week')}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg transition-all ${
+              pathname === '/top-week' || (pathname === '/' && selectedCountry.code === 'ALL')
+                ? 'bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-500/30'
+                : 'bg-gray-800/50 hover:bg-gray-700/50'
+            }`}
+          >
+            <Flame className={`w-4 h-4 ${
+              pathname === '/top-week' || (pathname === '/' && selectedCountry.code === 'ALL')
+                ? 'text-orange-500'
+                : 'text-gray-400'
+            }`} />
+            <span className={`text-sm font-medium ${
+              pathname === '/top-week' || (pathname === '/' && selectedCountry.code === 'ALL')
+                ? 'text-orange-500'
+                : 'text-gray-300'
+            }`}>
+              {t('nav.topWeek')}
+            </span>
+          </motion.button>
+
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => router.push('/premium')}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg transition-all ${
+              pathname === '/premium'
+                ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border border-yellow-500/30'
+                : 'bg-gray-800/50 hover:bg-gray-700/50'
+            }`}
+          >
+            <Coins className={`w-4 h-4 ${
+              pathname === '/premium'
+                ? 'text-yellow-500'
+                : 'text-gray-400'
+            }`} />
+            <span className={`text-sm font-medium ${
+              pathname === '/premium'
+                ? 'text-yellow-500'
+                : 'text-gray-300'
+            }`}>
+              {t('nav.premium')}
+            </span>
+          </motion.button>
+
+          {/* EliteCoins Display - Mobile */}
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => router.push(isLoggedIn ? '/shop' : '/auth')}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gradient-to-r from-amber-400/20 to-yellow-500/20 hover:from-amber-400/30 hover:to-yellow-500/30 border border-amber-400/30 transition-all"
+            title={isLoggedIn ? "Acheter des EliteCoins" : "Connectez-vous pour voir vos EliteCoins"}
+          >
+            <Coins className="w-4 h-4 text-amber-400" />
+            <span className="text-amber-400 font-bold text-sm">{eliteCoins}</span>
+          </motion.button>
         </div>
       </div>
 
