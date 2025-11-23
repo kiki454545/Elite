@@ -262,14 +262,14 @@ export default function SearchPage() {
         return value !== undefined && value !== null
       })
 
-    // Ne rien afficher si aucun filtre n'est actif et que la recherche est vide
-    if (searchQuery === '' && !hasFilters) {
+    // Ne rien afficher si la recherche a moins de 2 caractères ET qu'aucun filtre n'est actif
+    if (searchQuery.length < 2 && !hasFilters) {
       return []
     }
 
     return allAds.filter(ad => {
-      // Recherche textuelle (uniquement dans le pseudo)
-      const matchesSearch = searchQuery === '' ||
+      // Recherche textuelle (uniquement dans le pseudo) - minimum 2 caractères
+      const matchesSearch = searchQuery.length < 2 ||
         ad.username.toLowerCase().includes(searchQuery.toLowerCase())
 
     // Catégorie

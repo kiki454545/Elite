@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { MapPin, Navigation, X } from 'lucide-react'
 import { CITIES_BY_COUNTRY } from '@/data/cities'
 import { useCountry } from '@/contexts/CountryContext'
@@ -47,18 +47,19 @@ export function LocationSearch({ onLocationChange, className = '' }: LocationSea
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Filtrer les villes selon la recherche (minimum 2 caractères)
-  const filteredCities = searchQuery.length >= 2
-    ? citiesForCountry
-        .filter(cityName =>
-          cityName.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-        .slice(0, 15) // Limiter à 15 résultats
-        .map(cityName => ({
-          name: cityName,
-          country: selectedCountry.code
-        }))
-    : []
+  // Filtrer les villes selon la recherche (minimum 2 caractères) avec useMemo pour optimiser
+  const filteredCities = useMemo(() => {
+    if (searchQuery.length < 2) return []
+
+    const query = searchQuery.toLowerCase()
+    return citiesForCountry
+      .filter(cityName => cityName.toLowerCase().includes(query))
+      .slice(0, 15)
+      .map(cityName => ({
+        name: cityName,
+        country: selectedCountry.code
+      }))
+  }, [searchQuery, citiesForCountry, selectedCountry.code])
 
   const handleCitySelect = (city: City) => {
     setSelectedCity(city)
@@ -94,14 +95,21 @@ export function LocationSearch({ onLocationChange, className = '' }: LocationSea
             placeholder="Rechercher une ville..."
             value={searchQuery}
             onChange={(e) => {
-              setSearchQuery(e.target.value)
-              setShowDropdown(true)
-              if (!e.target.value) {
+              const value = e.target.value
+              setSearchQuery(value)
+              // N'ouvrir le dropdown que si on a 2 caractères ou plus
+              setShowDropdown(value.length >= 2)
+              if (!value) {
                 setSelectedCity(null)
                 onLocationChange(null, selectedRadius)
               }
             }}
-            onFocus={() => setShowDropdown(true)}
+            onFocus={() => {
+              // N'ouvrir le dropdown au focus que si on a déjà 2 caractères ou plus
+              if (searchQuery.length >= 2) {
+                setShowDropdown(true)
+              }
+            }}
             className="w-full bg-gray-900 text-white pl-10 pr-10 py-2.5 rounded-lg border border-gray-700 focus:border-pink-500 focus:outline-none text-sm"
           />
           {selectedCity && (
@@ -115,13 +123,9 @@ export function LocationSearch({ onLocationChange, className = '' }: LocationSea
         </div>
 
         {/* Dropdown avec la liste des villes */}
-        {showDropdown && searchQuery && (
+        {showDropdown && searchQuery.length >= 2 && (
           <div className="absolute z-50 w-full mt-2 bg-gray-800 border border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto">
-            {searchQuery.length < 2 ? (
-              <div className="p-4 text-center text-gray-400 text-sm">
-                Tapez au moins 2 caractères...
-              </div>
-            ) : filteredCities.length === 0 ? (
+            {filteredCities.length === 0 ? (
               <div className="p-4 text-center text-gray-400 text-sm">
                 Aucune ville trouvée
               </div>
