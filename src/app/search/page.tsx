@@ -129,11 +129,11 @@ export default function SearchPage() {
         return
       }
 
-      // Récupérer les profils des utilisateurs
+      // Récupérer les profils des utilisateurs avec tous les champs nécessaires
       const userIds = data.map((item: any) => item.user_id)
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, username, rank')
+        .select('id, username, rank, age, gender, ethnicity, nationality, cup_size, height, weight, hair_color, eye_color, body_type, tattoos, piercings, pubic_hair')
         .in('id', userIds)
 
       if (profilesError) {
@@ -172,6 +172,25 @@ export default function SearchPage() {
           availability: '',
           createdAt: new Date(item.created_at),
           updatedAt: item.updated_at ? new Date(item.updated_at) : new Date(item.created_at),
+          // Ajouter tous les champs de filtrage avancé (depuis profile ou ads)
+          gender: profile?.gender || item.gender,
+          ethnicity: profile?.ethnicity || item.ethnicity,
+          nationality: profile?.nationality || item.nationality,
+          cup_size: profile?.cup_size || item.cup_size,
+          height: profile?.height || item.height,
+          weight: profile?.weight || item.weight,
+          hair_color: profile?.hair_color || item.hair_color,
+          eye_color: profile?.eye_color || item.eye_color,
+          body_type: profile?.body_type || item.body_type,
+          pubic_hair: profile?.pubic_hair || item.pubic_hair,
+          tattoos: profile?.tattoos ?? item.tattoos,
+          piercings: profile?.piercings ?? item.piercings,
+          meeting_at_home: item.meeting_at_home,
+          meeting_at_hotel: item.meeting_at_hotel,
+          meeting_in_car: item.meeting_in_car,
+          meeting_at_escort: item.meeting_at_escort,
+          languages: item.languages,
+          has_comments: item.has_comments,
         }
       })
 
@@ -252,7 +271,19 @@ export default function SearchPage() {
   }
 
   // Filtrer les vraies annonces (côté client, INSTANTANÉ !) - avec useMemo pour éviter les re-renders
+  // Mapping des valeurs françaises vers les valeurs anglaises de la base
+  const genderMap: Record<string, string> = {
+    'femme': 'female',
+    'homme': 'male',
+    'trans': 'transsexual',
+    'couple': 'couple',
+    'non-binaire': 'non-binary'
+  }
+
   const filteredAds = useMemo(() => {
+    console.log('🔍 Filtrage des annonces - Filtres actifs:', advancedFilters)
+    console.log('📊 Total annonces avant filtrage:', allAds.length)
+
     // Vérifier si des filtres sont actifs
     const hasFilters = selectedCategory !== '' ||
       selectedCity !== null ||
@@ -267,7 +298,12 @@ export default function SearchPage() {
       return []
     }
 
-    return allAds.filter(ad => {
+    const results = allAds.filter(ad => {
+      // Log du premier filtre de genre pour debug
+      if (advancedFilters.gender && advancedFilters.gender.length > 0 && allAds.indexOf(ad) < 3) {
+        console.log(`📝 Annonce ${allAds.indexOf(ad)}: username=${ad.username}, gender=${(ad as any).gender}`)
+      }
+
       // Recherche textuelle (uniquement dans le pseudo) - minimum 2 caractères
       const matchesSearch = searchQuery.length < 2 ||
         ad.username.toLowerCase().includes(searchQuery.toLowerCase())
@@ -283,9 +319,17 @@ export default function SearchPage() {
     // Téléphone (pas encore chargé dans ad, skip pour l'instant)
     const matchesPhone = !advancedFilters.phoneNumber
 
-    // Genre
+    // Genre - Mapper les valeurs françaises vers les valeurs anglaises de la base
     const matchesGender = !advancedFilters.gender || advancedFilters.gender.length === 0 ||
-      (ad as any).gender && advancedFilters.gender.includes((ad as any).gender)
+      ((ad as any).gender && advancedFilters.gender.some(frenchGender => {
+        const mappedGender = genderMap[frenchGender]
+        const adGender = (ad as any).gender
+        const matches = mappedGender === adGender
+        if (advancedFilters.gender && advancedFilters.gender.length > 0) {
+          console.log(`   Genre - Filtre: ${frenchGender} (${mappedGender}) vs Annonce: ${adGender} => ${matches}`)
+        }
+        return matches
+      }))
 
     // Âge
     const matchesAgeMin = !advancedFilters.ageMin || ad.age >= advancedFilters.ageMin
@@ -365,6 +409,9 @@ export default function SearchPage() {
         matchesMeetingPlaces && matchesLanguages &&
         matchesVerified && matchesHasComments
     })
+
+    console.log(`✅ Résultats après filtrage: ${results.length} annonces`)
+    return results
   }, [allAds, searchQuery, selectedCategory, selectedCity, advancedFilters])
 
   // Afficher les annonces filtrées
