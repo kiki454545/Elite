@@ -47,16 +47,18 @@ export function LocationSearch({ onLocationChange, className = '' }: LocationSea
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Filtrer les villes selon la recherche
-  const filteredCities = citiesForCountry
-    .filter(cityName =>
-      cityName.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-    .slice(0, 15) // Limiter à 15 résultats
-    .map(cityName => ({
-      name: cityName,
-      country: selectedCountry.code
-    }))
+  // Filtrer les villes selon la recherche (minimum 2 caractères)
+  const filteredCities = searchQuery.length >= 2
+    ? citiesForCountry
+        .filter(cityName =>
+          cityName.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+        .slice(0, 15) // Limiter à 15 résultats
+        .map(cityName => ({
+          name: cityName,
+          country: selectedCountry.code
+        }))
+    : []
 
   const handleCitySelect = (city: City) => {
     setSelectedCity(city)
@@ -115,7 +117,11 @@ export function LocationSearch({ onLocationChange, className = '' }: LocationSea
         {/* Dropdown avec la liste des villes */}
         {showDropdown && searchQuery && (
           <div className="absolute z-50 w-full mt-2 bg-gray-800 border border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto">
-            {filteredCities.length === 0 ? (
+            {searchQuery.length < 2 ? (
+              <div className="p-4 text-center text-gray-400 text-sm">
+                Tapez au moins 2 caractères...
+              </div>
+            ) : filteredCities.length === 0 ? (
               <div className="p-4 text-center text-gray-400 text-sm">
                 Aucune ville trouvée
               </div>
