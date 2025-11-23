@@ -197,3 +197,4 @@ Pour toute question ou problème :
 ## 📄 Licence
 
 Ce projet est privé et propriétaire.
+# Force rebuild
