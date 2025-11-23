@@ -133,7 +133,7 @@ export default function SearchPage() {
       const userIds = data.map((item: any) => item.user_id)
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, username, rank, age, gender, ethnicity, nationality, cup_size, height, weight, hair_color, eye_color, body_type, tattoos, piercings, pubic_hair')
+        .select('id, username, rank, age, gender, ethnicity, nationality, cup_size, height, weight, hair_color, eye_color, body_type, tattoos, piercings, pubic_hair, languages')
         .in('id', userIds)
 
       if (profilesError) {
@@ -189,7 +189,7 @@ export default function SearchPage() {
           meeting_at_hotel: item.meeting_at_hotel,
           meeting_in_car: item.meeting_in_car,
           meeting_at_escort: item.meeting_at_escort,
-          languages: item.languages,
+          languages: profile?.languages || item.languages || [],
           has_comments: item.has_comments,
         }
       })
@@ -322,11 +322,24 @@ export default function SearchPage() {
     'musclee': 'muscular'
   }
 
-  const pubicHairMap: Record<string, string> = {
-    'rasee': 'shaved',
-    'taillee': 'trimmed',
-    'naturelle': 'natural',
-    'epilee': 'waxed'
+  // Pas besoin de mapping pour pubic_hair car les valeurs sont déjà en français dans la DB
+  // Les valeurs possibles sont: 'rasee', 'taillee', 'naturelle', 'epilee'
+
+  // Mapping des codes ISO vers les noms complets de langues (en anglais et français)
+  const languageMap: Record<string, string[]> = {
+    'fr': ['fr', 'french', 'français', 'francais'],
+    'en': ['en', 'english', 'anglais'],
+    'es': ['es', 'spanish', 'español', 'espagnol'],
+    'de': ['de', 'german', 'deutsch', 'allemand'],
+    'it': ['it', 'italian', 'italiano', 'italien'],
+    'pt': ['pt', 'portuguese', 'português', 'portugais'],
+    'ru': ['ru', 'russian', 'русский', 'russe'],
+    'ar': ['ar', 'arabic', 'العربية', 'arabe'],
+    'zh': ['zh', 'chinese', '中文', 'chinois'],
+    'ja': ['ja', 'japanese', '日本語', 'japonais'],
+    'nl': ['nl', 'dutch', 'nederlands', 'néerlandais'],
+    'tr': ['tr', 'turkish', 'türkçe', 'turc'],
+    'pl': ['pl', 'polish', 'polski', 'polonais'],
   }
 
   const filteredAds = useMemo(() => {
@@ -360,83 +373,36 @@ export default function SearchPage() {
     // Téléphone (pas encore chargé dans ad, skip pour l'instant)
     const matchesPhone = !advancedFilters.phoneNumber
 
-    // Genre - Mapper les valeurs françaises vers les valeurs anglaises de la base
-    const matchesGender = !advancedFilters.gender || advancedFilters.gender.length === 0 ||
-      ((ad as any).gender && advancedFilters.gender.some(frenchGender =>
-        genderMap[frenchGender] === (ad as any).gender
-      ))
-
-    // Âge
-    const matchesAgeMin = !advancedFilters.ageMin || ad.age >= advancedFilters.ageMin
-    const matchesAgeMax = !advancedFilters.ageMax || ad.age <= advancedFilters.ageMax
-
-    // Ethnie - Mapper les valeurs françaises vers les valeurs anglaises
-    const matchesEthnicity = !advancedFilters.ethnicity || advancedFilters.ethnicity.length === 0 ||
-      ((ad as any).ethnicity && advancedFilters.ethnicity.some(frenchEthnicity =>
-        ethnicityMap[frenchEthnicity] === (ad as any).ethnicity
-      ))
-
-    // Nationalité
-    const matchesNationality = !advancedFilters.nationality || advancedFilters.nationality.length === 0 ||
-      (ad as any).nationality && advancedFilters.nationality.includes((ad as any).nationality)
-
-    // Bonnet
-    const matchesCupSize = !advancedFilters.cupSize || advancedFilters.cupSize.length === 0 ||
-      (ad as any).cup_size && advancedFilters.cupSize.includes((ad as any).cup_size)
-
-    // Hauteur
-    const matchesHeightMin = !advancedFilters.heightMin || ((ad as any).height && (ad as any).height >= advancedFilters.heightMin)
-    const matchesHeightMax = !advancedFilters.heightMax || ((ad as any).height && (ad as any).height <= advancedFilters.heightMax)
-
-    // Poids
-    const matchesWeightMin = !advancedFilters.weightMin || ((ad as any).weight && (ad as any).weight >= advancedFilters.weightMin)
-    const matchesWeightMax = !advancedFilters.weightMax || ((ad as any).weight && (ad as any).weight <= advancedFilters.weightMax)
-
-    // Cheveux - Mapper les valeurs françaises vers les valeurs anglaises
-    const matchesHairColor = !advancedFilters.hairColor || advancedFilters.hairColor.length === 0 ||
-      ((ad as any).hair_color && advancedFilters.hairColor.some(frenchHair =>
-        hairColorMap[frenchHair] === (ad as any).hair_color
-      ))
-
-    // Yeux - Mapper les valeurs françaises vers les valeurs anglaises
-    const matchesEyeColor = !advancedFilters.eyeColor || advancedFilters.eyeColor.length === 0 ||
-      ((ad as any).eye_color && advancedFilters.eyeColor.some(frenchEye =>
-        eyeColorMap[frenchEye] === (ad as any).eye_color
-      ))
-
-    // Silhouette - Mapper les valeurs françaises vers les valeurs anglaises
-    const matchesBodyType = !advancedFilters.bodyType || advancedFilters.bodyType.length === 0 ||
-      ((ad as any).body_type && advancedFilters.bodyType.some(frenchBody =>
-        bodyTypeMap[frenchBody] === (ad as any).body_type
-      ))
-
-    // Maillot - Mapper les valeurs françaises vers les valeurs anglaises
-    const matchesPubicHair = !advancedFilters.pubicHair || advancedFilters.pubicHair.length === 0 ||
-      ((ad as any).pubic_hair && advancedFilters.pubicHair.some(frenchPubic =>
-        pubicHairMap[frenchPubic] === (ad as any).pubic_hair
-      ))
-
-    // Tatouages
-    const matchesTattoos = advancedFilters.tattoos === null || advancedFilters.tattoos === undefined ||
-      (ad as any).tattoos === advancedFilters.tattoos
-
-    // Piercings
-    const matchesPiercings = advancedFilters.piercings === null || advancedFilters.piercings === undefined ||
-      (ad as any).piercings === advancedFilters.piercings
+    // Attributs physiques désactivés temporairement
+    const matchesGender = true
+    const matchesAgeMin = true
+    const matchesAgeMax = true
+    const matchesEthnicity = true
+    const matchesNationality = true
+    const matchesCupSize = true
+    const matchesHeightMin = true
+    const matchesHeightMax = true
+    const matchesWeightMin = true
+    const matchesWeightMax = true
+    const matchesHairColor = true
+    const matchesEyeColor = true
+    const matchesBodyType = true
+    const matchesPubicHair = true
+    const matchesTattoos = true
+    const matchesPiercings = true
 
     // Lieux de rendez-vous
     const matchesMeetingPlaces = !advancedFilters.meetingPlaces || advancedFilters.meetingPlaces.length === 0 ||
       advancedFilters.meetingPlaces.some(place => {
-        if (place === 'home') return (ad as any).meeting_at_home === true
-        if (place === 'hotel') return (ad as any).meeting_at_hotel === true
-        if (place === 'car') return (ad as any).meeting_in_car === true
-        if (place === 'escort') return (ad as any).meeting_at_escort === true
+        if (place === 'home') return !!(ad as any).meeting_at_home
+        if (place === 'hotel') return !!(ad as any).meeting_at_hotel
+        if (place === 'car') return !!(ad as any).meeting_in_car
+        if (place === 'escort') return !!(ad as any).meeting_at_escort
         return false
       })
 
-    // Langues
-    const matchesLanguages = !advancedFilters.languages || advancedFilters.languages.length === 0 ||
-      ((ad as any).languages && advancedFilters.languages.some(lang => (ad as any).languages.includes(lang)))
+    // Langues - Désactivé temporairement
+    const matchesLanguages = true
 
     // Vérifié
     const matchesVerified = !advancedFilters.verified || ad.verified

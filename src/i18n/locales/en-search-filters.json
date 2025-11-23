@@ -9,6 +9,9 @@
     "meetingPlaces": "Meeting Places",
     "languages": "Spoken Languages",
     "otherFilters": "Other Filters",
+    "city": "City",
+    "cityPlaceholder": "Search for a city...",
+    "allCities": "All cities",
 
     "gender": {
       "label": "Gender",

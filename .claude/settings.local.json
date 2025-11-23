@@ -132,7 +132,12 @@
       "Bash(c:/Users/ekino/OneDrive/Bureau/site-modern/src/components/ProfileGrid.tsx.bak)",
       "Bash(node scripts/setup_weekly_views.mjs:*)",
       "Bash(node scripts/check_premium_users.mjs:*)",
-      "Bash(node scripts/reset_specific_ranks.mjs)"
+      "Bash(node scripts/reset_specific_ranks.mjs)",
+      "Bash(node scripts/check_sliema_genders.mjs:*)",
+      "Bash(node scripts/fix_tas_sliema.mjs:*)",
+      "Bash(node scripts/check_meeting_places.mjs:*)",
+      "Bash(node scripts/check_meeting_places_columns.mjs:*)",
+      "Bash(node scripts/check_pubic_hair_values.mjs:*)"
     ],
     "deny": [],
     "ask": []

@@ -6,6 +6,7 @@ import {
   User, Heart, Ruler, Eye, Globe, MessageCircle,
   MapPin, Shield, Phone
 } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export interface AdvancedSearchFiltersData {
   // Texte
@@ -226,6 +227,8 @@ const NATIONALITY_OPTIONS = [
 ]
 
 function AdvancedSearchFiltersComponent({ filters, onFiltersChange, onClear }: AdvancedSearchFiltersProps) {
+  const { t } = useLanguage()
+
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     basic: true,
     physical: false,
@@ -361,7 +364,7 @@ function AdvancedSearchFiltersComponent({ filters, onFiltersChange, onClear }: A
       <div className="p-4 border-b border-gray-700 flex items-center justify-between bg-gray-800/50">
         <div className="flex items-center gap-2">
           <Filter className="w-5 h-5 text-pink-400" />
-          <h3 className="text-white font-semibold">Filtres avancés</h3>
+          <h3 className="text-white font-semibold">{t('search.advancedFilters')}</h3>
         </div>
         {hasActiveFilters() && (
           <button
@@ -372,7 +375,7 @@ function AdvancedSearchFiltersComponent({ filters, onFiltersChange, onClear }: A
             className="text-pink-400 hover:text-pink-300 text-sm flex items-center gap-1 transition-colors"
           >
             <X className="w-4 h-4" />
-            Effacer tout
+            {t('search.clearAll')}
           </button>
         )}
       </div>
@@ -381,11 +384,11 @@ function AdvancedSearchFiltersComponent({ filters, onFiltersChange, onClear }: A
       <div className="p-4 border-b border-gray-700">
         <label className="text-gray-300 text-sm font-medium mb-2 block flex items-center gap-2">
           <Phone className="w-4 h-4 text-pink-400" />
-          Recherche par téléphone
+          {t('search.searchByPhone')}
         </label>
         <input
           type="tel"
-          placeholder="Ex: 06 12 34 56 78"
+          placeholder={t('search.phonePlaceholder')}
           value={filters.phoneNumber || ''}
           onChange={(e) => updateFilter('phoneNumber', e.target.value)}
           className="w-full bg-gray-800 text-white px-3 py-2 rounded-lg border border-gray-700 focus:border-pink-500 focus:outline-none text-sm"
@@ -393,10 +396,10 @@ function AdvancedSearchFiltersComponent({ filters, onFiltersChange, onClear }: A
       </div>
 
       {/* Informations de base */}
-      <FilterSection id="basic" title="Informations de base" icon={User}>
+      <FilterSection id="basic" title={t('search.basicInfo')} icon={User}>
         {/* Genre */}
         <div>
-          <label className="text-gray-300 text-sm font-medium mb-2 block">Sexe</label>
+          <label className="text-gray-300 text-sm font-medium mb-2 block">{t('search.gender.label')}</label>
           <div className="flex flex-wrap gap-2">
             {GENDER_OPTIONS.map(option => (
               <button
@@ -417,12 +420,12 @@ function AdvancedSearchFiltersComponent({ filters, onFiltersChange, onClear }: A
 
         {/* Âge */}
         <div>
-          <label className="text-gray-300 text-sm font-medium mb-2 block">Âge</label>
+          <label className="text-gray-300 text-sm font-medium mb-2 block">{t('search.age.label')}</label>
           <div className="grid grid-cols-2 gap-2">
             <input
               ref={ageMinRef}
               type="number"
-              placeholder="Min (18)"
+              placeholder={t('search.age.min')}
               min="18"
               max="99"
               defaultValue={filters.ageMin?.toString() || ''}
@@ -432,7 +435,7 @@ function AdvancedSearchFiltersComponent({ filters, onFiltersChange, onClear }: A
             <input
               ref={ageMaxRef}
               type="number"
-              placeholder="Max (99)"
+              placeholder={t('search.age.max')}
               min="18"
               max="99"
               defaultValue={filters.ageMax?.toString() || ''}
@@ -444,7 +447,7 @@ function AdvancedSearchFiltersComponent({ filters, onFiltersChange, onClear }: A
 
         {/* Ethnie */}
         <div>
-          <label className="text-gray-300 text-sm font-medium mb-2 block">Ethnie</label>
+          <label className="text-gray-300 text-sm font-medium mb-2 block">{t('search.ethnicity.label')}</label>
           <div className="flex flex-wrap gap-2">
             {ETHNICITY_OPTIONS.map(option => (
               <button
@@ -465,7 +468,7 @@ function AdvancedSearchFiltersComponent({ filters, onFiltersChange, onClear }: A
 
         {/* Nationalité */}
         <div>
-          <label className="text-gray-300 text-sm font-medium mb-2 block">Nationalité</label>
+          <label className="text-gray-300 text-sm font-medium mb-2 block">{t('search.nationality.label')}</label>
           <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto pr-2">
             {NATIONALITY_OPTIONS.map(option => (
               <button
@@ -488,7 +491,7 @@ function AdvancedSearchFiltersComponent({ filters, onFiltersChange, onClear }: A
         <div>
           <label className="text-gray-300 text-sm font-medium mb-2 block flex items-center gap-2">
             <MapPin className="w-4 h-4 text-pink-400" />
-            Lieux de rendez-vous
+            {t('search.meetingPlaces')}
           </label>
           <div className="grid grid-cols-2 gap-2">
             {MEETING_PLACES.map(place => (
@@ -514,247 +517,11 @@ function AdvancedSearchFiltersComponent({ filters, onFiltersChange, onClear }: A
           </div>
         </div>
 
-        {/* Langues parlées */}
-        <div>
-          <label className="text-gray-300 text-sm font-medium mb-2 block flex items-center gap-2">
-            <Globe className="w-4 h-4 text-pink-400" />
-            Langues parlées
-          </label>
-          <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto pr-2">
-            {LANGUAGE_OPTIONS.map(option => (
-              <button
-                key={option.value}
-                onClick={() => toggleArrayFilter('languages', option.value)}
-                className={`px-3 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1 ${
-                  filters.languages?.includes(option.value)
-                    ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg'
-                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                }`}
-              >
-                <span>{option.flag}</span>
-                <span>{option.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
       </FilterSection>
 
-      {/* Attributs physiques */}
-      <FilterSection id="physical" title="Attributs physiques" icon={Ruler}>
-        {/* Bonnet */}
-        <div>
-          <label className="text-gray-300 text-sm font-medium mb-2 block">Bonnet</label>
-          <div className="flex flex-wrap gap-2">
-            {CUP_SIZE_OPTIONS.map(size => (
-              <button
-                key={size}
-                onClick={() => toggleArrayFilter('cupSize', size)}
-                className={`w-10 h-10 rounded-lg text-sm font-bold transition-all ${
-                  filters.cupSize?.includes(size)
-                    ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg scale-110'
-                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                }`}
-              >
-                {size}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Hauteur */}
-        <div>
-          <label className="text-gray-300 text-sm font-medium mb-2 block">Hauteur (cm)</label>
-          <div className="grid grid-cols-2 gap-2">
-            <input
-              ref={heightMinRef}
-              type="number"
-              placeholder="Min (140)"
-              min="140"
-              max="210"
-              defaultValue={filters.heightMin?.toString() || ''}
-              onBlur={() => handleNumberInputBlur('heightMin', heightMinRef)}
-              className="w-full bg-gray-800 text-white px-3 py-2 rounded-lg border border-gray-700 focus:border-pink-500 focus:outline-none text-sm"
-            />
-            <input
-              ref={heightMaxRef}
-              type="number"
-              placeholder="Max (210)"
-              min="140"
-              max="210"
-              defaultValue={filters.heightMax?.toString() || ''}
-              onBlur={() => handleNumberInputBlur('heightMax', heightMaxRef)}
-              className="w-full bg-gray-800 text-white px-3 py-2 rounded-lg border border-gray-700 focus:border-pink-500 focus:outline-none text-sm"
-            />
-          </div>
-        </div>
-
-        {/* Poids */}
-        <div>
-          <label className="text-gray-300 text-sm font-medium mb-2 block">Poids (kg)</label>
-          <div className="grid grid-cols-2 gap-2">
-            <input
-              ref={weightMinRef}
-              type="number"
-              placeholder="Min (40)"
-              min="40"
-              max="150"
-              defaultValue={filters.weightMin?.toString() || ''}
-              onBlur={() => handleNumberInputBlur('weightMin', weightMinRef)}
-              className="w-full bg-gray-800 text-white px-3 py-2 rounded-lg border border-gray-700 focus:border-pink-500 focus:outline-none text-sm"
-            />
-            <input
-              ref={weightMaxRef}
-              type="number"
-              placeholder="Max (150)"
-              min="40"
-              max="150"
-              defaultValue={filters.weightMax?.toString() || ''}
-              onBlur={() => handleNumberInputBlur('weightMax', weightMaxRef)}
-              className="w-full bg-gray-800 text-white px-3 py-2 rounded-lg border border-gray-700 focus:border-pink-500 focus:outline-none text-sm"
-            />
-          </div>
-        </div>
-
-        {/* Cheveux */}
-        <div>
-          <label className="text-gray-300 text-sm font-medium mb-2 block">Cheveux</label>
-          <div className="flex flex-wrap gap-2">
-            {HAIR_COLOR_OPTIONS.map(option => (
-              <button
-                key={option.value}
-                onClick={() => toggleArrayFilter('hairColor', option.value)}
-                className={`px-3 py-2 rounded-lg text-sm transition-all ${
-                  filters.hairColor?.includes(option.value)
-                    ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg'
-                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                }`}
-              >
-                <span className="mr-1">{option.icon}</span>
-                {option.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Yeux */}
-        <div>
-          <label className="text-gray-300 text-sm font-medium mb-2 block">Yeux</label>
-          <div className="flex flex-wrap gap-2">
-            {EYE_COLOR_OPTIONS.map(option => (
-              <button
-                key={option.value}
-                onClick={() => toggleArrayFilter('eyeColor', option.value)}
-                className={`px-3 py-2 rounded-lg text-sm transition-all ${
-                  filters.eyeColor?.includes(option.value)
-                    ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg'
-                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                }`}
-              >
-                <span className="mr-1">{option.icon}</span>
-                {option.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Silhouette */}
-        <div>
-          <label className="text-gray-300 text-sm font-medium mb-2 block">Silhouette</label>
-          <div className="flex flex-wrap gap-2">
-            {BODY_TYPE_OPTIONS.map(option => (
-              <button
-                key={option.value}
-                onClick={() => toggleArrayFilter('bodyType', option.value)}
-                className={`px-3 py-2 rounded-lg text-sm transition-all ${
-                  filters.bodyType?.includes(option.value)
-                    ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg'
-                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                }`}
-              >
-                <span className="mr-1">{option.icon}</span>
-                {option.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Maillot */}
-        <div>
-          <label className="text-gray-300 text-sm font-medium mb-2 block">Maillot</label>
-          <div className="flex flex-wrap gap-2">
-            {PUBIC_HAIR_OPTIONS.map(option => (
-              <button
-                key={option.value}
-                onClick={() => toggleArrayFilter('pubicHair', option.value)}
-                className={`px-3 py-2 rounded-lg text-sm transition-all ${
-                  filters.pubicHair?.includes(option.value)
-                    ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg'
-                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                }`}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Tatouages */}
-        <div>
-          <label className="text-gray-300 text-sm font-medium mb-2 block">Tatouages</label>
-          <div className="flex gap-2">
-            <button
-              onClick={() => updateFilter('tattoos', filters.tattoos === true ? null : true)}
-              className={`flex-1 px-3 py-2 rounded-lg text-sm transition-all ${
-                filters.tattoos === true
-                  ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg'
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-              }`}
-            >
-              Avec tatouages
-            </button>
-            <button
-              onClick={() => updateFilter('tattoos', filters.tattoos === false ? null : false)}
-              className={`flex-1 px-3 py-2 rounded-lg text-sm transition-all ${
-                filters.tattoos === false
-                  ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg'
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-              }`}
-            >
-              Sans tatouages
-            </button>
-          </div>
-        </div>
-
-        {/* Piercings */}
-        <div>
-          <label className="text-gray-300 text-sm font-medium mb-2 block">Piercings</label>
-          <div className="flex gap-2">
-            <button
-              onClick={() => updateFilter('piercings', filters.piercings === true ? null : true)}
-              className={`flex-1 px-3 py-2 rounded-lg text-sm transition-all ${
-                filters.piercings === true
-                  ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg'
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-              }`}
-            >
-              Avec piercings
-            </button>
-            <button
-              onClick={() => updateFilter('piercings', filters.piercings === false ? null : false)}
-              className={`flex-1 px-3 py-2 rounded-lg text-sm transition-all ${
-                filters.piercings === false
-                  ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg'
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-              }`}
-            >
-              Sans piercings
-            </button>
-          </div>
-        </div>
-      </FilterSection>
 
       {/* Méta */}
-      <FilterSection id="meta" title="Autres filtres" icon={Shield}>
+      <FilterSection id="meta" title={t('search.otherFilters')} icon={Shield}>
         <div className="space-y-3">
           <button
             onClick={() => updateFilter('verified', filters.verified ? undefined : true)}
@@ -766,7 +533,7 @@ function AdvancedSearchFiltersComponent({ filters, onFiltersChange, onClear }: A
           >
             <span className="flex items-center gap-2">
               <Shield className="w-4 h-4" />
-              Uniquement profils vérifiés
+              {t('search.verifiedOnly')}
             </span>
             {filters.verified && <span className="text-lg">✓</span>}
           </button>
@@ -781,7 +548,7 @@ function AdvancedSearchFiltersComponent({ filters, onFiltersChange, onClear }: A
           >
             <span className="flex items-center gap-2">
               <MessageCircle className="w-4 h-4" />
-              Uniquement avec commentaires
+              {t('search.withCommentsOnly')}
             </span>
             {filters.hasComments && <span className="text-lg">✓</span>}
           </button>

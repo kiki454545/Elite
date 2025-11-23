@@ -9,6 +9,9 @@
     "meetingPlaces": "Lieux de rendez-vous",
     "languages": "Langues parlées",
     "otherFilters": "Autres filtres",
+    "city": "Ville",
+    "cityPlaceholder": "Rechercher une ville...",
+    "allCities": "Toutes les villes",
 
     "gender": {
       "label": "Sexe",

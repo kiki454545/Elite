@@ -182,7 +182,11 @@ export default function CreateAdPage() {
           country: country,
           nearby_cities: filteredNearbyCities,
           categories: formData.categories,
-          meeting_places: formData.meetingPlaces,
+          // Transformer meeting_places en champs booléens
+          meeting_at_home: formData.meetingPlaces.includes('home'),
+          meeting_at_hotel: formData.meetingPlaces.includes('hotel'),
+          meeting_in_car: formData.meetingPlaces.includes('car'),
+          meeting_at_escort: formData.meetingPlaces.includes('escort'),
           services: formData.services,
           price: formData.price,
           photos: photoUrls,

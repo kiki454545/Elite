@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 import { MapPin, Navigation, X } from 'lucide-react'
 import { CITIES_BY_COUNTRY } from '@/data/cities'
 import { useCountry } from '@/contexts/CountryContext'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface City {
   name: string
@@ -26,6 +27,7 @@ const RADIUS_OPTIONS = [
 
 export function LocationSearch({ onLocationChange, className = '' }: LocationSearchProps) {
   const { selectedCountry } = useCountry()
+  const { t } = useLanguage()
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCity, setSelectedCity] = useState<City | null>(null)
   const [selectedRadius, setSelectedRadius] = useState<number | null>(null)
@@ -85,14 +87,14 @@ export function LocationSearch({ onLocationChange, className = '' }: LocationSea
       {/* Sélecteur de ville */}
       <div className="relative" ref={dropdownRef}>
         <label className="text-gray-300 text-sm font-medium mb-2 block">
-          Ville
+          {t('search.city')}
         </label>
         <div className="relative">
           <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none z-10" />
           <input
             ref={inputRef}
             type="text"
-            placeholder="Rechercher une ville..."
+            placeholder={t('search.cityPlaceholder')}
             value={searchQuery}
             onChange={(e) => {
               const value = e.target.value
