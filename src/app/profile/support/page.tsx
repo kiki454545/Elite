@@ -304,9 +304,6 @@ export default function SupportPage() {
                             minute: '2-digit'
                           })}
                         </span>
-                        <span className={`font-medium ${getPriorityColor(selectedTicket.priority)}`}>
-                          {t('supportPage.priority')}: {getPriorityText(selectedTicket.priority)}
-                        </span>
                       </div>
                     </div>
                   </div>
@@ -461,22 +458,6 @@ export default function SupportPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">
-                        {t('supportPage.priority')}
-                      </label>
-                      <select
-                        value={priority}
-                        onChange={(e) => setPriority(e.target.value as any)}
-                        className="w-full bg-gray-800 text-white px-4 py-3 rounded-lg border border-gray-700 focus:border-purple-500 focus:outline-none"
-                      >
-                        <option value="low">{t('supportPage.priorityLow')}</option>
-                        <option value="normal">{t('supportPage.priorityNormal')}</option>
-                        <option value="high">{t('supportPage.priorityHigh')}</option>
-                        <option value="urgent">{t('supportPage.priorityUrgent')}</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
                         {t('supportPage.message')}
                       </label>
                       <textarea
@@ -568,9 +549,6 @@ export default function SupportPage() {
                             <span className="flex items-center gap-1">
                               <Clock className="w-4 h-4" />
                               {new Date(ticket.created_at).toLocaleDateString('fr-FR')}
-                            </span>
-                            <span className={`font-medium ${getPriorityColor(ticket.priority)}`}>
-                              {getPriorityText(ticket.priority)}
                             </span>
                           </div>
                         </div>

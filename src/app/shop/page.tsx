@@ -10,13 +10,6 @@ import { supabase } from '@/lib/supabase'
 import { Notification, NotificationType } from '@/components/Notification'
 import { useLanguage } from '@/contexts/LanguageContext'
 
-// Déclaration TypeScript pour la fonction Dédipass
-declare global {
-  interface Window {
-    dedipassUpdate?: () => void
-  }
-}
-
 interface CoinPackage {
   id: string
   coins: number
@@ -180,12 +173,7 @@ export default function ShopPage() {
     vip: 30,
     elite: 30,
   })
-  const [showDedipassModal, setShowDedipassModal] = useState(false)
-  const [currentPurchase, setCurrentPurchase] = useState<{ packageId: string, price: number, coins: number } | null>(null)
-  const [dedipassCode, setDedipassCode] = useState('')
-  const [isValidating, setIsValidating] = useState(false)
-  const [validationError, setValidationError] = useState('')
-  const [showPaymentOptions, setShowPaymentOptions] = useState(false)
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false)
   const [notification, setNotification] = useState<{
     isVisible: boolean
     type: NotificationType
@@ -216,53 +204,7 @@ export default function ShopPage() {
     }
 
     fetchUserCoins()
-
-    // Charger le script Dédipass une seule fois au chargement de la page
-    if (!document.getElementById('dedipass-script')) {
-      console.log('📦 Chargement initial du script Dédipass')
-      const script = document.createElement('script')
-      script.src = 'https://api.dedipass.com/v1/pay.js'
-      script.id = 'dedipass-script'
-      script.async = true
-
-      script.onload = () => {
-        console.log('✅ Script Dédipass chargé au montage du composant')
-      }
-
-      script.onerror = () => {
-        console.error('❌ Erreur de chargement du script Dédipass')
-      }
-
-      document.body.appendChild(script)
-    }
   }, [])
-
-  // Rafraîchir le widget Dédipass quand le modal s'ouvre
-  useEffect(() => {
-    if (showDedipassModal && currentPurchase) {
-      console.log('🔄 Modal ouvert, rafraîchissement du widget...')
-
-      // Attendre que le DOM soit mis à jour avec le modal
-      const timer = setTimeout(() => {
-        const widgetContainer = document.querySelector('[data-dedipass]')
-        console.log('📦 Conteneur widget:', widgetContainer)
-
-        if (window.dedipassUpdate) {
-          console.log('🔄 Appel de window.dedipassUpdate()')
-          try {
-            window.dedipassUpdate()
-            console.log('✅ Widget rafraîchi')
-          } catch (error) {
-            console.error('❌ Erreur lors du rafraîchissement:', error)
-          }
-        } else {
-          console.warn('⚠️ window.dedipassUpdate() non disponible - Le script est-il chargé ?')
-        }
-      }, 300)
-
-      return () => clearTimeout(timer)
-    }
-  }, [showDedipassModal, currentPurchase])
 
 
   const calculateCoinPrice = (baseCoinPrice: number, days: number) => {
@@ -297,70 +239,44 @@ export default function ShopPage() {
       return
     }
 
-    // Sauvegarder les infos de l'achat
-    setCurrentPurchase({ packageId, price, coins })
-
-    // Réinitialiser les états
-    setDedipassCode('')
-    setValidationError('')
-    setIsValidating(false)
-
-    // Ouvrir le modal Dédipass
-    setShowDedipassModal(true)
-  }
-
-  const handleValidateCode = async () => {
-    if (!dedipassCode.trim()) {
-      setValidationError('Veuillez entrer votre code Dédipass')
-      return
-    }
-
-    setIsValidating(true)
-    setValidationError('')
+    setIsProcessingPayment(true)
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-
-      if (!user) {
-        setValidationError('Vous devez être connecté')
-        setIsValidating(false)
-        return
-      }
-
-      // Appeler l'API de validation
-      const response = await fetch('/api/dedipass/callback', {
+      // Créer une session de paiement Stripe
+      const response = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          code: dedipassCode,
+          packageId,
+          price,
+          coins,
           userId: user.id,
-          packageId: currentPurchase?.packageId,
         }),
       })
 
       const data = await response.json()
 
-      if (response.ok && data.success) {
-        // Succès - créditer les coins et fermer la modale
-        setEliteCoins(data.newBalance)
-        setShowDedipassModal(false)
-        setDedipassCode('')
-        showNotification(
-          'success',
-          'Achat réussi !',
-          `${data.coinsAdded} EliteCoins ont été ajoutés à votre compte. Nouveau solde: ${data.newBalance} EC`
-        )
+      if (response.ok && data.url) {
+        // Rediriger vers Stripe Checkout
+        window.location.href = data.url
       } else {
-        // Erreur de validation
-        setValidationError(data.error || 'Code invalide ou déjà utilisé')
+        showNotification(
+          'error',
+          'Erreur',
+          data.error || 'Impossible de créer la session de paiement'
+        )
+        setIsProcessingPayment(false)
       }
     } catch (error) {
-      console.error('Erreur lors de la validation:', error)
-      setValidationError('Erreur de connexion. Veuillez réessayer.')
-    } finally {
-      setIsValidating(false)
+      console.error('Erreur lors de la création de la session Stripe:', error)
+      showNotification(
+        'error',
+        'Erreur serveur',
+        'Impossible de traiter votre demande. Veuillez réessayer.'
+      )
+      setIsProcessingPayment(false)
     }
   }
 
@@ -617,12 +533,24 @@ export default function ShopPage() {
 
                     {/* Purchase Button */}
                     <motion.button
-                      whileTap={{ scale: 0.98 }}
+                      whileTap={{ scale: isProcessingPayment ? 1 : 0.98 }}
                       onClick={() => handleBuyCoins(pkg.id, pkg.price, pkg.coins + (pkg.bonus || 0))}
-                      className="w-full bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-gray-900 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg"
+                      disabled={isProcessingPayment}
+                      className={`w-full bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-gray-900 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg ${
+                        isProcessingPayment ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
                     >
-                      <ShoppingCart className="w-5 h-5" />
-                      <span>{t('shop.buy')}</span>
+                      {isProcessingPayment ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
+                          <span>Traitement...</span>
+                        </>
+                      ) : (
+                        <>
+                          <ShoppingCart className="w-5 h-5" />
+                          <span>{t('shop.buy')}</span>
+                        </>
+                      )}
                     </motion.button>
                   </div>
                 </motion.div>
@@ -759,7 +687,7 @@ export default function ShopPage() {
                               {t('shop.save', { percent: savingsPercent })}
                             </div>
                           )
-                        } else if (selectedDurations[offer.id] === 30) {
+                        } else if (offer.id === 'elite' && selectedDurations[offer.id] === 30) {
                           return (
                             <div className="text-amber-400 text-xs mt-1">
                               {t('shop.bestValue')}
@@ -787,7 +715,7 @@ export default function ShopPage() {
 
                     {/* Purchase Button */}
                     <motion.button
-                      whileTap={{ scale: 0.98 }}
+                      whileTap={{ scale: eliteCoins < calculateCoinPrice(offer.coinPrice, selectedDurations[offer.id]) ? 1 : 0.98 }}
                       onClick={() => handleBuyRank(
                         offer.id,
                         selectedDurations[offer.id],
@@ -799,7 +727,9 @@ export default function ShopPage() {
                           : offer.id === 'vip'
                           ? 'from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700'
                           : 'from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600'
-                      } text-white py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg`}
+                      } text-white py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg ${
+                        eliteCoins < calculateCoinPrice(offer.coinPrice, selectedDurations[offer.id]) ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
                       disabled={eliteCoins < calculateCoinPrice(offer.coinPrice, selectedDurations[offer.id])}
                     >
                       <span>
@@ -825,132 +755,13 @@ export default function ShopPage() {
         >
           <div className="flex items-center justify-center gap-2 text-gray-400 mb-2">
             <Shield className="w-5 h-5" />
-            <span>{t('shop.securePaymentBy')}</span>
+            <span>Paiement sécurisé par Stripe</span>
           </div>
           <p className="text-gray-500 text-sm">
-            {t('shop.securePaymentInfo')}
+            Vos données de paiement sont cryptées et sécurisées. Nous acceptons toutes les cartes bancaires.
           </p>
         </motion.div>
       </div>
-
-      {/* Modal Dédipass */}
-      <AnimatePresence>
-        {showDedipassModal && currentPurchase && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-            onClick={() => setShowDedipassModal(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-gray-900 rounded-2xl border border-gray-800 p-6 max-w-lg w-full"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Header */}
-              <div className="flex items-center justify-between mb-5">
-                <h2 className="text-xl font-bold text-white">{t('shop.paymentSecure')}</h2>
-                <button
-                  onClick={() => setShowDedipassModal(false)}
-                  className="text-gray-400 hover:text-white transition-colors"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-
-              {/* Récapitulatif de l'achat */}
-              <div className="bg-gradient-to-br from-amber-500/10 to-yellow-500/10 rounded-xl p-4 mb-5 border border-amber-400/30">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-amber-500/20 rounded-full flex items-center justify-center">
-                      <Coins className="w-5 h-5 text-amber-400" />
-                    </div>
-                    <div>
-                      <div className="text-amber-400 font-bold text-2xl">{currentPurchase.coins} EC</div>
-                      <div className="text-gray-400 text-sm">{t('shop.eliteCoins')}</div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-3xl font-bold text-white">{currentPurchase.price}€</div>
-                    <div className="text-sm text-gray-400">TTC</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Widget Dédipass */}
-              <div className="bg-gray-800/50 rounded-xl p-4 mb-6 max-h-[400px] overflow-y-auto">
-                <h3 className="text-white font-bold mb-3 text-center text-sm">{t('shop.choosePaymentMethod')}</h3>
-                <div className="bg-white rounded-lg p-2" style={{ maxWidth: '100%', overflow: 'hidden' }}>
-                  <div
-                    data-dedipass="493e04c66c01aeca43780caecd67b4ff"
-                    data-dedipass-custom=""
-                    style={{
-                      maxWidth: '100%',
-                      fontSize: '12px',
-                      transform: 'scale(0.95)',
-                      transformOrigin: 'top center'
-                    }}
-                  ></div>
-                </div>
-                <p className="text-gray-400 text-xs text-center mt-2">
-                  {t('shop.afterPaymentEnterCode')}
-                </p>
-              </div>
-
-              {/* Code Validation Form */}
-              <div className="bg-gray-800/50 rounded-xl p-4">
-                <label className="block text-white font-bold mb-2 text-sm">
-                  {t('shop.iReceivedMyCode')}
-                </label>
-
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={dedipassCode}
-                    onChange={(e) => setDedipassCode(e.target.value.toUpperCase())}
-                    placeholder="ABCD1234"
-                    className="flex-1 bg-gray-900 text-white px-4 py-2.5 rounded-lg border border-gray-700 focus:border-amber-500 focus:outline-none placeholder-gray-500 text-center font-mono text-lg"
-                    disabled={isValidating}
-                  />
-
-                  <motion.button
-                    whileTap={{ scale: 0.98 }}
-                    onClick={handleValidateCode}
-                    disabled={isValidating || !dedipassCode.trim()}
-                    className={`px-6 py-2.5 rounded-lg font-bold transition-all ${
-                      isValidating || !dedipassCode.trim()
-                        ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                        : 'bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-gray-900'
-                    }`}
-                  >
-                    {isValidating ? (
-                      <div className="w-5 h-5 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
-                    ) : (
-                      t('shop.validate')
-                    )}
-                  </motion.button>
-                </div>
-
-                {/* Error Message */}
-                {validationError && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mt-2 bg-red-500/20 border border-red-500/30 rounded-lg p-2 text-red-400 text-xs"
-                  >
-                    ❌ {validationError}
-                  </motion.div>
-                )}
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   )
 }

@@ -674,7 +674,8 @@
     "ticketResolvedClosed": "✓ This ticket has been resolved and closed",
     "noTickets": "No tickets",
     "noTicketsDesc": "You haven't created any support tickets yet",
-    "createFirstTicket": "Create my first ticket"
+    "createFirstTicket": "Create my first ticket",
+    "cancel": "Cancel"
   },
   "warningsPage": {
     "title": "My Warnings",

@@ -19,6 +19,7 @@ interface SupportTicket {
   updated_at: string
   user?: {
     username: string
+    rank: string
   }
 }
 
@@ -219,16 +220,16 @@ export default function AdminPage() {
       const { data, error } = await supabase
         .from('support_tickets')
         .select('*')
-        .order('created_at', { ascending: false })
+        .order('created_at', { ascending: true })
 
       if (error) throw error
 
-      // Charger les infos utilisateur pour chaque ticket
+      // Charger les infos utilisateur pour chaque ticket avec le rang
       const ticketsWithUsers = await Promise.all(
         (data || []).map(async (ticket) => {
           const { data: userData } = await supabase
             .from('profiles')
-            .select('username')
+            .select('username, rank')
             .eq('id', ticket.user_id)
             .single()
 
@@ -239,7 +240,28 @@ export default function AdminPage() {
         })
       )
 
-      setTickets(ticketsWithUsers)
+      // Trier par rang (Elite > VIP > Plus > Standard) puis par date (plus ancien d'abord)
+      const rankPriority: Record<string, number> = {
+        'elite': 4,
+        'vip': 3,
+        'plus': 2,
+        'standard': 1
+      }
+
+      const sortedTickets = ticketsWithUsers.sort((a, b) => {
+        const rankA = rankPriority[a.user?.rank || 'standard'] || 1
+        const rankB = rankPriority[b.user?.rank || 'standard'] || 1
+
+        // Si les rangs sont différents, trier par rang (du plus élevé au plus bas)
+        if (rankA !== rankB) {
+          return rankB - rankA
+        }
+
+        // Si même rang, trier par date (du plus ancien au plus récent)
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      })
+
+      setTickets(sortedTickets)
     } catch (error) {
       console.error('Erreur lors du chargement des tickets:', error)
     } finally {
@@ -735,6 +757,35 @@ export default function AdminPage() {
     }
   }
 
+  const getRankBadge = (rank: string) => {
+    switch (rank) {
+      case 'elite':
+        return (
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-gradient-to-r from-amber-400 to-yellow-500 text-gray-900">
+            👑 ELITE
+          </span>
+        )
+      case 'vip':
+        return (
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-gradient-to-r from-purple-500 to-pink-600 text-white">
+            💎 VIP
+          </span>
+        )
+      case 'plus':
+        return (
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-gradient-to-r from-blue-500 to-cyan-500 text-white">
+            ⭐ PLUS
+          </span>
+        )
+      default:
+        return (
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-700 text-gray-300">
+            Standard
+          </span>
+        )
+    }
+  }
+
   // Computed values
   const pendingTickets = tickets.filter(t => t.status !== 'closed').length
   const pendingVerifications = verificationRequests.filter(v => v.status === 'pending').length
@@ -962,11 +1013,18 @@ export default function AdminPage() {
                           <h3 className="text-white font-semibold">{ticket.subject}</h3>
                           <AlertCircle className={`w-4 h-4 ${getPriorityColor(ticket.priority)}`} />
                         </div>
-                        <div className="flex items-center gap-2 text-xs text-gray-400 mb-2">
+                        <div className="flex items-center gap-2 text-xs text-gray-400 mb-2 flex-wrap">
                           <User className="w-3 h-3" />
                           <span>{ticket.user?.username || 'Utilisateur inconnu'}</span>
+                          {ticket.user?.rank && getRankBadge(ticket.user.rank)}
                           <Calendar className="w-3 h-3 ml-2" />
-                          <span>{new Date(ticket.created_at).toLocaleDateString('fr-FR')}</span>
+                          <span>{new Date(ticket.created_at).toLocaleDateString('fr-FR', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}</span>
                         </div>
 
                         {selectedTicket?.id === ticket.id ? (
