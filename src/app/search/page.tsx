@@ -280,10 +280,56 @@ export default function SearchPage() {
     'non-binaire': 'non-binary'
   }
 
-  const filteredAds = useMemo(() => {
-    console.log('🔍 Filtrage des annonces - Filtres actifs:', advancedFilters)
-    console.log('📊 Total annonces avant filtrage:', allAds.length)
+  const ethnicityMap: Record<string, string> = {
+    'caucasienne': 'caucasian',
+    'africaine': 'african',
+    'asiatique': 'asian',
+    'latine': 'latina',
+    'arabe': 'arab',
+    'metisse': 'mixed',
+    'indienne': 'indian',
+    'autre': 'other'
+  }
 
+  const hairColorMap: Record<string, string> = {
+    'blonde': 'blonde',
+    'brune': 'brunette',
+    'rousse': 'redhead',
+    'chatain': 'brown',
+    'noire': 'black',
+    'grise': 'gray',
+    'blanche': 'white',
+    'coloree': 'colored',
+    'autre': 'other'
+  }
+
+  const eyeColorMap: Record<string, string> = {
+    'bleus': 'blue',
+    'verts': 'green',
+    'marrons': 'brown',
+    'noirs': 'black',
+    'gris': 'gray',
+    'noisette': 'hazel',
+    'autre': 'other'
+  }
+
+  const bodyTypeMap: Record<string, string> = {
+    'mince': 'slim',
+    'athletique': 'athletic',
+    'moyenne': 'average',
+    'ronde': 'curvy',
+    'pulpeuse': 'voluptuous',
+    'musclee': 'muscular'
+  }
+
+  const pubicHairMap: Record<string, string> = {
+    'rasee': 'shaved',
+    'taillee': 'trimmed',
+    'naturelle': 'natural',
+    'epilee': 'waxed'
+  }
+
+  const filteredAds = useMemo(() => {
     // Vérifier si des filtres sont actifs
     const hasFilters = selectedCategory !== '' ||
       selectedCity !== null ||
@@ -299,11 +345,6 @@ export default function SearchPage() {
     }
 
     const results = allAds.filter(ad => {
-      // Log du premier filtre de genre pour debug
-      if (advancedFilters.gender && advancedFilters.gender.length > 0 && allAds.indexOf(ad) < 3) {
-        console.log(`📝 Annonce ${allAds.indexOf(ad)}: username=${ad.username}, gender=${(ad as any).gender}`)
-      }
-
       // Recherche textuelle (uniquement dans le pseudo) - minimum 2 caractères
       const matchesSearch = searchQuery.length < 2 ||
         ad.username.toLowerCase().includes(searchQuery.toLowerCase())
@@ -321,23 +362,19 @@ export default function SearchPage() {
 
     // Genre - Mapper les valeurs françaises vers les valeurs anglaises de la base
     const matchesGender = !advancedFilters.gender || advancedFilters.gender.length === 0 ||
-      ((ad as any).gender && advancedFilters.gender.some(frenchGender => {
-        const mappedGender = genderMap[frenchGender]
-        const adGender = (ad as any).gender
-        const matches = mappedGender === adGender
-        if (advancedFilters.gender && advancedFilters.gender.length > 0) {
-          console.log(`   Genre - Filtre: ${frenchGender} (${mappedGender}) vs Annonce: ${adGender} => ${matches}`)
-        }
-        return matches
-      }))
+      ((ad as any).gender && advancedFilters.gender.some(frenchGender =>
+        genderMap[frenchGender] === (ad as any).gender
+      ))
 
     // Âge
     const matchesAgeMin = !advancedFilters.ageMin || ad.age >= advancedFilters.ageMin
     const matchesAgeMax = !advancedFilters.ageMax || ad.age <= advancedFilters.ageMax
 
-    // Ethnie
+    // Ethnie - Mapper les valeurs françaises vers les valeurs anglaises
     const matchesEthnicity = !advancedFilters.ethnicity || advancedFilters.ethnicity.length === 0 ||
-      (ad as any).ethnicity && advancedFilters.ethnicity.includes((ad as any).ethnicity)
+      ((ad as any).ethnicity && advancedFilters.ethnicity.some(frenchEthnicity =>
+        ethnicityMap[frenchEthnicity] === (ad as any).ethnicity
+      ))
 
     // Nationalité
     const matchesNationality = !advancedFilters.nationality || advancedFilters.nationality.length === 0 ||
@@ -355,21 +392,29 @@ export default function SearchPage() {
     const matchesWeightMin = !advancedFilters.weightMin || ((ad as any).weight && (ad as any).weight >= advancedFilters.weightMin)
     const matchesWeightMax = !advancedFilters.weightMax || ((ad as any).weight && (ad as any).weight <= advancedFilters.weightMax)
 
-    // Cheveux
+    // Cheveux - Mapper les valeurs françaises vers les valeurs anglaises
     const matchesHairColor = !advancedFilters.hairColor || advancedFilters.hairColor.length === 0 ||
-      (ad as any).hair_color && advancedFilters.hairColor.includes((ad as any).hair_color)
+      ((ad as any).hair_color && advancedFilters.hairColor.some(frenchHair =>
+        hairColorMap[frenchHair] === (ad as any).hair_color
+      ))
 
-    // Yeux
+    // Yeux - Mapper les valeurs françaises vers les valeurs anglaises
     const matchesEyeColor = !advancedFilters.eyeColor || advancedFilters.eyeColor.length === 0 ||
-      (ad as any).eye_color && advancedFilters.eyeColor.includes((ad as any).eye_color)
+      ((ad as any).eye_color && advancedFilters.eyeColor.some(frenchEye =>
+        eyeColorMap[frenchEye] === (ad as any).eye_color
+      ))
 
-    // Silhouette
+    // Silhouette - Mapper les valeurs françaises vers les valeurs anglaises
     const matchesBodyType = !advancedFilters.bodyType || advancedFilters.bodyType.length === 0 ||
-      (ad as any).body_type && advancedFilters.bodyType.includes((ad as any).body_type)
+      ((ad as any).body_type && advancedFilters.bodyType.some(frenchBody =>
+        bodyTypeMap[frenchBody] === (ad as any).body_type
+      ))
 
-    // Maillot
+    // Maillot - Mapper les valeurs françaises vers les valeurs anglaises
     const matchesPubicHair = !advancedFilters.pubicHair || advancedFilters.pubicHair.length === 0 ||
-      (ad as any).pubic_hair && advancedFilters.pubicHair.includes((ad as any).pubic_hair)
+      ((ad as any).pubic_hair && advancedFilters.pubicHair.some(frenchPubic =>
+        pubicHairMap[frenchPubic] === (ad as any).pubic_hair
+      ))
 
     // Tatouages
     const matchesTattoos = advancedFilters.tattoos === null || advancedFilters.tattoos === undefined ||
@@ -382,10 +427,10 @@ export default function SearchPage() {
     // Lieux de rendez-vous
     const matchesMeetingPlaces = !advancedFilters.meetingPlaces || advancedFilters.meetingPlaces.length === 0 ||
       advancedFilters.meetingPlaces.some(place => {
-        if (place === 'home') return (ad as any).meeting_at_home
-        if (place === 'hotel') return (ad as any).meeting_at_hotel
-        if (place === 'car') return (ad as any).meeting_in_car
-        if (place === 'escort') return (ad as any).meeting_at_escort
+        if (place === 'home') return (ad as any).meeting_at_home === true
+        if (place === 'hotel') return (ad as any).meeting_at_hotel === true
+        if (place === 'car') return (ad as any).meeting_in_car === true
+        if (place === 'escort') return (ad as any).meeting_at_escort === true
         return false
       })
 
@@ -410,7 +455,6 @@ export default function SearchPage() {
         matchesVerified && matchesHasComments
     })
 
-    console.log(`✅ Résultats après filtrage: ${results.length} annonces`)
     return results
   }, [allAds, searchQuery, selectedCategory, selectedCity, advancedFilters])
 
