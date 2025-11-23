@@ -31,15 +31,45 @@ interface AdWithDistance extends Ad {
   distance_km?: number
 }
 
-function RankBadge({ rank }: { rank: RankType }) {
-  if (rank === 'standard') return null
-  const config = RANK_CONFIG[rank]
+function RankBadge() {
+  // Badges de rang désactivés
+  return null
+}
+
+function NewBadge({ createdAt }: { createdAt: Date }) {
+  const { language } = useLanguage()
+
+  // Vérifier si l'annonce a été créée dans les derniers 7 jours
+  const isNew = () => {
+    const now = new Date()
+    const created = new Date(createdAt)
+    const diffInHours = (now.getTime() - created.getTime()) / (1000 * 60 * 60)
+    return diffInHours <= 168 // 7 jours = 168 heures
+  }
+
+  if (!isNew()) return null
+
+  // Badge pour anglais
+  if (language === 'en') {
+    return (
+      <div className="absolute top-0 right-0 overflow-hidden w-24 h-24 pointer-events-none">
+        <div className="absolute top-3 right-[-32px] bg-gradient-to-r from-rose-600 to-pink-600 text-white text-center py-1 px-8 rotate-45 shadow-lg shadow-pink-600/60">
+          <span className="text-[11px] font-bold tracking-wider uppercase">
+            {'\u2009\u2009\u2009\u2009NEW\u2009\u2009\u2009\u2009\u2009\u2009'}
+          </span>
+        </div>
+      </div>
+    )
+  }
+
+  // Badge pour français
   return (
-    <div className={`absolute top-3 left-3 flex items-center gap-1.5 ${config.bgColor} backdrop-blur-md px-2.5 py-1.5 rounded-lg border ${config.borderColor} shadow-lg`}>
-      <span className="text-sm">{config.icon}</span>
-      <span className={`text-xs font-bold ${config.textColor} tracking-wider`}>
-        {config.label}
-      </span>
+    <div className="absolute top-0 right-0 overflow-hidden w-24 h-24 pointer-events-none">
+      <div className="absolute top-3 right-[-32px] bg-gradient-to-r from-rose-600 to-pink-600 text-white text-center py-1 px-8 rotate-45 shadow-lg shadow-pink-600/60">
+        <span className="text-[11px] font-bold tracking-wider uppercase">
+          Nouveau
+        </span>
+      </div>
     </div>
   )
 }
@@ -313,11 +343,25 @@ export default function SearchPage() {
   }
 
   // Filtrer les vraies annonces (côté client, INSTANTANÉ !) - avec useMemo pour éviter les re-renders
-  const filteredAds = useMemo(() => allAds.filter(ad => {
-    // Recherche textuelle
-    const matchesSearch = searchQuery === '' ||
-      ad.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      ad.description.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredAds = useMemo(() => {
+    // Vérifier si des filtres sont actifs
+    const hasFilters = selectedCategory !== '' ||
+      selectedCity !== null ||
+      Object.keys(advancedFilters).some(key => {
+        const value = advancedFilters[key as keyof AdvancedSearchFiltersData]
+        if (Array.isArray(value)) return value.length > 0
+        return value !== undefined && value !== null
+      })
+
+    // Ne rien afficher si aucun filtre n'est actif et que la recherche est vide
+    if (searchQuery === '' && !hasFilters) {
+      return []
+    }
+
+    return allAds.filter(ad => {
+      // Recherche textuelle (uniquement dans le pseudo)
+      const matchesSearch = searchQuery === '' ||
+        ad.username.toLowerCase().includes(searchQuery.toLowerCase())
 
     // Catégorie
     const matchesCategory = selectedCategory === '' ||
@@ -398,16 +442,17 @@ export default function SearchPage() {
     // Commentaires
     const matchesHasComments = !advancedFilters.hasComments || (ad as any).has_comments
 
-    return matchesSearch && matchesCategory && matchesPhone &&
-      matchesGender && matchesAgeMin && matchesAgeMax &&
-      matchesEthnicity && matchesNationality &&
-      matchesCupSize && matchesHeightMin && matchesHeightMax &&
-      matchesWeightMin && matchesWeightMax &&
-      matchesHairColor && matchesEyeColor && matchesBodyType &&
-      matchesPubicHair && matchesTattoos && matchesPiercings &&
-      matchesMeetingPlaces && matchesLanguages &&
-      matchesVerified && matchesHasComments
-  }), [allAds, searchQuery, selectedCategory, advancedFilters])
+      return matchesSearch && matchesCategory && matchesPhone &&
+        matchesGender && matchesAgeMin && matchesAgeMax &&
+        matchesEthnicity && matchesNationality &&
+        matchesCupSize && matchesHeightMin && matchesHeightMax &&
+        matchesWeightMin && matchesWeightMax &&
+        matchesHairColor && matchesEyeColor && matchesBodyType &&
+        matchesPubicHair && matchesTattoos && matchesPiercings &&
+        matchesMeetingPlaces && matchesLanguages &&
+        matchesVerified && matchesHasComments
+    })
+  }, [allAds, searchQuery, selectedCategory, advancedFilters])
 
   // Utiliser les annonces de géolocalisation si disponibles, sinon toutes les annonces filtrées
   const adsToDisplay: AdWithDistance[] = useMemo(() =>
@@ -678,8 +723,12 @@ export default function SearchPage() {
                     ))}
                   </div>
 
-                  <RankBadge rank={ad.rank} />
+                  <RankBadge />
 
+                  {/* Badge NEW/Nouveau */}
+                  <NewBadge createdAt={ad.createdAt} />
+
+                  {/* Online indicator */}
                   {ad.online && (
                     <div className="absolute top-3 right-3 flex items-center gap-1 bg-green-500/90 backdrop-blur-sm px-2 py-1 rounded-full">
                       <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
@@ -687,18 +736,20 @@ export default function SearchPage() {
                     </div>
                   )}
 
-                  {ad.verified && (
-                    <div className="absolute top-14 left-3 bg-blue-500/90 backdrop-blur-sm p-1.5 rounded-full">
-                      <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                  )}
-
                   <div className="absolute bottom-0 left-0 right-0 p-3">
-                    <h3 className="text-white font-semibold text-base mb-1">
-                      {ad.username}, {ad.age}
-                    </h3>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-white font-semibold text-base">
+                        {ad.username}, {ad.age}
+                      </h3>
+                      {/* Verified badge */}
+                      {ad.verified && (
+                        <div className="flex items-center justify-center bg-gradient-to-br from-blue-500 to-cyan-500 p-0.5 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]">
+                          <svg className="w-3 h-3 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
                     <div className="flex items-center gap-1 text-gray-300 text-xs mb-2">
                       <MapPin className="w-3 h-3" />
                       <span>
