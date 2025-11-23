@@ -124,14 +124,17 @@ export async function POST(request: NextRequest) {
 async function incrementAdViewCount(adId: string) {
   const { data: ad } = await supabase
     .from('ads')
-    .select('views')
+    .select('views, weekly_views')
     .eq('id', adId)
     .single()
 
   if (ad) {
     await supabase
       .from('ads')
-      .update({ views: (ad.views || 0) + 1 })
+      .update({
+        views: (ad.views || 0) + 1,
+        weekly_views: (ad.weekly_views || 0) + 1
+      })
       .eq('id', adId)
   }
 }
