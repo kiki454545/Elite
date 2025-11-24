@@ -53,6 +53,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe()
   }, [])
 
+  // Vérifier périodiquement si l'utilisateur est banni (toutes les 30 secondes)
+  useEffect(() => {
+    if (!user?.id) return
+
+    const checkBanStatus = async () => {
+      try {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('banned_until, ban_reason')
+          .eq('id', user.id)
+          .single()
+
+        if (profileData) {
+          // Vérifier si le ban est actif
+          const isBanned = profileData.ban_reason && (
+            !profileData.banned_until || // Ban permanent
+            new Date(profileData.banned_until) > new Date() // Ban temporaire actif
+          )
+
+          if (isBanned) {
+            // Déconnecter l'utilisateur
+            await supabase.auth.signOut()
+            // Mettre à jour l'état local
+            setUser(null)
+          }
+        }
+      } catch (error) {
+        console.error('Erreur lors de la vérification du statut de ban:', error)
+      }
+    }
+
+    // Vérifier immédiatement
+    checkBanStatus()
+
+    // Puis vérifier toutes les 30 secondes
+    const interval = setInterval(checkBanStatus, 30000)
+
+    return () => clearInterval(interval)
+  }, [user?.id])
+
   async function checkUser() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
@@ -98,13 +138,57 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       })
 
       if (error) {
         return { error: error.message }
+      }
+
+      // Vérifier si l'utilisateur est banni
+      if (data.user) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('banned_until, ban_reason')
+          .eq('id', data.user.id)
+          .single()
+
+        if (profileData) {
+          // Vérifier si le ban est toujours actif
+          if (profileData.banned_until) {
+            const bannedUntil = new Date(profileData.banned_until)
+            const now = new Date()
+
+            if (bannedUntil > now) {
+              // Ban temporaire actif
+              const daysLeft = Math.ceil((bannedUntil.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+              const dateStr = bannedUntil.toLocaleDateString('fr-FR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })
+
+              // Déconnecter l'utilisateur
+              await supabase.auth.signOut()
+
+              return {
+                error: `Votre compte est temporairement suspendu jusqu'au ${dateStr} (${daysLeft} jour(s) restant(s)).\n\nRaison: ${profileData.ban_reason || 'Non spécifiée'}`
+              }
+            }
+          } else if (profileData.ban_reason) {
+            // Ban permanent (banned_until est null mais ban_reason existe)
+            // Déconnecter l'utilisateur
+            await supabase.auth.signOut()
+
+            return {
+              error: `Votre compte a été banni définitivement.\n\nRaison: ${profileData.ban_reason}`
+            }
+          }
+        }
       }
 
       return {}

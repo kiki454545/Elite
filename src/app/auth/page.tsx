@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { supabase } from '@/lib/supabase'
 import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react'
 
 export default function AuthPage() {
@@ -22,6 +23,9 @@ export default function AuthPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [emailConfirmationNeeded, setEmailConfirmationNeeded] = useState(false)
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
+  const [resetEmail, setResetEmail] = useState('')
+  const [resetEmailSent, setResetEmailSent] = useState(false)
 
   const { login, signup } = useAuth()
   const router = useRouter()
@@ -75,6 +79,35 @@ export default function AuthPage() {
       }
     } catch (err) {
       setError(t('authPage.errorOccurred'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+
+    try {
+      // Utiliser l'URL de base du site
+      const redirectUrl = typeof window !== 'undefined'
+        ? `${window.location.origin}/reset-password`
+        : 'http://localhost:3000/reset-password'
+
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: redirectUrl,
+      })
+
+      if (error) {
+        console.error('Erreur resetPasswordForEmail:', error)
+        setError('Une erreur est survenue lors de l\'envoi de l\'email. Vérifiez votre adresse email.')
+      } else {
+        setResetEmailSent(true)
+      }
+    } catch (err) {
+      console.error('Erreur catch:', err)
+      setError('Une erreur est survenue. Veuillez réessayer.')
     } finally {
       setLoading(false)
     }
@@ -299,9 +332,13 @@ export default function AuthPage() {
           {/* Footer */}
           {isLogin && (
             <div className="mt-4 text-center">
-              <a href="#" className="text-sm text-pink-500 hover:text-pink-400">
+              <button
+                type="button"
+                onClick={() => setShowForgotPassword(true)}
+                className="text-sm text-pink-500 hover:text-pink-400 transition-colors"
+              >
                 Mot de passe oublié ?
-              </a>
+              </button>
             </div>
           )}
         </div>
@@ -373,6 +410,134 @@ export default function AuthPage() {
                   {t('common.close')}
                 </button>
               </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Modal de récupération de mot de passe */}
+      {showForgotPassword && !resetEmailSent && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="bg-gray-900 rounded-2xl border border-gray-800 p-8 max-w-md w-full shadow-2xl"
+          >
+            <div className="flex flex-col">
+              {/* Icône Lock */}
+              <div className="w-20 h-20 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-pink-500/50 mx-auto">
+                <Lock className="w-10 h-10 text-white" />
+              </div>
+
+              {/* Titre */}
+              <h3 className="text-2xl font-bold text-white mb-3 text-center">
+                Mot de passe oublié ?
+              </h3>
+
+              {/* Message */}
+              <p className="text-gray-300 mb-6 text-center leading-relaxed">
+                Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe.
+              </p>
+
+              {/* Formulaire */}
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Email
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type="email"
+                      value={resetEmail}
+                      onChange={(e) => setResetEmail(e.target.value)}
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 pl-11 pr-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                      placeholder="votre@email.com"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {error && (
+                  <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-3 text-red-500 text-sm">
+                    {error}
+                  </div>
+                )}
+
+                {/* Boutons */}
+                <div className="flex flex-col gap-3">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white py-3 rounded-xl font-medium hover:from-pink-600 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading ? 'Envoi en cours...' : 'Envoyer le lien'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowForgotPassword(false)
+                      setResetEmail('')
+                      setError('')
+                    }}
+                    className="text-gray-400 hover:text-white text-sm transition-colors"
+                  >
+                    Annuler
+                  </button>
+                </div>
+              </form>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Modal de confirmation d'envoi d'email de récupération */}
+      {resetEmailSent && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="bg-gray-900 rounded-2xl border border-gray-800 p-8 max-w-md w-full shadow-2xl"
+          >
+            <div className="flex flex-col items-center text-center">
+              {/* Icône Email */}
+              <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-green-500/50">
+                <Mail className="w-10 h-10 text-white" />
+              </div>
+
+              {/* Titre */}
+              <h3 className="text-2xl font-bold text-white mb-3">
+                Email envoyé !
+              </h3>
+
+              {/* Message */}
+              <p className="text-gray-300 mb-2 leading-relaxed">
+                Un email de récupération a été envoyé à :
+              </p>
+              <p className="text-pink-400 font-semibold mb-6 break-all">
+                {resetEmail}
+              </p>
+
+              <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700 mb-6 w-full">
+                <p className="text-gray-400 text-sm leading-relaxed">
+                  Cliquez sur le lien dans l'email pour réinitialiser votre mot de passe. Le lien est valable pendant 1 heure.
+                </p>
+                <p className="text-gray-400 text-sm mt-2">
+                  💡 <span className="text-gray-300">N'oubliez pas de vérifier vos spams !</span>
+                </p>
+              </div>
+
+              {/* Bouton */}
+              <button
+                onClick={() => {
+                  setResetEmailSent(false)
+                  setShowForgotPassword(false)
+                  setResetEmail('')
+                }}
+                className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white py-3 rounded-xl font-medium hover:from-pink-600 hover:to-purple-700 transition-all"
+              >
+                Retour à la connexion
+              </button>
             </div>
           </motion.div>
         </div>
