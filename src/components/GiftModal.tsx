@@ -89,6 +89,64 @@ export function GiftModal({ isOpen, onClose, recipientId, recipientName }: GiftM
 
       if (transactionError) throw transactionError
 
+      // 4. Créer ou récupérer la conversation
+      let conversationId: string | null = null
+
+      // Vérifier si une conversation existe déjà
+      const { data: existingConv } = await supabase
+        .from('conversations')
+        .select('id')
+        .or(`and(user1_id.eq.${user.id},user2_id.eq.${recipientId}),and(user1_id.eq.${recipientId},user2_id.eq.${user.id})`)
+        .maybeSingle()
+
+      if (existingConv) {
+        conversationId = existingConv.id
+      } else {
+        // Créer une nouvelle conversation
+        const { data: newConv, error: convError } = await supabase
+          .from('conversations')
+          .insert({
+            user1_id: user.id,
+            user2_id: recipientId,
+            last_message: null,
+            last_message_at: new Date().toISOString()
+          })
+          .select()
+          .single()
+
+        if (convError) throw convError
+        conversationId = newConv.id
+      }
+
+      // 5. Envoyer un message automatique
+      if (conversationId) {
+        const giftMessage = t('adDetailPage.giftModal.giftMessage', {
+          emoji: selectedGift.emoji,
+          name: selectedGift.name,
+          coins: selectedGift.coins
+        })
+
+        const { error: messageError } = await supabase
+          .from('messages')
+          .insert({
+            conversation_id: conversationId,
+            sender_id: user.id,
+            content: giftMessage,
+            read: false
+          })
+
+        if (messageError) throw messageError
+
+        // Mettre à jour la conversation
+        await supabase
+          .from('conversations')
+          .update({
+            last_message: giftMessage,
+            last_message_at: new Date().toISOString()
+          })
+          .eq('id', conversationId)
+      }
+
       // Succès !
       setMessage({ text: `${selectedGift.emoji} ${selectedGift.name} envoyé à ${recipientName} !`, type: 'success' })
       setUserCoins(prev => prev - selectedGift.coins)

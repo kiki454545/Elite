@@ -863,7 +863,8 @@
       "title": "Envoyer un cadeau",
       "sendGift": "Envoyer un cadeau",
       "loginToSendGift": "Connectez-vous pour envoyer un cadeau",
-      "recharge": "Recharger"
+      "recharge": "Recharger",
+      "giftMessage": "🎁 Vous a envoyé un cadeau : {{emoji}} {{name}} ({{coins}} EliteCoins)"
     }
   },
   "adEditPage": {
