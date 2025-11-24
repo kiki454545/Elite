@@ -1,10 +1,11 @@
 'use client'
 
+import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { ShieldAlert, Clock } from 'lucide-react'
 
-export default function BlockedPage() {
+function BlockedContent() {
   const searchParams = useSearchParams()
   const reason = searchParams.get('reason') || 'Votre accès a été restreint'
   const until = searchParams.get('until')
@@ -89,5 +90,17 @@ export default function BlockedPage() {
         </div>
       </motion.div>
     </div>
+  )
+}
+
+export default function BlockedPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <div className="text-white">Chargement...</div>
+      </div>
+    }>
+      <BlockedContent />
+    </Suspense>
   )
 }
