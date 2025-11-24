@@ -186,7 +186,7 @@ export function BottomNavigation() {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 md:sticky md:top-[71px] z-20 bg-gray-900/95 backdrop-blur-sm border-t md:border-t-0 md:border-b border-gray-800">
+      <nav className="fixed bottom-0 left-0 right-0 md:sticky md:top-[71px] z-20 bg-gray-900/98 md:backdrop-blur-sm border-t md:border-t-0 md:border-b border-gray-800">
         <div className="max-w-screen-xl mx-auto px-2">
           {/* Menu mobile */}
           <div className="flex md:hidden items-center justify-around">
@@ -195,28 +195,23 @@ export function BottomNavigation() {
               const isActive = activeTab === item.id
 
               return (
-                <motion.button
+                <button
                   key={item.id}
                   onClick={() => handleNavClick(item)}
-                  className="relative flex flex-col items-center gap-0.5 py-2 px-1 transition-colors"
-                  whileTap={{ scale: 0.95 }}
+                  className="relative flex flex-col items-center gap-0.5 py-2 px-1 transition-all active:scale-95 touch-manipulation"
                 >
                   {/* Active indicator */}
                   {isActive && (
-                    <motion.div
-                      layoutId="activeTabMobile"
-                      className="absolute inset-0 bg-gradient-to-r from-pink-500/10 to-purple-600/10 rounded-xl"
-                      transition={{ type: 'spring', duration: 0.5 }}
-                    />
+                    <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 to-purple-600/10 rounded-xl" />
                   )}
 
                   {/* Icon */}
-                  <div className="relative">
+                  <div className="relative pointer-events-none">
                     <Icon
                       className={`w-5 h-5 transition-colors ${
                         isActive
                           ? 'text-pink-500'
-                          : 'text-gray-400 group-hover:text-gray-300'
+                          : 'text-gray-400'
                       }`}
                     />
 
@@ -230,7 +225,7 @@ export function BottomNavigation() {
 
                   {/* Label */}
                   <span
-                    className={`text-[10px] font-medium transition-colors ${
+                    className={`text-[10px] font-medium transition-colors pointer-events-none ${
                       isActive
                         ? 'text-pink-500'
                         : 'text-gray-400'
@@ -238,7 +233,7 @@ export function BottomNavigation() {
                   >
                     {item.label}
                   </span>
-                </motion.button>
+                </button>
               )
             })}
           </div>
@@ -250,28 +245,23 @@ export function BottomNavigation() {
               const isActive = activeTab === item.id
 
               return (
-                <motion.button
+                <button
                   key={item.id}
                   onClick={() => handleNavClick(item)}
-                  className="relative flex flex-row items-center gap-2 py-2 px-4 transition-colors"
-                  whileTap={{ scale: 0.95 }}
+                  className="relative flex flex-row items-center gap-2 py-2 px-4 transition-all active:scale-95"
                 >
                   {/* Active indicator */}
                   {isActive && (
-                    <motion.div
-                      layoutId="activeTabDesktop"
-                      className="absolute inset-0 bg-gradient-to-r from-pink-500/10 to-purple-600/10 rounded-xl"
-                      transition={{ type: 'spring', duration: 0.5 }}
-                    />
+                    <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 to-purple-600/10 rounded-xl" />
                   )}
 
                   {/* Icon */}
-                  <div className="relative">
+                  <div className="relative pointer-events-none">
                     <Icon
                       className={`w-5 h-5 transition-colors ${
                         isActive
                           ? 'text-pink-500'
-                          : 'text-gray-400 group-hover:text-gray-300'
+                          : 'text-gray-400 hover:text-gray-300'
                       }`}
                     />
 
@@ -285,7 +275,7 @@ export function BottomNavigation() {
 
                   {/* Label */}
                   <span
-                    className={`text-sm font-medium transition-colors ${
+                    className={`text-sm font-medium transition-colors pointer-events-none ${
                       isActive
                         ? 'text-pink-500'
                         : 'text-gray-400'
