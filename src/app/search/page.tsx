@@ -25,6 +25,22 @@ interface City {
 
 interface AdWithDistance extends Ad {
   distance_km?: number
+  ethnicity?: string
+  nationality?: string
+  cup_size?: string
+  height?: number
+  weight?: number
+  hair_color?: string
+  eye_color?: string
+  body_type?: string
+  pubic_hair?: string
+  tattoos?: boolean
+  piercings?: boolean
+  meeting_at_home?: boolean
+  meeting_at_hotel?: boolean
+  meeting_in_car?: boolean
+  meeting_at_escort?: boolean
+  has_comments?: boolean
 }
 
 function RankBadge() {
