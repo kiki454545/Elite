@@ -437,9 +437,51 @@ export default function MyAdsPage() {
                 </div>
               </motion.div>
             ))}
+
+            {/* Boutique Premium - Dans la grille */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: myAds.length * 0.1 }}
+              className="bg-gradient-to-br from-pink-500/20 via-purple-600/20 to-blue-500/20 rounded-2xl border border-pink-500/30 overflow-hidden cursor-pointer group"
+              onClick={() => router.push('/shop')}
+            >
+              <div className="relative h-48 bg-gradient-to-br from-pink-600 via-purple-700 to-blue-600 flex items-center justify-center">
+                <div className="absolute inset-0 bg-black/20" />
+                <div className="relative z-10 flex flex-col items-center gap-3">
+                  <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center">
+                    <ShoppingBag className="w-8 h-8 text-white" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Star className="w-5 h-5 text-yellow-400" />
+                    <Sparkles className="w-5 h-5 text-pink-400" />
+                    <Zap className="w-5 h-5 text-blue-400" />
+                  </div>
+                </div>
+                <div className="absolute top-3 right-3">
+                  <div className="bg-gradient-to-r from-yellow-400 to-orange-500 px-3 py-1 rounded-full">
+                    <span className="text-xs text-white font-bold">PREMIUM</span>
+                  </div>
+                </div>
+              </div>
+              <div className="p-6 bg-gradient-to-b from-gray-900/80 to-gray-900">
+                <h3 className="text-white font-bold text-xl mb-2 flex items-center gap-2">
+                  <Crown className="w-6 h-6 text-yellow-400" />
+                  {t('myAdsPage.premiumShop')}
+                </h3>
+                <p className="text-gray-300 text-sm mb-4">
+                  {t('myAdsPage.boostVisibility')}
+                </p>
+                <div className="flex items-center gap-2 text-pink-400 text-sm font-medium">
+                  <span>{t('myAdsPage.viewOffers')}</span>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </div>
+            </motion.div>
           </div>
         )}
-
 
         {/* Settings Links */}
         <div className="bg-gray-900 rounded-2xl border border-gray-800 divide-y divide-gray-800 mb-6">

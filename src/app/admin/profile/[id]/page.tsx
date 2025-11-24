@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { Shield, Mail, Calendar, MapPin, Star, Eye, Heart, AlertCircle, Ban, CheckCircle, XCircle, Edit, Trash2, ArrowLeft, AlertTriangle, MessageCircle } from 'lucide-react'
+import { Shield, Mail, Calendar, MapPin, Star, Eye, Heart, AlertCircle, Ban, CheckCircle, XCircle, Edit, Trash2, ArrowLeft, AlertTriangle, MessageCircle, ShoppingCart } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { Header } from '@/components/Header'
@@ -57,6 +57,18 @@ interface UserWarning {
   }
 }
 
+interface Purchase {
+  id: string
+  user_id: string
+  purchase_type: string
+  item_name: string
+  amount: number
+  currency: string
+  payment_method: string
+  metadata?: any
+  created_at: string
+}
+
 export default function AdminProfileDetailPage() {
   const router = useRouter()
   const params = useParams()
@@ -72,7 +84,7 @@ export default function AdminProfileDetailPage() {
     totalBlocked: 0
   })
   const [loadingData, setLoadingData] = useState(true)
-  const [activeTab, setActiveTab] = useState<'ads' | 'stats' | 'warnings' | 'actions'>('ads')
+  const [activeTab, setActiveTab] = useState<'ads' | 'stats' | 'warnings' | 'purchases' | 'actions'>('ads')
 
   // Warnings
   const [warnings, setWarnings] = useState<UserWarning[]>([])
@@ -81,6 +93,10 @@ export default function AdminProfileDetailPage() {
   const [warningDetails, setWarningDetails] = useState('')
   const [submittingWarning, setSubmittingWarning] = useState(false)
   const [showSuccessMessage, setShowSuccessMessage] = useState(false)
+
+  // Purchases
+  const [purchases, setPurchases] = useState<Purchase[]>([])
+  const [loadingPurchases, setLoadingPurchases] = useState(false)
 
   // Modals state
   const [deleteProfileModal, setDeleteProfileModal] = useState(false)
@@ -118,6 +134,7 @@ export default function AdminProfileDetailPage() {
     if (isAdmin && params.id) {
       loadProfileData()
       loadWarnings()
+      loadPurchases()
     }
   }, [isAdmin, params.id])
 
@@ -240,6 +257,24 @@ export default function AdminProfileDetailPage() {
       setWarnings(data || [])
     } catch (error) {
       console.error('Erreur lors du chargement des avertissements:', error)
+    }
+  }
+
+  async function loadPurchases() {
+    try {
+      setLoadingPurchases(true)
+      const { data, error } = await supabase
+        .from('purchases')
+        .select('*')
+        .eq('user_id', params.id)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      setPurchases(data || [])
+    } catch (error) {
+      console.error('Erreur lors du chargement des achats:', error)
+    } finally {
+      setLoadingPurchases(false)
     }
   }
 
@@ -480,6 +515,16 @@ Si vous pensez que cet avertissement a été émis par erreur, vous pouvez nous 
             Avertissements ({warnings.length})
           </button>
           <button
+            onClick={() => setActiveTab('purchases')}
+            className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
+              activeTab === 'purchases'
+                ? 'bg-purple-500 text-white'
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            Achats ({purchases.length})
+          </button>
+          <button
             onClick={() => setActiveTab('actions')}
             className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
               activeTab === 'actions'
@@ -683,6 +728,93 @@ Si vous pensez que cet avertissement a été émis par erreur, vous pouvez nous 
                   ))
                 )}
               </div>
+            </motion.div>
+          </div>
+        ) : activeTab === 'purchases' ? (
+          <div className="space-y-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-gray-900 rounded-xl p-6 border border-gray-800"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-white font-semibold text-lg flex items-center gap-2">
+                  <ShoppingCart className="w-5 h-5 text-purple-500" />
+                  Historique des achats
+                </h3>
+                <span className="text-gray-400 text-sm">{purchases.length} achat{purchases.length !== 1 ? 's' : ''}</span>
+              </div>
+
+              {loadingPurchases ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+                </div>
+              ) : purchases.length === 0 ? (
+                <div className="bg-gray-800/50 rounded-lg p-12 text-center">
+                  <ShoppingCart className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+                  <p className="text-gray-400">Aucun achat effectué</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {purchases.map((purchase) => (
+                    <motion.div
+                      key={purchase.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="bg-gray-800/50 rounded-lg p-4 border border-gray-700 hover:border-purple-500/30 transition-all"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${
+                              purchase.purchase_type === 'rank'
+                                ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                                : purchase.purchase_type === 'coins'
+                                ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+                                : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                            }`}>
+                              {purchase.purchase_type === 'rank' ? '⭐ Rang' :
+                               purchase.purchase_type === 'coins' ? '💎 Coins' :
+                               '🚀 Boost'}
+                            </span>
+                            <span className="text-white font-medium">{purchase.item_name}</span>
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400">
+                            <div className="flex items-center gap-1">
+                              <span>{purchase.amount}</span>
+                              <span>{purchase.currency === 'coins' ? 'Elite Coins' : purchase.currency.toUpperCase()}</span>
+                            </div>
+                            {purchase.payment_method && (
+                              <div className="flex items-center gap-1">
+                                <span className="text-gray-500">via</span>
+                                <span className="capitalize">{purchase.payment_method.replace('_', ' ')}</span>
+                              </div>
+                            )}
+                            <div className="flex items-center gap-1">
+                              <Calendar className="w-3.5 h-3.5" />
+                              <span>{new Date(purchase.created_at).toLocaleDateString('fr-FR', {
+                                day: '2-digit',
+                                month: 'long',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}</span>
+                            </div>
+                          </div>
+
+                          {purchase.metadata && Object.keys(purchase.metadata).length > 0 && (
+                            <div className="mt-2 text-xs text-gray-500">
+                              {purchase.metadata.days && <span>Durée: {purchase.metadata.days} jours</span>}
+                              {purchase.metadata.rank && <span> • Rang: {purchase.metadata.rank}</span>}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
             </motion.div>
           </div>
         ) : (

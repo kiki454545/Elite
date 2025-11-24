@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Shield, Ticket, CheckCircle, Clock, XCircle, AlertCircle, User, Calendar, MessageSquare, Users, Search, Flag, Eye, History, Filter, ChevronLeft, ChevronRight, Coins } from 'lucide-react'
+import { Shield, Ticket, CheckCircle, Clock, XCircle, AlertCircle, User, Calendar, MessageSquare, Users, Search, Flag, Eye, History, Filter, ChevronLeft, ChevronRight, Coins, Ban } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Header } from '@/components/Header'
@@ -47,6 +47,11 @@ interface Profile {
   is_admin: boolean
   created_at: string
   adsCount?: number
+  banned_until?: string | null
+  ban_reason?: string | null
+  banned_at?: string | null
+  banned_by?: string | null
+  elite_coins?: number
 }
 
 interface Report {
@@ -131,6 +136,23 @@ export default function AdminPage() {
   const [profilesPage, setProfilesPage] = useState(1)
   const [totalProfilesCount, setTotalProfilesCount] = useState(0)
   const PROFILES_PER_PAGE = 20
+
+  // Ban system
+  const [showBanModal, setShowBanModal] = useState(false)
+  const [selectedProfileForBan, setSelectedProfileForBan] = useState<Profile | null>(null)
+  const [banDuration, setBanDuration] = useState<string>('1') // En jours
+  const [banReason, setBanReason] = useState('')
+  const [banType, setBanType] = useState<'temporary' | 'permanent'>('temporary')
+  const [banIpToo, setBanIpToo] = useState(false) // Option pour bannir l'IP aussi
+  const [processingBan, setProcessingBan] = useState(false)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+
+  // Elite Coins management
+  const [showCoinsModal, setShowCoinsModal] = useState(false)
+  const [selectedProfileForCoins, setSelectedProfileForCoins] = useState<Profile | null>(null)
+  const [coinsAmount, setCoinsAmount] = useState<string>('')
+  const [coinsOperation, setCoinsOperation] = useState<'add' | 'remove'>('add')
+  const [processingCoins, setProcessingCoins] = useState(false)
 
   // Reports
   const [reports, setReports] = useState<Report[]>([])
@@ -520,7 +542,7 @@ export default function AdminPage() {
 
       let query = supabase
         .from('profiles')
-        .select('id, username, email, age, verified, rank, is_admin, created_at')
+        .select('id, username, email, age, verified, rank, is_admin, created_at, banned_until, ban_reason, banned_at, banned_by, elite_coins')
         .order('created_at', { ascending: false })
         .range(from, to)
 
@@ -552,6 +574,229 @@ export default function AdminPage() {
       console.error('Erreur lors du chargement des profils:', error)
     } finally {
       setProfilesLoading(false)
+    }
+  }
+
+  async function banUser(userId: string, duration: string, reason: string, isPermanent: boolean) {
+    console.log('🔨 banUser appelé avec:', { userId, duration, reason, isPermanent, adminId: user?.id })
+
+    try {
+      setProcessingBan(true)
+
+      // Utiliser la fonction RPC pour bannir l'utilisateur (contourne les RLS policies)
+      const { data, error } = await supabase.rpc('ban_user', {
+        target_user_id: userId,
+        ban_duration_days: isPermanent ? null : parseInt(duration),
+        ban_reason_text: reason,
+        admin_user_id: user?.id
+      })
+
+      console.log('📊 Résultat RPC ban_user:', { data, error })
+
+      if (error) {
+        console.error('❌ Erreur Supabase:', error)
+        setToast({
+          message: `Erreur: ${error.message}`,
+          type: 'error'
+        })
+        setTimeout(() => setToast(null), 5000)
+        throw error
+      }
+
+      console.log('✅ Ban appliqué avec succès!')
+
+      // Si l'option est cochée, bannir aussi l'IP de l'utilisateur
+      if (banIpToo && selectedProfileForBan) {
+        // Récupérer l'IP de l'utilisateur depuis son profil
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('last_ip')
+          .eq('id', userId)
+          .single()
+
+        if (profileData?.last_ip) {
+          const { error: ipBanError } = await supabase.rpc('ban_ip', {
+            target_ip: profileData.last_ip,
+            ban_reason: `IP de ${selectedProfileForBan.username} - ${reason}`,
+            ban_duration_days: isPermanent ? null : parseInt(duration),
+            admin_user_id: user?.id
+          })
+
+          if (ipBanError) {
+            console.error('Erreur lors du ban de l\'IP:', ipBanError)
+            setToast({
+              message: `Utilisateur banni, mais erreur lors du ban de l'IP: ${ipBanError.message}`,
+              type: 'error'
+            })
+            setTimeout(() => setToast(null), 5000)
+          } else {
+            console.log('✅ IP bannie avec succès:', profileData.last_ip)
+          }
+        } else {
+          console.warn('⚠️ Pas d\'IP trouvée pour cet utilisateur')
+        }
+      }
+
+      // Ajouter à l'historique
+      await addHistoryEntry(
+        'profile_banned' as any,
+        'profile',
+        userId,
+        selectedProfileForBan?.username,
+        {
+          duration: isPermanent ? 'Permanent' : `${duration} jours`,
+          reason,
+          ipBanned: banIpToo
+        }
+      )
+
+      await loadProfiles()
+      setShowBanModal(false)
+      setSelectedProfileForBan(null)
+      setBanDuration('1')
+      setBanReason('')
+      setBanType('temporary')
+      setBanIpToo(false)
+
+      const successMessage = banIpToo
+        ? `${selectedProfileForBan?.username} et son IP ont été bannis avec succès`
+        : `${selectedProfileForBan?.username} a été banni avec succès`
+
+      setToast({
+        message: successMessage,
+        type: 'success'
+      })
+      setTimeout(() => setToast(null), 5000)
+    } catch (error: any) {
+      console.error('❌ Erreur lors du bannissement:', error)
+      setToast({
+        message: `Erreur lors du bannissement: ${error.message || 'Erreur inconnue'}`,
+        type: 'error'
+      })
+      setTimeout(() => setToast(null), 5000)
+    } finally {
+      setProcessingBan(false)
+    }
+  }
+
+  async function unbanUser(userId: string, username: string) {
+    try {
+      // Utiliser la fonction RPC pour débannir l'utilisateur (contourne les RLS policies)
+      const { data, error } = await supabase.rpc('unban_user', {
+        target_user_id: userId
+      })
+
+      if (error) {
+        console.error('❌ Erreur lors du débannissement:', error)
+        setToast({
+          message: `Erreur: ${error.message}`,
+          type: 'error'
+        })
+        setTimeout(() => setToast(null), 5000)
+        throw error
+      }
+
+      console.log('✅ Utilisateur débanni avec succès!')
+
+      // Ajouter à l'historique
+      await addHistoryEntry(
+        'profile_unbanned' as any,
+        'profile',
+        userId,
+        username,
+        null
+      )
+
+      await loadProfiles()
+
+      setToast({
+        message: `${username} a été débanni avec succès`,
+        type: 'success'
+      })
+      setTimeout(() => setToast(null), 5000)
+    } catch (error: any) {
+      console.error('Erreur lors du débannissement:', error)
+      setToast({
+        message: `Erreur lors du débannissement: ${error.message || 'Erreur inconnue'}`,
+        type: 'error'
+      })
+      setTimeout(() => setToast(null), 5000)
+    }
+  }
+
+  async function manageCoins(userId: string, amount: number, operation: 'add' | 'remove') {
+    try {
+      setProcessingCoins(true)
+
+      // Récupérer le solde actuel
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('elite_coins, username')
+        .eq('id', userId)
+        .single()
+
+      if (!profileData) {
+        throw new Error('Profil non trouvé')
+      }
+
+      const currentCoins = profileData.elite_coins || 0
+      let newCoins = currentCoins
+
+      if (operation === 'add') {
+        newCoins = currentCoins + amount
+      } else {
+        newCoins = Math.max(0, currentCoins - amount) // Ne pas descendre en dessous de 0
+      }
+
+      // Mettre à jour le solde
+      const { error } = await supabase
+        .from('profiles')
+        .update({ elite_coins: newCoins })
+        .eq('id', userId)
+
+      if (error) {
+        setToast({
+          message: `Erreur: ${error.message}`,
+          type: 'error'
+        })
+        setTimeout(() => setToast(null), 5000)
+        throw error
+      }
+
+      // Ajouter à l'historique
+      await addHistoryEntry(
+        'coins_adjusted' as any,
+        'profile',
+        userId,
+        selectedProfileForCoins?.username,
+        {
+          operation,
+          amount,
+          previousBalance: currentCoins,
+          newBalance: newCoins
+        }
+      )
+
+      await loadProfiles()
+      setShowCoinsModal(false)
+      setSelectedProfileForCoins(null)
+      setCoinsAmount('')
+      setCoinsOperation('add')
+
+      setToast({
+        message: `${operation === 'add' ? 'Ajout' : 'Retrait'} de ${amount} Elite Coins effectué avec succès`,
+        type: 'success'
+      })
+      setTimeout(() => setToast(null), 5000)
+    } catch (error: any) {
+      console.error('❌ Erreur lors de la gestion des coins:', error)
+      setToast({
+        message: `Erreur: ${error.message || 'Erreur inconnue'}`,
+        type: 'error'
+      })
+      setTimeout(() => setToast(null), 5000)
+    } finally {
+      setProcessingCoins(false)
     }
   }
 
@@ -1397,14 +1642,78 @@ export default function AdminPage() {
                             </div>
                           </div>
                         </div>
-                        <button
-                          onClick={() => router.push(`/admin/profile/${profile.id}`)}
-                          className="px-3 py-1.5 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg text-xs font-medium transition-all flex items-center gap-1"
-                        >
-                          <Eye className="w-3 h-3" />
-                          Voir
-                        </button>
+                        <div className="flex items-center gap-2">
+                          {(() => {
+                            // Vérifier si l'utilisateur est actuellement banni
+                            const isBanned = profile.ban_reason && (
+                              !profile.banned_until || // Ban permanent (pas de date de fin)
+                              new Date(profile.banned_until) > new Date() // Ban temporaire encore actif
+                            )
+
+                            return isBanned ? (
+                              <button
+                                onClick={() => unbanUser(profile.id, profile.username)}
+                                className="px-3 py-1.5 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg text-xs font-medium transition-all flex items-center gap-1"
+                              >
+                                <CheckCircle className="w-3 h-3" />
+                                Débannir
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => {
+                                  setSelectedProfileForBan(profile)
+                                  setShowBanModal(true)
+                                }}
+                                className="px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg text-xs font-medium transition-all flex items-center gap-1"
+                              >
+                                <Ban className="w-3 h-3" />
+                                Bannir
+                              </button>
+                            )
+                          })()}
+                          <button
+                            onClick={() => {
+                              setSelectedProfileForCoins(profile)
+                              setShowCoinsModal(true)
+                            }}
+                            className="px-3 py-1.5 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 rounded-lg text-xs font-medium transition-all flex items-center gap-1"
+                          >
+                            <Coins className="w-3 h-3" />
+                            Coins
+                          </button>
+                          <button
+                            onClick={() => router.push(`/admin/profile/${profile.id}`)}
+                            className="px-3 py-1.5 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg text-xs font-medium transition-all flex items-center gap-1"
+                          >
+                            <Eye className="w-3 h-3" />
+                            Voir
+                          </button>
+                        </div>
                       </div>
+                      {/* Badge de ban si actif */}
+                      {(() => {
+                        const isBanned = profile.ban_reason && (
+                          !profile.banned_until ||
+                          new Date(profile.banned_until) > new Date()
+                        )
+
+                        return isBanned && (
+                          <div className="mt-2 bg-red-500/10 border border-red-500/30 rounded-lg p-2">
+                            <div className="flex items-center gap-2 text-xs">
+                              <Ban className="w-3 h-3 text-red-400" />
+                              <span className="text-red-400 font-medium">
+                                {profile.banned_until
+                                  ? `Banni jusqu'au ${new Date(profile.banned_until).toLocaleDateString('fr-FR')}`
+                                  : 'Banni définitivement'
+                                }
+                              </span>
+                            </div>
+                            {profile.ban_reason && (
+                              <p className="text-xs text-red-300 mt-1">Raison: {profile.ban_reason}</p>
+                            )}
+                          </div>
+                        )
+                      })()}
                     </motion.div>
                   ))}
                 </div>
@@ -2143,6 +2452,275 @@ export default function AdminPage() {
         </>
       )}
 
+      {/* Modal de bannissement */}
+      {showBanModal && selectedProfileForBan && (
+        <>
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50" onClick={() => setShowBanModal(false)} />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl shadow-2xl max-w-md w-full border border-red-500/30"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6">
+                {/* En-tête */}
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-3 bg-red-500/20 rounded-xl">
+                    <Ban className="w-6 h-6 text-red-500" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-white">Bannir un utilisateur</h2>
+                    <p className="text-sm text-gray-400">{selectedProfileForBan.username}</p>
+                  </div>
+                </div>
+
+                {/* Type de ban */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Type de bannissement
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => setBanType('temporary')}
+                      className={`py-2 px-4 rounded-lg font-medium text-sm transition-all ${
+                        banType === 'temporary'
+                          ? 'bg-red-500 text-white'
+                          : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                      }`}
+                    >
+                      Temporaire
+                    </button>
+                    <button
+                      onClick={() => setBanType('permanent')}
+                      className={`py-2 px-4 rounded-lg font-medium text-sm transition-all ${
+                        banType === 'permanent'
+                          ? 'bg-red-500 text-white'
+                          : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                      }`}
+                    >
+                      Permanent
+                    </button>
+                  </div>
+                </div>
+
+                {/* Durée (si temporaire) */}
+                {banType === 'temporary' && (
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Durée du ban (en jours)
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={banDuration}
+                      onChange={(e) => setBanDuration(e.target.value)}
+                      className="w-full bg-gray-800 text-white p-3 rounded-lg border border-gray-700 focus:border-red-500 focus:outline-none"
+                      placeholder="Ex: 7"
+                    />
+                    <p className="text-xs text-gray-400 mt-1">
+                      Jusqu'au {new Date(Date.now() + parseInt(banDuration || '1') * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR')}
+                    </p>
+                  </div>
+                )}
+
+                {/* Raison */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Raison du bannissement *
+                  </label>
+                  <textarea
+                    value={banReason}
+                    onChange={(e) => setBanReason(e.target.value)}
+                    placeholder="Ex: Violation des règles, spam, comportement inapproprié..."
+                    className="w-full bg-gray-800 text-white p-3 rounded-lg border border-gray-700 focus:border-red-500 focus:outline-none text-sm resize-none"
+                    rows={4}
+                    required
+                  />
+                </div>
+
+                {/* Option pour bannir l'IP aussi */}
+                <div className="mb-4">
+                  <label className="flex items-center gap-2 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={banIpToo}
+                      onChange={(e) => setBanIpToo(e.target.checked)}
+                      className="w-4 h-4 rounded border-gray-700 bg-gray-800 text-red-500 focus:ring-red-500 focus:ring-offset-gray-900"
+                    />
+                    <span className="text-sm text-gray-300 group-hover:text-white transition-colors">
+                      Bannir aussi l'adresse IP de cet utilisateur
+                    </span>
+                  </label>
+                  <p className="text-xs text-gray-500 mt-1 ml-6">
+                    Empêche toute connexion depuis cette IP
+                  </p>
+                </div>
+
+                {/* Avertissement */}
+                <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 mb-4">
+                  <p className="text-sm text-red-400">
+                    ⚠️ L'utilisateur sera immédiatement déconnecté et ne pourra plus se connecter {banType === 'permanent' ? 'définitivement' : `pendant ${banDuration} jour(s)`}.
+                    {banIpToo && ' Son adresse IP sera également bloquée.'}
+                  </p>
+                </div>
+
+                {/* Boutons */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowBanModal(false)
+                      setSelectedProfileForBan(null)
+                      setBanDuration('1')
+                      setBanReason('')
+                      setBanType('temporary')
+                      setBanIpToo(false)
+                    }}
+                    className="flex-1 bg-gray-700 text-white py-3 rounded-xl font-medium hover:bg-gray-600 transition-all"
+                    disabled={processingBan}
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={() => banUser(selectedProfileForBan.id, banDuration, banReason, banType === 'permanent')}
+                    disabled={!banReason.trim() || processingBan || (banType === 'temporary' && (!banDuration || parseInt(banDuration) < 1))}
+                    className="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white py-3 rounded-xl font-medium hover:from-red-600 hover:to-red-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {processingBan ? 'Bannissement...' : 'Bannir'}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </>
+      )}
+
+      {/* Modal de gestion des Elite Coins */}
+      {showCoinsModal && selectedProfileForCoins && (
+        <>
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50" onClick={() => setShowCoinsModal(false)} />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl shadow-2xl max-w-md w-full border border-yellow-500/30"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6">
+                {/* En-tête */}
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-3 bg-yellow-500/20 rounded-xl">
+                    <Coins className="w-6 h-6 text-yellow-500" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-white">Gérer les Elite Coins</h2>
+                    <p className="text-sm text-gray-400">{selectedProfileForCoins.username}</p>
+                  </div>
+                </div>
+
+                {/* Solde actuel */}
+                <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 mb-4">
+                  <p className="text-sm text-gray-400 mb-1">Solde actuel</p>
+                  <p className="text-2xl font-bold text-yellow-400 flex items-center gap-2">
+                    <Coins className="w-6 h-6" />
+                    {selectedProfileForCoins.elite_coins || 0}
+                  </p>
+                </div>
+
+                {/* Type d'opération */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Opération
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => setCoinsOperation('add')}
+                      className={`py-2 px-4 rounded-lg font-medium text-sm transition-all ${
+                        coinsOperation === 'add'
+                          ? 'bg-green-500 text-white'
+                          : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                      }`}
+                    >
+                      Ajouter
+                    </button>
+                    <button
+                      onClick={() => setCoinsOperation('remove')}
+                      className={`py-2 px-4 rounded-lg font-medium text-sm transition-all ${
+                        coinsOperation === 'remove'
+                          ? 'bg-red-500 text-white'
+                          : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                      }`}
+                    >
+                      Retirer
+                    </button>
+                  </div>
+                </div>
+
+                {/* Montant */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Montant *
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={coinsAmount}
+                    onChange={(e) => setCoinsAmount(e.target.value)}
+                    className="w-full bg-gray-800 text-white p-3 rounded-lg border border-gray-700 focus:border-yellow-500 focus:outline-none"
+                    placeholder="Ex: 100"
+                  />
+                </div>
+
+                {/* Aperçu */}
+                {coinsAmount && parseInt(coinsAmount) > 0 && (
+                  <div className={`border rounded-lg p-3 mb-4 ${
+                    coinsOperation === 'add'
+                      ? 'bg-green-500/10 border-green-500/30'
+                      : 'bg-red-500/10 border-red-500/30'
+                  }`}>
+                    <p className="text-sm text-gray-300">
+                      Nouveau solde : <strong className={coinsOperation === 'add' ? 'text-green-400' : 'text-red-400'}>
+                        {coinsOperation === 'add'
+                          ? (selectedProfileForCoins.elite_coins || 0) + parseInt(coinsAmount)
+                          : Math.max(0, (selectedProfileForCoins.elite_coins || 0) - parseInt(coinsAmount))
+                        } Elite Coins
+                      </strong>
+                    </p>
+                  </div>
+                )}
+
+                {/* Boutons */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowCoinsModal(false)
+                      setSelectedProfileForCoins(null)
+                      setCoinsAmount('')
+                      setCoinsOperation('add')
+                    }}
+                    className="flex-1 bg-gray-700 text-white py-3 rounded-xl font-medium hover:bg-gray-600 transition-all"
+                    disabled={processingCoins}
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={() => manageCoins(selectedProfileForCoins.id, parseInt(coinsAmount), coinsOperation)}
+                    disabled={!coinsAmount || parseInt(coinsAmount) < 1 || processingCoins}
+                    className={`flex-1 py-3 rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                      coinsOperation === 'add'
+                        ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700'
+                        : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700'
+                    } text-white`}
+                  >
+                    {processingCoins ? 'Traitement...' : coinsOperation === 'add' ? 'Ajouter' : 'Retirer'}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </>
+      )}
+
       {/* Toast de succès */}
       {showSuccessMessage && (
         <motion.div
@@ -2155,6 +2733,27 @@ export default function AdminPage() {
           <span className="font-medium">
             {showSuccessMessage.type === 'message' ? 'Message' : 'Commentaire'} supprimé avec succès !
           </span>
+        </motion.div>
+      )}
+
+      {/* Toast pour ban/unban */}
+      {toast && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className={`fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 ${
+            toast.type === 'success'
+              ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white'
+              : 'bg-gradient-to-r from-red-500 to-red-600 text-white'
+          }`}
+        >
+          {toast.type === 'success' ? (
+            <CheckCircle className="w-5 h-5" />
+          ) : (
+            <XCircle className="w-5 h-5" />
+          )}
+          <span className="font-medium">{toast.message}</span>
         </motion.div>
       )}
     </div>

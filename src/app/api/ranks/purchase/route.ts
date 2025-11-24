@@ -86,7 +86,27 @@ export async function POST(request: NextRequest) {
 
     console.log(`✅ Grade ${rank} attribué à ${userId} pour ${days} jours. Nouveau solde: ${newBalance} EC`)
 
-    // TODO: Enregistrer la transaction dans une table "transactions" pour historique
+    // Enregistrer la transaction dans l'historique des achats
+    const { error: purchaseError } = await supabase
+      .from('purchases')
+      .insert({
+        user_id: userId,
+        purchase_type: 'rank',
+        item_name: `${rank} (${days} jours)`,
+        amount: coinPrice,
+        currency: 'coins',
+        payment_method: 'elite_coins',
+        metadata: {
+          rank,
+          days,
+          expiry_date: expiryDate.toISOString()
+        }
+      })
+
+    if (purchaseError) {
+      console.error('⚠️ Error saving purchase history:', purchaseError)
+      // Ne pas bloquer l'achat si l'enregistrement échoue
+    }
 
     return NextResponse.json({
       success: true,
