@@ -186,7 +186,7 @@ export function BottomNavigation() {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 md:sticky md:top-[71px] z-20 bg-gray-900/98 md:backdrop-blur-sm border-t md:border-t-0 md:border-b border-gray-800">
+      <nav className="fixed bottom-0 left-0 right-0 md:sticky md:top-[71px] z-20 bg-gray-900 border-t md:border-t-0 md:border-b border-gray-800">
         <div className="max-w-screen-xl mx-auto px-2">
           {/* Menu mobile */}
           <div className="flex md:hidden items-center justify-around">
