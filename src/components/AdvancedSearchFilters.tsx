@@ -405,9 +405,9 @@ function AdvancedSearchFiltersComponent({ filters, onFiltersChange, onClear }: A
               <button
                 key={option.value}
                 onClick={() => toggleArrayFilter('gender', option.value)}
-                className={`px-3 py-2 rounded-lg text-sm transition-all ${
+                className={`px-3 py-2 rounded-lg text-sm transition-all active:scale-95 ${
                   filters.gender?.includes(option.value)
-                    ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg scale-105'
+                    ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg'
                     : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
                 }`}
               >
@@ -453,7 +453,7 @@ function AdvancedSearchFiltersComponent({ filters, onFiltersChange, onClear }: A
               <button
                 key={option.value}
                 onClick={() => toggleArrayFilter('ethnicity', option.value)}
-                className={`px-3 py-2 rounded-lg text-sm transition-all ${
+                className={`px-3 py-2 rounded-lg text-sm transition-all active:scale-95 ${
                   filters.ethnicity?.includes(option.value)
                     ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg'
                     : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
@@ -474,7 +474,7 @@ function AdvancedSearchFiltersComponent({ filters, onFiltersChange, onClear }: A
               <button
                 key={option.value}
                 onClick={() => toggleArrayFilter('nationality', option.value)}
-                className={`px-3 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1 ${
+                className={`px-3 py-1.5 rounded-lg text-xs transition-all active:scale-95 flex items-center gap-1 ${
                   filters.nationality?.includes(option.value)
                     ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg'
                     : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
@@ -504,7 +504,7 @@ function AdvancedSearchFiltersComponent({ filters, onFiltersChange, onClear }: A
                     : [...current, place.value]
                   updateFilter('meetingPlaces', newValue.length > 0 ? newValue : undefined)
                 }}
-                className={`px-3 py-2 rounded-lg text-sm transition-all flex items-center justify-center gap-2 ${
+                className={`px-3 py-2 rounded-lg text-sm transition-all active:scale-95 flex items-center justify-center gap-2 ${
                   filters.meetingPlaces?.includes(place.value)
                     ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg'
                     : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
@@ -525,7 +525,7 @@ function AdvancedSearchFiltersComponent({ filters, onFiltersChange, onClear }: A
         <div className="space-y-3">
           <button
             onClick={() => updateFilter('verified', filters.verified ? undefined : true)}
-            className={`w-full px-4 py-3 rounded-lg text-sm transition-all flex items-center justify-between ${
+            className={`w-full px-4 py-3 rounded-lg text-sm transition-all active:scale-95 flex items-center justify-between ${
               filters.verified
                 ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg'
                 : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
@@ -540,7 +540,7 @@ function AdvancedSearchFiltersComponent({ filters, onFiltersChange, onClear }: A
 
           <button
             onClick={() => updateFilter('hasComments', filters.hasComments ? undefined : true)}
-            className={`w-full px-4 py-3 rounded-lg text-sm transition-all flex items-center justify-between ${
+            className={`w-full px-4 py-3 rounded-lg text-sm transition-all active:scale-95 flex items-center justify-between ${
               filters.hasComments
                 ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg'
                 : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
@@ -560,8 +560,11 @@ function AdvancedSearchFiltersComponent({ filters, onFiltersChange, onClear }: A
 
 // Exporter avec memo pour éviter les re-renders inutiles
 export const AdvancedSearchFilters = memo(AdvancedSearchFiltersComponent, (prevProps, nextProps) => {
-  // Ne re-render que si onFiltersChange ou onClear changent
-  // Ignorer les changements de 'filters' pour éviter la perte de focus
+  // Re-render si onFiltersChange, onClear OU filters changent
+  // On doit comparer filters pour que les boutons changent de couleur
+  const filtersChanged = JSON.stringify(prevProps.filters) !== JSON.stringify(nextProps.filters)
+
   return prevProps.onFiltersChange === nextProps.onFiltersChange &&
-         prevProps.onClear === nextProps.onClear
+         prevProps.onClear === nextProps.onClear &&
+         !filtersChanged
 })

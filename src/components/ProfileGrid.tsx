@@ -223,18 +223,7 @@ export function ProfileGrid() {
                 className="absolute inset-0"
               >
                 <motion.div
-                  drag="x"
-                  dragConstraints={{ left: 0, right: 0 }}
-                  dragElastic={0.1}
-                  dragMomentum={false}
-                  onDragEnd={(e, { offset }) => {
-                    const swipe = offset.x
-                    const photoCount = getPhotoCount(ad)
-                    if (Math.abs(swipe) > 50) {
-                      handleSwipe(ad.id, swipe > 0 ? 'right' : 'left', photoCount)
-                    }
-                  }}
-                  className="flex h-full touch-pan-y md:pointer-events-none"
+                  className="flex h-full"
                   animate={{
                     x: `-${getCurrentPhotoIndex(ad.id) * 100}%`
                   }}

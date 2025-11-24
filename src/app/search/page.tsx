@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Search, MapPin, X, SlidersHorizontal, ChevronLeft, ChevronRight, Eye, Heart, Navigation } from 'lucide-react'
 import { Ad } from '@/types/ad'
@@ -78,6 +78,7 @@ export default function SearchPage() {
   const { t } = useLanguage()
   const [currentPhotoIndices, setCurrentPhotoIndices] = useState<Record<string, number>>({})
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' | 'info' } | null>(null)
+  const isDraggingRef = useRef<Record<string, boolean>>({})
 
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('')
@@ -86,6 +87,15 @@ export default function SearchPage() {
   // Filtres avancés
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedSearchFiltersData>({})
 
+  // Stabiliser les callbacks pour éviter les re-renders
+  const handleAdvancedFiltersChange = useCallback((newFilters: AdvancedSearchFiltersData) => {
+    setAdvancedFilters(newFilters)
+  }, [])
+
+  const handleClearAdvancedFilters = useCallback(() => {
+    setAdvancedFilters({})
+  }, [])
+
   // Sélection de ville
   const [selectedCity, setSelectedCity] = useState<City | null>(null)
   const [selectedRadius, setSelectedRadius] = useState<number | null>(null)
@@ -93,6 +103,8 @@ export default function SearchPage() {
   // Toutes les annonces de la base de données
   const [allAds, setAllAds] = useState<AdWithDistance[]>([])
   const [loadingAllAds, setLoadingAllAds] = useState(false)
+  const isLoadingRef = useRef(false)
+  const hasLoadedOnce = useRef(false)
 
   // Helper pour afficher un toast
   const showToast = (message: string, type: 'error' | 'success' | 'info' = 'info') => {
@@ -100,107 +112,142 @@ export default function SearchPage() {
     setTimeout(() => setToast(null), 3000)
   }
 
+  // Rediriger vers l'accueil si la page est actualisée (F5)
+  useEffect(() => {
+    // Vérifier si on arrive sur la page sans avoir de pays sélectionné
+    // Cela arrive uniquement lors d'un refresh (F5)
+    if (selectedCountry.code === 'ALL') {
+      router.push('/')
+    }
+  }, [])
+
   // Charger toutes les annonces au démarrage
   useEffect(() => {
-    loadAllAds()
-  }, [selectedCountry])
+    let isCancelled = false
 
-  async function loadAllAds() {
-    try {
-      setLoadingAllAds(true)
-
-      // Charger TOUTES les annonces sans filtres (filtrage côté client pour performance)
-      const { data, error } = await supabase
-        .from('ads')
-        .select('*')
-        .eq('status', 'approved')
-        .eq('country', selectedCountry.code)
-        .order('created_at', { ascending: false })
-
-      if (error) {
-        console.error('Erreur lors du chargement des annonces:', error)
+    const load = async () => {
+      // Éviter les chargements multiples simultanés
+      if (isLoadingRef.current) {
         return
       }
 
-      console.log('📋 Annonces chargées:', data)
+      try {
+        isLoadingRef.current = true
+        setLoadingAllAds(true)
 
-      if (!data || data.length === 0) {
-        setAllAds([])
-        return
-      }
+        // Charger TOUTES les annonces sans filtres (filtrage côté client pour performance)
+        const { data, error } = await supabase
+          .from('ads')
+          .select('*')
+          .eq('status', 'approved')
+          .eq('country', selectedCountry.code)
+          .order('created_at', { ascending: false })
 
-      // Récupérer les profils des utilisateurs avec tous les champs nécessaires
-      const userIds = data.map((item: any) => item.user_id)
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, username, rank, age, gender, ethnicity, nationality, cup_size, height, weight, hair_color, eye_color, body_type, tattoos, piercings, pubic_hair, languages')
-        .in('id', userIds)
-
-      if (profilesError) {
-        console.error('Erreur lors du chargement des profils:', profilesError)
-      }
-
-      console.log('👤 Profils chargés:', profiles)
-
-      // Créer un index des profils pour recherche rapide
-      const profilesMap = new Map()
-      profiles?.forEach(profile => {
-        profilesMap.set(profile.id, profile)
-      })
-
-      // Convertir les données en format Ad
-      const ads: AdWithDistance[] = (data || []).map((item: any) => {
-        const profile = profilesMap.get(item.user_id)
-        return {
-          id: item.id,
-          userId: item.user_id,
-          username: profile?.username || item.title || 'Utilisateur',
-          title: item.title || profile?.username || 'Utilisateur',
-          age: profile?.age || item.age || 25,
-          location: item.location,
-          photos: item.photos || [],
-          category: (item.categories && item.categories[0]) || 'escort',
-          services: [],
-          description: item.description || '',
-          verified: item.verified || false,
-          online: false,
-          views: item.views || 0,
-          favorites: item.favorites_count || 0,
-          rank: (profile?.rank || 'standard') as RankType,
-          video: item.video_url,
-          country: item.country || selectedCountry.code,
-          availability: '',
-          createdAt: new Date(item.created_at),
-          updatedAt: item.updated_at ? new Date(item.updated_at) : new Date(item.created_at),
-          // Ajouter tous les champs de filtrage avancé (depuis profile ou ads)
-          gender: profile?.gender || item.gender,
-          ethnicity: profile?.ethnicity || item.ethnicity,
-          nationality: profile?.nationality || item.nationality,
-          cup_size: profile?.cup_size || item.cup_size,
-          height: profile?.height || item.height,
-          weight: profile?.weight || item.weight,
-          hair_color: profile?.hair_color || item.hair_color,
-          eye_color: profile?.eye_color || item.eye_color,
-          body_type: profile?.body_type || item.body_type,
-          pubic_hair: profile?.pubic_hair || item.pubic_hair,
-          tattoos: profile?.tattoos ?? item.tattoos,
-          piercings: profile?.piercings ?? item.piercings,
-          meeting_at_home: item.meeting_at_home,
-          meeting_at_hotel: item.meeting_at_hotel,
-          meeting_in_car: item.meeting_in_car,
-          meeting_at_escort: item.meeting_at_escort,
-          languages: profile?.languages || item.languages || [],
-          has_comments: item.has_comments,
+        // Si le composant est démonté ou qu'un nouveau chargement a commencé, abandonner
+        if (isCancelled) {
+          return
         }
-      })
 
-      setAllAds(ads)
-    } catch (error) {
-      console.error('Erreur:', error)
-    } finally {
-      setLoadingAllAds(false)
+        if (error) {
+          console.error('Erreur lors du chargement des annonces:', error)
+          return
+        }
+
+        if (!data || data.length === 0) {
+          if (!isCancelled) setAllAds([])
+          return
+        }
+
+        // Récupérer les profils des utilisateurs avec tous les champs nécessaires
+        const userIds = data.map((item: any) => item.user_id)
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, username, rank, age, gender, ethnicity, nationality, cup_size, height, weight, hair_color, eye_color, body_type, tattoos, piercings, pubic_hair, languages')
+          .in('id', userIds)
+
+        if (isCancelled) {
+          return
+        }
+
+        if (profilesError) {
+          console.error('Erreur lors du chargement des profils:', profilesError)
+        }
+
+        // Créer un index des profils pour recherche rapide
+        const profilesMap = new Map()
+        profiles?.forEach(profile => {
+          profilesMap.set(profile.id, profile)
+        })
+
+        // Convertir les données en format Ad
+        const ads: AdWithDistance[] = (data || []).map((item: any) => {
+          const profile = profilesMap.get(item.user_id)
+          return {
+            id: item.id,
+            userId: item.user_id,
+            username: profile?.username || item.title || 'Utilisateur',
+            title: item.title || profile?.username || 'Utilisateur',
+            age: profile?.age || item.age || 25,
+            location: item.location,
+            photos: item.photos || [],
+            category: (item.categories && item.categories[0]) || 'escort',
+            services: [],
+            description: item.description || '',
+            verified: item.verified || false,
+            online: false,
+            views: item.views || 0,
+            favorites: item.favorites_count || 0,
+            rank: (profile?.rank || 'standard') as RankType,
+            video: item.video_url,
+            country: item.country || selectedCountry.code,
+            availability: '',
+            createdAt: new Date(item.created_at),
+            updatedAt: item.updated_at ? new Date(item.updated_at) : new Date(item.created_at),
+            // Ajouter tous les champs de filtrage avancé (depuis profile ou ads)
+            gender: profile?.gender || item.gender,
+            ethnicity: profile?.ethnicity || item.ethnicity,
+            nationality: profile?.nationality || item.nationality,
+            cup_size: profile?.cup_size || item.cup_size,
+            height: profile?.height || item.height,
+            weight: profile?.weight || item.weight,
+            hair_color: profile?.hair_color || item.hair_color,
+            eye_color: profile?.eye_color || item.eye_color,
+            body_type: profile?.body_type || item.body_type,
+            pubic_hair: profile?.pubic_hair || item.pubic_hair,
+            tattoos: profile?.tattoos ?? item.tattoos,
+            piercings: profile?.piercings ?? item.piercings,
+            meeting_at_home: item.meeting_at_home,
+            meeting_at_hotel: item.meeting_at_hotel,
+            meeting_in_car: item.meeting_in_car,
+            meeting_at_escort: item.meeting_at_escort,
+            languages: profile?.languages || item.languages || [],
+            has_comments: item.has_comments,
+          }
+        })
+
+        if (!isCancelled) {
+          setAllAds(ads)
+        }
+      } catch (error) {
+        if (!isCancelled) {
+          console.error('❌ Erreur lors du chargement:', error)
+        }
+      } finally {
+        if (!isCancelled) {
+          setLoadingAllAds(false)
+        }
+        isLoadingRef.current = false
+      }
     }
-  }
+
+    load()
+
+    // Cleanup function
+    return () => {
+      isCancelled = true
+      isLoadingRef.current = false
+    }
+  }, [selectedCountry])
 
   // NE PAS recharger à chaque changement de filtre (filtrage côté client)
 
@@ -343,6 +390,14 @@ export default function SearchPage() {
   }
 
   const filteredAds = useMemo(() => {
+    // Si les annonces sont en cours de chargement, retourner un tableau vide
+    if (loadingAllAds || allAds.length === 0) {
+      return []
+    }
+
+    // Debug: afficher les filtres actifs
+    console.log('🔍 Filtres actifs:', advancedFilters)
+
     // Vérifier si des filtres sont actifs
     const hasFilters = selectedCategory !== '' ||
       selectedCity !== null ||
@@ -352,77 +407,123 @@ export default function SearchPage() {
         return value !== undefined && value !== null
       })
 
-    // Ne rien afficher si la recherche a moins de 2 caractères ET qu'aucun filtre n'est actif
-    if (searchQuery.length < 2 && !hasFilters) {
-      return []
-    }
+    // Si l'utilisateur tape moins de 2 caractères dans la barre de recherche
+    // ET qu'aucun filtre n'est actif, afficher toutes les annonces
+    // (comportement par défaut de la page de recherche)
 
     const results = allAds.filter(ad => {
-      // Recherche textuelle (uniquement dans le pseudo) - minimum 2 caractères
-      const matchesSearch = searchQuery.length < 2 ||
-        ad.username.toLowerCase().includes(searchQuery.toLowerCase())
-
-    // Catégorie
-    const matchesCategory = selectedCategory === '' ||
-      ad.category === selectedCategory
-
-    // Ville
-    const matchesCity = !selectedCity ||
-      ad.location?.toLowerCase() === selectedCity.name.toLowerCase()
-
-    // Téléphone (pas encore chargé dans ad, skip pour l'instant)
-    const matchesPhone = !advancedFilters.phoneNumber
-
-    // Attributs physiques désactivés temporairement
-    const matchesGender = true
-    const matchesAgeMin = true
-    const matchesAgeMax = true
-    const matchesEthnicity = true
-    const matchesNationality = true
-    const matchesCupSize = true
-    const matchesHeightMin = true
-    const matchesHeightMax = true
-    const matchesWeightMin = true
-    const matchesWeightMax = true
-    const matchesHairColor = true
-    const matchesEyeColor = true
-    const matchesBodyType = true
-    const matchesPubicHair = true
-    const matchesTattoos = true
-    const matchesPiercings = true
-
-    // Lieux de rendez-vous
-    const matchesMeetingPlaces = !advancedFilters.meetingPlaces || advancedFilters.meetingPlaces.length === 0 ||
-      advancedFilters.meetingPlaces.some(place => {
-        if (place === 'home') return !!(ad as any).meeting_at_home
-        if (place === 'hotel') return !!(ad as any).meeting_at_hotel
-        if (place === 'car') return !!(ad as any).meeting_in_car
-        if (place === 'escort') return !!(ad as any).meeting_at_escort
+      // Recherche textuelle - vérification précoce pour éliminer rapidement
+      if (searchQuery.length >= 2 && !ad.username.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false
-      })
+      }
 
-    // Langues - Désactivé temporairement
-    const matchesLanguages = true
+      // Catégorie - vérification précoce
+      if (selectedCategory !== '' && ad.category !== selectedCategory) {
+        return false
+      }
 
-    // Vérifié
-    const matchesVerified = !advancedFilters.verified || ad.verified
+      // Ville - vérification précoce
+      if (selectedCity && ad.location?.toLowerCase() !== selectedCity.name.toLowerCase()) {
+        return false
+      }
 
-    // Commentaires
-    const matchesHasComments = !advancedFilters.hasComments || (ad as any).has_comments
+      // Téléphone
+      if (advancedFilters.phoneNumber) {
+        return false // Skip pour l'instant
+      }
 
-      return matchesSearch && matchesCategory && matchesCity && matchesPhone &&
-        matchesGender && matchesAgeMin && matchesAgeMax &&
-        matchesEthnicity && matchesNationality &&
-        matchesCupSize && matchesHeightMin && matchesHeightMax &&
-        matchesWeightMin && matchesWeightMax &&
-        matchesHairColor && matchesEyeColor && matchesBodyType &&
-        matchesPubicHair && matchesTattoos && matchesPiercings &&
-        matchesMeetingPlaces && matchesLanguages &&
-        matchesVerified && matchesHasComments
+      // Genre
+      if (advancedFilters.gender && advancedFilters.gender.length > 0) {
+        if (!advancedFilters.gender.includes(ad.gender || '')) return false
+      }
+
+      // Âge
+      if (advancedFilters.ageMin && (!ad.age || ad.age < advancedFilters.ageMin)) return false
+      if (advancedFilters.ageMax && (!ad.age || ad.age > advancedFilters.ageMax)) return false
+
+      // Ethnie
+      if (advancedFilters.ethnicity && advancedFilters.ethnicity.length > 0) {
+        if (!advancedFilters.ethnicity.includes(ad.ethnicity || '')) return false
+      }
+
+      // Nationalité
+      if (advancedFilters.nationality && advancedFilters.nationality.length > 0) {
+        if (!advancedFilters.nationality.includes(ad.nationality || '')) return false
+      }
+
+      // Bonnet
+      if (advancedFilters.cupSize && advancedFilters.cupSize.length > 0) {
+        if (!advancedFilters.cupSize.includes(ad.cup_size || '')) return false
+      }
+
+      // Taille
+      if (advancedFilters.heightMin && (!ad.height || ad.height < advancedFilters.heightMin)) return false
+      if (advancedFilters.heightMax && (!ad.height || ad.height > advancedFilters.heightMax)) return false
+
+      // Poids
+      if (advancedFilters.weightMin && (!ad.weight || ad.weight < advancedFilters.weightMin)) return false
+      if (advancedFilters.weightMax && (!ad.weight || ad.weight > advancedFilters.weightMax)) return false
+
+      // Couleur de cheveux
+      if (advancedFilters.hairColor && advancedFilters.hairColor.length > 0) {
+        if (!advancedFilters.hairColor.includes(ad.hair_color || '')) return false
+      }
+
+      // Couleur des yeux
+      if (advancedFilters.eyeColor && advancedFilters.eyeColor.length > 0) {
+        if (!advancedFilters.eyeColor.includes(ad.eye_color || '')) return false
+      }
+
+      // Type de corps
+      if (advancedFilters.bodyType && advancedFilters.bodyType.length > 0) {
+        if (!advancedFilters.bodyType.includes(ad.body_type || '')) return false
+      }
+
+      // Pilosité pubienne
+      if (advancedFilters.pubicHair && advancedFilters.pubicHair.length > 0) {
+        if (!advancedFilters.pubicHair.includes(ad.pubic_hair || '')) return false
+      }
+
+      // Tatouages
+      if (advancedFilters.tattoos !== undefined && advancedFilters.tattoos !== null) {
+        if (ad.tattoos !== advancedFilters.tattoos) return false
+      }
+
+      // Piercings
+      if (advancedFilters.piercings !== undefined && advancedFilters.piercings !== null) {
+        if (ad.piercings !== advancedFilters.piercings) return false
+      }
+
+      // Lieux de rendez-vous
+      if (advancedFilters.meetingPlaces && advancedFilters.meetingPlaces.length > 0) {
+        const hasMatchingPlace = advancedFilters.meetingPlaces.some(place => {
+          if (place === 'home') return !!(ad as any).meeting_at_home
+          if (place === 'hotel') return !!(ad as any).meeting_at_hotel
+          if (place === 'car') return !!(ad as any).meeting_in_car
+          if (place === 'escort') return !!(ad as any).meeting_at_escort
+          return false
+        })
+        if (!hasMatchingPlace) return false
+      }
+
+      // Langues
+      if (advancedFilters.languages && advancedFilters.languages.length > 0) {
+        const adLanguages = ad.languages || []
+        const hasMatchingLanguage = advancedFilters.languages.some(lang => adLanguages.includes(lang))
+        if (!hasMatchingLanguage) return false
+      }
+
+      // Vérifié
+      if (advancedFilters.verified && !ad.verified) return false
+
+      // Commentaires
+      if (advancedFilters.hasComments && !(ad as any).has_comments) return false
+
+      return true
     })
 
     return results
-  }, [allAds, searchQuery, selectedCategory, selectedCity, advancedFilters])
+  }, [allAds, searchQuery, selectedCategory, selectedCity, advancedFilters, loadingAllAds])
 
   // Afficher les annonces filtrées
   const adsToDisplay: AdWithDistance[] = filteredAds
@@ -451,7 +552,7 @@ export default function SearchPage() {
       <Header title={t('searchPage.title')} showBackButton={true} />
 
       {/* Search Bar */}
-      <div className="sticky top-[71px] z-[5] bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
+      <div className={`${showFilters ? '' : 'sticky top-[71px]'} z-[20] bg-gray-900 border-b border-gray-800`}>
         <div className="max-w-screen-xl mx-auto px-4 py-4">
 
           {/* Search Bar */}
@@ -522,12 +623,14 @@ export default function SearchPage() {
                 </div>
               </div>
 
-              {/* Filtres avancés */}
-              <AdvancedSearchFilters
-                filters={advancedFilters}
-                onFiltersChange={setAdvancedFilters}
-                onClear={() => setAdvancedFilters({})}
-              />
+              {/* Filtres avancés - Désactivés pendant le chargement */}
+              <div className={loadingAllAds ? 'pointer-events-none opacity-50' : ''}>
+                <AdvancedSearchFilters
+                  filters={advancedFilters}
+                  onFiltersChange={handleAdvancedFiltersChange}
+                  onClear={handleClearAdvancedFilters}
+                />
+              </div>
 
               {/* Clear All Filters */}
               {hasActiveFilters() && (
@@ -607,7 +710,7 @@ export default function SearchPage() {
                 key={ad.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
+                transition={{ delay: Math.min(index * 0.05, 0.5) }}
                 className="group cursor-pointer"
                 onClick={() => handleViewAd(ad.id)}
               >
@@ -615,24 +718,7 @@ export default function SearchPage() {
                   {/* Carousel avec effet de slide horizontal */}
                   <motion.div className="absolute inset-0">
                     <motion.div
-                      drag="x"
-                      dragConstraints={{ left: 0, right: 0 }}
-                      dragElastic={0.1}
-                      dragMomentum={false}
-                      onDragStart={(e) => {
-                        if ((e as any).pointerType === 'mouse') {
-                          e.preventDefault()
-                          return false
-                        }
-                      }}
-                      onDragEnd={(e, { offset }) => {
-                        const swipe = offset.x
-                        const photoCount = getPhotoCount(ad)
-                        if (Math.abs(swipe) > 50) {
-                          handleSwipe(ad.id, swipe > 0 ? 'right' : 'left', photoCount)
-                        }
-                      }}
-                      className="flex h-full touch-pan-y"
+                      className="flex h-full"
                       animate={{
                         x: `-${getCurrentPhotoIndex(ad.id) * 100}%`
                       }}
