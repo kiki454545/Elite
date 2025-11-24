@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Shield, Ticket, CheckCircle, Clock, XCircle, AlertCircle, User, Calendar, MessageSquare, Users, Search, Flag, Eye, History, Filter, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Shield, Ticket, CheckCircle, Clock, XCircle, AlertCircle, User, Calendar, MessageSquare, Users, Search, Flag, Eye, History, Filter, ChevronLeft, ChevronRight, Coins } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Header } from '@/components/Header'
@@ -155,6 +155,10 @@ export default function AdminPage() {
   const [deleteTarget, setDeleteTarget] = useState<{ type: 'message' | 'comment', id: string } | null>(null)
   const [showSuccessMessage, setShowSuccessMessage] = useState<{ type: 'message' | 'comment' } | null>(null)
 
+  // Total EliteCoins
+  const [totalCoins, setTotalCoins] = useState(0)
+  const [coinsLoading, setCoinsLoading] = useState(true)
+
   // Vérifier si l'utilisateur est admin
   useEffect(() => {
     async function checkAdmin() {
@@ -216,6 +220,31 @@ export default function AdminPage() {
       loadHistory()
     }
   }, [isAdmin])
+
+  // Charger le total des EliteCoins
+  useEffect(() => {
+    if (isAdmin) {
+      loadTotalCoins()
+    }
+  }, [isAdmin])
+
+  async function loadTotalCoins() {
+    try {
+      setCoinsLoading(true)
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('elite_coins')
+
+      if (error) throw error
+
+      const total = (data || []).reduce((sum, profile) => sum + (profile.elite_coins || 0), 0)
+      setTotalCoins(total)
+    } catch (error) {
+      console.error('Erreur lors du chargement du total des coins:', error)
+    } finally {
+      setCoinsLoading(false)
+    }
+  }
 
   async function loadTickets() {
     try {
@@ -871,7 +900,7 @@ export default function AdminPage() {
 
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -935,6 +964,25 @@ export default function AdminPage() {
               <div>
                 <div className="text-2xl font-bold text-white">{pendingReports}</div>
                 <div className="text-sm text-gray-400">Signalements</div>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="bg-gradient-to-br from-amber-500/10 to-yellow-600/10 rounded-xl p-4 border border-amber-500/20"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-amber-500/20 rounded-lg flex items-center justify-center">
+                <Coins className="w-5 h-5 text-amber-500" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-white">
+                  {coinsLoading ? '...' : totalCoins.toLocaleString()}
+                </div>
+                <div className="text-sm text-gray-400">EliteCoins total</div>
               </div>
             </div>
           </motion.div>
