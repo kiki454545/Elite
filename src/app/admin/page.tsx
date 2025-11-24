@@ -231,13 +231,32 @@ export default function AdminPage() {
   async function loadTotalCoins() {
     try {
       setCoinsLoading(true)
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('elite_coins')
 
-      if (error) throw error
+      // Utiliser une fonction RPC pour calculer la somme côté serveur (plus efficace)
+      // Sinon, on doit charger tous les profils par batch
+      let allProfiles: any[] = []
+      let from = 0
+      const batchSize = 1000
+      let hasMore = true
 
-      const total = (data || []).reduce((sum, profile) => sum + (profile.elite_coins || 0), 0)
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('elite_coins')
+          .range(from, from + batchSize - 1)
+
+        if (error) throw error
+
+        if (data && data.length > 0) {
+          allProfiles = [...allProfiles, ...data]
+          from += batchSize
+          hasMore = data.length === batchSize
+        } else {
+          hasMore = false
+        }
+      }
+
+      const total = allProfiles.reduce((sum, profile) => sum + (profile.elite_coins || 0), 0)
       setTotalCoins(total)
     } catch (error) {
       console.error('Erreur lors du chargement du total des coins:', error)
