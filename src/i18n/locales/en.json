@@ -862,7 +862,8 @@
     "giftModal": {
       "title": "Send a gift",
       "sendGift": "Send a gift",
-      "loginToSendGift": "Log in to send a gift"
+      "loginToSendGift": "Log in to send a gift",
+      "recharge": "Recharge"
     }
   },
   "adEditPage": {

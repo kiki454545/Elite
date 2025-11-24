@@ -6,6 +6,8 @@ import { X, Coins, Send } from 'lucide-react'
 import { GIFTS, RARITY_COLORS, Gift } from '@/config/gifts'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
+import { useTranslation } from 'react-i18next'
+import { useRouter } from 'next/navigation'
 
 interface GiftModalProps {
   isOpen: boolean
@@ -16,6 +18,8 @@ interface GiftModalProps {
 
 export function GiftModal({ isOpen, onClose, recipientId, recipientName }: GiftModalProps) {
   const { user } = useAuth()
+  const { t } = useTranslation()
+  const router = useRouter()
   const [selectedGift, setSelectedGift] = useState<Gift | null>(null)
   const [userCoins, setUserCoins] = useState(0)
   const [sending, setSending] = useState(false)
@@ -132,10 +136,20 @@ export function GiftModal({ isOpen, onClose, recipientId, recipientName }: GiftM
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-800">
             <div>
-              <h2 className="text-2xl font-bold text-white">Envoyer un cadeau</h2>
+              <h2 className="text-2xl font-bold text-white">{t('adDetailPage.giftModal.title')}</h2>
               <p className="text-gray-400 text-sm mt-1">À {recipientName}</p>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              {/* Bouton Recharger */}
+              <button
+                onClick={() => {
+                  router.push('/shop')
+                  onClose()
+                }}
+                className="px-3 py-2 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-white font-medium text-sm rounded-lg transition-all shadow-lg"
+              >
+                {t('adDetailPage.giftModal.recharge')}
+              </button>
               {/* Solde */}
               <div className="flex items-center gap-2 px-4 py-2 bg-amber-400/10 rounded-lg border border-amber-400/30">
                 <Coins className="w-5 h-5 text-amber-400" />
