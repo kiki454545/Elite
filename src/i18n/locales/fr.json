@@ -838,7 +838,7 @@
     "errorCreatingConversation": "Erreur lors de la création de la conversation",
     "cannotContactThisUser": "Vous ne pouvez pas contacter cet utilisateur",
     "loginToReport": "Connectez-vous pour signaler",
-    "loginToDonate": "Connectez-vous pour faire un don",
+    "loginToSendGift": "Connectez-vous pour envoyer un cadeau",
     "reportModal": {
       "title": "Signaler ce profil",
       "reasonLabel": "Raison du signalement *",
@@ -859,20 +859,10 @@
       "success": "Signalement envoyé avec succès",
       "error": "Erreur lors de l'envoi du signalement"
     },
-    "donateModal": {
-      "title": "Faire un don",
-      "yourBalance": "Votre solde",
-      "amountLabel": "Montant du don (EliteCoins) *",
-      "amountPlaceholder": "Entrez le montant",
-      "cancel": "Annuler",
-      "send": "Envoyer",
-      "sending": "Envoi...",
-      "mustBeLoggedIn": "Vous devez être connecté pour faire un don",
-      "invalidAmount": "Montant invalide",
-      "insufficientBalance": "Solde insuffisant. Vous avez {{balance}} EC",
-      "success": "Don de {{amount}} EC envoyé avec succès !",
-      "error": "Erreur lors du don",
-      "connectionError": "Erreur de connexion"
+    "giftModal": {
+      "title": "Envoyer un cadeau",
+      "sendGift": "Envoyer un cadeau",
+      "loginToSendGift": "Connectez-vous pour envoyer un cadeau"
     }
   },
   "adEditPage": {

@@ -838,7 +838,7 @@
     "errorCreatingConversation": "Error creating conversation",
     "cannotContactThisUser": "You cannot contact this user",
     "loginToReport": "Log in to report",
-    "loginToDonate": "Log in to donate",
+    "loginToSendGift": "Log in to send a gift",
     "reportModal": {
       "title": "Report this profile",
       "reasonLabel": "Report reason *",
@@ -859,20 +859,10 @@
       "success": "Report sent successfully",
       "error": "Error sending report"
     },
-    "donateModal": {
-      "title": "Make a donation",
-      "yourBalance": "Your balance",
-      "amountLabel": "Donation amount (EliteCoins) *",
-      "amountPlaceholder": "Enter amount",
-      "cancel": "Cancel",
-      "send": "Send",
-      "sending": "Sending...",
-      "mustBeLoggedIn": "You must be logged in to donate",
-      "invalidAmount": "Invalid amount",
-      "insufficientBalance": "Insufficient balance. You have {{balance}} EC",
-      "success": "Donation of {{amount}} EC sent successfully!",
-      "error": "Error donating",
-      "connectionError": "Connection error"
+    "giftModal": {
+      "title": "Send a gift",
+      "sendGift": "Send a gift",
+      "loginToSendGift": "Log in to send a gift"
     }
   },
   "adEditPage": {

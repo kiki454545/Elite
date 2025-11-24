@@ -15,6 +15,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { DAYS_OF_WEEK } from '@/types/ad'
 import { translateHairColor, translateEyeColor, translateEthnicity, translateHairRemoval, translateBreastType, getCountryName, getLanguageName } from '@/types/constants'
 import { AdComments } from '@/components/AdComments'
+import { GiftModal } from '@/components/GiftModal'
 import { supabase } from '@/lib/supabase'
 import { translateAdData } from '@/i18n/config'
 
@@ -50,10 +51,7 @@ export default function AdDetailPage() {
   const [reportReason, setReportReason] = useState('')
   const [reportDescription, setReportDescription] = useState('')
   const [isSubmittingReport, setIsSubmittingReport] = useState(false)
-  const [showDonateModal, setShowDonateModal] = useState(false)
-  const [donateAmount, setDonateAmount] = useState('')
-  const [isDonating, setIsDonating] = useState(false)
-  const [userCoins, setUserCoins] = useState(0)
+  const [showGiftModal, setShowGiftModal] = useState(false)
 
   // Helper pour générer le message WhatsApp selon la langue
   const getWhatsAppMessage = (username: string, title: string, country: string) => {
@@ -110,76 +108,6 @@ export default function AdDetailPage() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // Récupérer le solde EliteCoins de l'utilisateur
-  useEffect(() => {
-    const fetchUserCoins = async () => {
-      if (!user) return
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('elite_coins')
-        .eq('id', user.id)
-        .single()
-
-      if (profile) {
-        setUserCoins(profile.elite_coins || 0)
-      }
-    }
-    fetchUserCoins()
-  }, [user])
-
-  // Fonction pour faire un don
-  const handleDonate = async () => {
-    if (!user || !ad) {
-      showToast(t('adDetailPage.donateModal.mustBeLoggedIn'), 'error')
-      return
-    }
-
-    const amount = parseInt(donateAmount)
-    if (!amount || amount <= 0) {
-      showToast(t('adDetailPage.donateModal.invalidAmount'), 'error')
-      return
-    }
-
-    if (amount > userCoins) {
-      showToast(t('adDetailPage.donateModal.insufficientBalance', { balance: userCoins }), 'error')
-      return
-    }
-
-    setIsDonating(true)
-    try {
-      const payload = {
-        fromUserId: user.id,
-        toUserId: ad.userId,
-        amount
-      }
-
-      console.log('📤 Envoi du don:', payload)
-
-      const response = await fetch('/api/coins/donate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      })
-
-      const data = await response.json()
-      console.log('📥 Réponse API:', data)
-
-      if (response.ok && data.success) {
-        setUserCoins(data.fromBalance)
-        setShowDonateModal(false)
-        setDonateAmount('')
-        showToast(t('adDetailPage.donateModal.success', { amount }), 'success')
-      } else {
-        console.error('❌ Erreur don:', data)
-        showToast(data.error || t('adDetailPage.donateModal.error'), 'error')
-      }
-    } catch (error) {
-      console.error('❌ Exception:', error)
-      showToast(t('adDetailPage.donateModal.connectionError'), 'error')
-    } finally {
-      setIsDonating(false)
-    }
-  }
 
   // Fonction pour remonter en haut
   const scrollToTop = () => {
@@ -462,6 +390,23 @@ export default function AdDetailPage() {
             <ArrowLeft className="w-6 h-6" />
           </button>
           <div className="flex items-center gap-2">
+            {/* Bouton Envoyer un cadeau */}
+            {ad && ad.userId !== user?.id && (
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={() => {
+                  if (!isAuthenticated) {
+                    showToast(t('adDetailPage.loginToSendGift'), 'error')
+                    return
+                  }
+                  setShowGiftModal(true)
+                }}
+                className="p-2 rounded-full bg-gradient-to-r from-amber-400/20 to-yellow-500/20 hover:from-amber-400/30 hover:to-yellow-500/30 border border-amber-400/30 text-amber-400 hover:text-amber-300 transition-all"
+                title={t('adDetailPage.giftModal.sendGift')}
+              >
+                <Coins className="w-5 h-5" />
+              </motion.button>
+            )}
             <motion.button
               whileTap={{ scale: 0.9 }}
               className="p-2 rounded-full bg-gray-800 text-white hover:bg-gray-700 transition-colors"
@@ -652,15 +597,15 @@ export default function AdDetailPage() {
                   whileTap={{ scale: 0.9 }}
                   onClick={() => {
                     if (!isAuthenticated) {
-                      showToast(t('adDetailPage.loginToDonate'), 'error')
+                      showToast(t('adDetailPage.loginToSendGift'), 'error')
                       return
                     }
-                    setShowDonateModal(true)
+                    setShowGiftModal(true)
                   }}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-yellow-500 to-amber-600 text-white hover:from-yellow-600 hover:to-amber-700 transition-all shadow-lg"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 text-white hover:from-amber-500 hover:to-yellow-600 transition-all shadow-lg"
                 >
                   <Coins className="w-5 h-5" />
-                  <span className="font-medium text-sm">{t('adDetailPage.donateModal.title')}</span>
+                  <span className="font-medium text-sm">{t('adDetailPage.giftModal.sendGift')}</span>
                 </motion.button>
               )}
             </div>
@@ -1105,106 +1050,6 @@ export default function AdDetailPage() {
         </div>
       )}
 
-      {/* Modal de don */}
-      {showDonateModal && (
-        <>
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => !isDonating && setShowDonateModal(false)}
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50"
-          />
-
-          {/* Modal */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-gray-900 rounded-2xl border border-gray-800 p-6 max-w-md w-full shadow-2xl"
-            >
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-r from-yellow-500 to-amber-600 rounded-full flex items-center justify-center">
-                  <Coins className="w-5 h-5 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-white">
-                  {t('adDetailPage.donateModal.title')}
-                </h3>
-              </div>
-
-              <div className="mb-6 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-400">{t('adDetailPage.donateModal.yourBalance')}</span>
-                  <span className="font-bold text-white flex items-center gap-1">
-                    <Coins className="w-4 h-4 text-yellow-500" />
-                    {userCoins} EC
-                  </span>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    {t('adDetailPage.donateModal.amountLabel')}
-                  </label>
-                  <input
-                    type="number"
-                    value={donateAmount}
-                    onChange={(e) => setDonateAmount(e.target.value)}
-                    placeholder={t('adDetailPage.donateModal.amountPlaceholder')}
-                    min="1"
-                    max={userCoins}
-                    className="w-full bg-gray-800 text-white p-3 rounded-lg border border-gray-700 focus:border-yellow-500 focus:outline-none"
-                    disabled={isDonating}
-                  />
-                </div>
-
-                <div className="grid grid-cols-4 gap-2">
-                  {[10, 25, 50, 100].map((amount) => (
-                    <button
-                      key={amount}
-                      onClick={() => setDonateAmount(amount.toString())}
-                      disabled={isDonating || amount > userCoins}
-                      className="bg-gray-800 hover:bg-gray-700 text-white py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {amount}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="flex gap-3 pt-2">
-                  <button
-                    onClick={() => {
-                      setShowDonateModal(false)
-                      setDonateAmount('')
-                    }}
-                    disabled={isDonating}
-                    className="flex-1 bg-gray-800 text-white py-3 rounded-xl font-medium hover:bg-gray-700 transition-colors disabled:opacity-50"
-                  >
-                    {t('adDetailPage.donateModal.cancel')}
-                  </button>
-                  <button
-                    onClick={handleDonate}
-                    disabled={isDonating || !donateAmount || parseInt(donateAmount) <= 0}
-                    className="flex-1 bg-gradient-to-r from-yellow-500 to-amber-600 text-white py-3 rounded-xl font-medium hover:from-yellow-600 hover:to-amber-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {isDonating ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        {t('adDetailPage.donateModal.sending')}
-                      </>
-                    ) : (
-                      t('adDetailPage.donateModal.send')
-                    )}
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </>
-      )}
 
       {/* Modal de signalement */}
       {showReportModal && (
@@ -1294,6 +1139,16 @@ export default function AdDetailPage() {
             </motion.div>
           </div>
         </>
+      )}
+
+      {/* Gift Modal */}
+      {ad && (
+        <GiftModal
+          isOpen={showGiftModal}
+          onClose={() => setShowGiftModal(false)}
+          recipientId={ad.userId}
+          recipientName={ad.username}
+        />
       )}
     </div>
   )

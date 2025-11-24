@@ -281,16 +281,18 @@ export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderP
             </span>
           </motion.button>
 
-          {/* EliteCoins Display - Mobile */}
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={() => router.push(isLoggedIn ? '/shop' : '/auth')}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gradient-to-r from-amber-400/20 to-yellow-500/20 hover:from-amber-400/30 hover:to-yellow-500/30 border border-amber-400/30 transition-all"
-            title={isLoggedIn ? "Acheter des EliteCoins" : "Connectez-vous pour voir vos EliteCoins"}
-          >
-            <Coins className="w-4 h-4 text-amber-400" />
-            <span className="text-amber-400 font-bold text-sm">{eliteCoins}</span>
-          </motion.button>
+          {/* EliteCoins Display - Mobile (uniquement si connecté) */}
+          {isLoggedIn && (
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => router.push('/shop')}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gradient-to-r from-amber-400/20 to-yellow-500/20 hover:from-amber-400/30 hover:to-yellow-500/30 border border-amber-400/30 transition-all"
+              title="Acheter des EliteCoins"
+            >
+              <Coins className="w-4 h-4 text-amber-400" />
+              <span className="text-amber-400 font-bold text-sm">{eliteCoins}</span>
+            </motion.button>
+          )}
         </div>
       </div>
 

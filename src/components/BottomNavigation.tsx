@@ -220,16 +220,18 @@ export function BottomNavigation() {
             )
           })}
 
-          {/* EliteCoins Display - Desktop only */}
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={() => router.push(isLoggedIn ? '/shop' : '/auth')}
-            className="relative flex flex-row items-center gap-2 py-2 px-4 transition-colors bg-gradient-to-r from-amber-400/20 to-yellow-500/20 hover:from-amber-400/30 hover:to-yellow-500/30 rounded-xl border border-amber-400/30"
-            title={isLoggedIn ? "Acheter des EliteCoins" : "Connectez-vous pour voir vos EliteCoins"}
-          >
-            <Coins className="w-5 h-5 text-amber-400" />
-            <span className="text-sm font-medium text-amber-400">{eliteCoins}</span>
-          </motion.button>
+          {/* EliteCoins Display - Desktop only (uniquement si connecté) */}
+          {isLoggedIn && (
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => router.push('/shop')}
+              className="relative flex flex-row items-center gap-2 py-2 px-4 transition-colors bg-gradient-to-r from-amber-400/20 to-yellow-500/20 hover:from-amber-400/30 hover:to-yellow-500/30 rounded-xl border border-amber-400/30"
+              title="Acheter des EliteCoins"
+            >
+              <Coins className="w-5 h-5 text-amber-400" />
+              <span className="text-sm font-medium text-amber-400">{eliteCoins}</span>
+            </motion.button>
+          )}
         </div>
       </div>
     </nav>
