@@ -235,63 +235,60 @@ export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderP
       {/* Barre de navigation Top Week / Premium / EliteCoins - Mobile uniquement */}
       <div className="md:hidden border-t border-gray-800">
         <div className="flex items-center justify-around px-2 py-2">
-          <motion.button
-            whileTap={{ scale: 0.95 }}
+          <button
             onClick={() => router.push('/top-week')}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg transition-all ${
+            className={`flex items-center gap-1.5 px-4 py-3 rounded-lg transition-all active:scale-95 touch-manipulation ${
               pathname === '/top-week' || (pathname === '/' && selectedCountry.code === 'ALL')
                 ? 'bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-500/30'
-                : 'bg-gray-800/50 hover:bg-gray-700/50'
+                : 'bg-gray-800/50 active:bg-gray-700/50'
             }`}
           >
-            <Flame className={`w-4 h-4 ${
+            <Flame className={`w-4 h-4 pointer-events-none ${
               pathname === '/top-week' || (pathname === '/' && selectedCountry.code === 'ALL')
                 ? 'text-orange-500'
                 : 'text-gray-400'
             }`} />
-            <span className={`text-sm font-medium ${
+            <span className={`text-sm font-medium pointer-events-none ${
               pathname === '/top-week' || (pathname === '/' && selectedCountry.code === 'ALL')
                 ? 'text-orange-500'
                 : 'text-gray-300'
             }`}>
               {t('nav.topWeek')}
             </span>
-          </motion.button>
+          </button>
 
-          <motion.button
-            whileTap={{ scale: 0.95 }}
+          <button
             onClick={() => router.push('/premium')}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg transition-all ${
+            className={`flex items-center gap-1.5 px-4 py-3 rounded-lg transition-all active:scale-95 touch-manipulation ${
               pathname === '/premium'
                 ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border border-yellow-500/30'
-                : 'bg-gray-800/50 hover:bg-gray-700/50'
+                : 'bg-gray-800/50 active:bg-gray-700/50'
             }`}
           >
-            <Coins className={`w-4 h-4 ${
+            <Coins className={`w-4 h-4 pointer-events-none ${
               pathname === '/premium'
                 ? 'text-yellow-500'
                 : 'text-gray-400'
             }`} />
-            <span className={`text-sm font-medium ${
+            <span className={`text-sm font-medium pointer-events-none ${
               pathname === '/premium'
                 ? 'text-yellow-500'
                 : 'text-gray-300'
             }`}>
               {t('nav.premium')}
             </span>
-          </motion.button>
+          </button>
 
           {/* EliteCoins Display - Mobile (uniquement si connecté) */}
           {isLoggedIn && (
-            <motion.button
-              whileTap={{ scale: 0.95 }}
+            <button
               onClick={() => router.push('/shop')}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gradient-to-r from-amber-400/20 to-yellow-500/20 hover:from-amber-400/30 hover:to-yellow-500/30 border border-amber-400/30 transition-all"
+              className="flex items-center gap-1.5 px-4 py-3 rounded-lg bg-gradient-to-r from-amber-400/20 to-yellow-500/20 active:from-amber-400/30 active:to-yellow-500/30 border border-amber-400/30 transition-all active:scale-95 touch-manipulation"
               title="Acheter des EliteCoins"
             >
-              <Coins className="w-4 h-4 text-amber-400" />
-              <span className="text-amber-400 font-bold text-sm">{eliteCoins}</span>
-            </motion.button>
+              <Coins className="w-4 h-4 text-amber-400 pointer-events-none" />
+              <span className="text-amber-400 font-bold text-sm pointer-events-none">{eliteCoins}</span>
+            </button>
           )}
         </div>
       </div>
