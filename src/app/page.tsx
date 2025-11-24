@@ -44,7 +44,7 @@ export default function HomePage() {
 
   // Afficher les annonces du pays sélectionné
   return (
-    <main className="min-h-screen bg-gray-950 pb-20 md:pb-0 overflow-x-hidden">
+    <main className="min-h-screen bg-gray-950 pb-20 md:pb-0">
       <DynamicMetadata />
       <Header />
       <BottomNavigation />

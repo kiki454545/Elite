@@ -105,7 +105,7 @@ export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderP
   ]
 
   return (
-    <header className="sticky top-0 z-10 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
+    <header className="sticky top-0 z-30 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
       <div className="max-w-screen-xl mx-auto px-2 md:px-4 py-2 md:py-4 flex items-center justify-between gap-2 md:gap-4">
         {/* Left side - Back button (if enabled) or Logo + Country Selector + Stats */}
         <div className="flex items-center gap-1 md:gap-4 flex-shrink-0">

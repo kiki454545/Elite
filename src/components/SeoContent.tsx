@@ -8,7 +8,7 @@ export function SeoHero() {
   const { t } = useLanguage()
 
   return (
-    <section className="max-w-7xl mx-auto px-4 py-8 text-center">
+    <section className="max-w-7xl mx-auto px-4 pt-24 md:pt-8 pb-8 text-center">
       <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
         {t('home.seo.hero.title')}
       </h1>

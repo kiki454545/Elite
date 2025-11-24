@@ -451,7 +451,7 @@ export default function SearchPage() {
       <Header title={t('searchPage.title')} showBackButton={true} />
 
       {/* Search Bar */}
-      <div className="sticky top-[73px] z-[5] bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
+      <div className="sticky top-[71px] z-[5] bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
         <div className="max-w-screen-xl mx-auto px-4 py-4">
 
           {/* Search Bar */}

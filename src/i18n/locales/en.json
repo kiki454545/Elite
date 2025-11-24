@@ -136,7 +136,9 @@
     "filterByCategory": "Filter by category",
     "filterByServices": "Filter by services",
     "showFilters": "Show filters",
-    "hideFilters": "Hide filters"
+    "hideFilters": "Hide filters",
+    "selectCountry": "Select a country",
+    "selectCountryDescription": "Please choose the country where you want to search."
   },
   "rank": {
     "standard": "Standard",
