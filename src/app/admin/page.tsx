@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Shield, Ticket, CheckCircle, Clock, XCircle, AlertCircle, User, Calendar, MessageSquare, Users, Search, Flag, Eye, History, Filter } from 'lucide-react'
+import { Shield, Ticket, CheckCircle, Clock, XCircle, AlertCircle, User, Calendar, MessageSquare, Users, Search, Flag, Eye, History, Filter, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Header } from '@/components/Header'
@@ -128,6 +128,9 @@ export default function AdminPage() {
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [profilesLoading, setProfilesLoading] = useState(true)
   const [profileSearch, setProfileSearch] = useState('')
+  const [profilesPage, setProfilesPage] = useState(1)
+  const [totalProfilesCount, setTotalProfilesCount] = useState(0)
+  const PROFILES_PER_PAGE = 20
 
   // Reports
   const [reports, setReports] = useState<Report[]>([])
@@ -198,7 +201,7 @@ export default function AdminPage() {
     if (isAdmin) {
       loadProfiles()
     }
-  }, [isAdmin])
+  }, [isAdmin, profilesPage, profileSearch])
 
   // Charger les signalements
   useEffect(() => {
@@ -450,10 +453,34 @@ export default function AdminPage() {
   async function loadProfiles() {
     try {
       setProfilesLoading(true)
-      const { data, error } = await supabase
+
+      // Compter le nombre total de profils (avec recherche si applicable)
+      let countQuery = supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+
+      if (profileSearch.trim()) {
+        countQuery = countQuery.or(`username.ilike.%${profileSearch}%,email.ilike.%${profileSearch}%`)
+      }
+
+      const { count: totalCount } = await countQuery
+      setTotalProfilesCount(totalCount || 0)
+
+      // Charger seulement la page actuelle (20 profils)
+      const from = (profilesPage - 1) * PROFILES_PER_PAGE
+      const to = from + PROFILES_PER_PAGE - 1
+
+      let query = supabase
         .from('profiles')
         .select('id, username, email, age, verified, rank, is_admin, created_at')
         .order('created_at', { ascending: false })
+        .range(from, to)
+
+      if (profileSearch.trim()) {
+        query = query.or(`username.ilike.%${profileSearch}%,email.ilike.%${profileSearch}%`)
+      }
+
+      const { data, error } = await query
 
       if (error) throw error
 
@@ -790,12 +817,10 @@ export default function AdminPage() {
   const pendingTickets = tickets.filter(t => t.status !== 'closed').length
   const pendingVerifications = verificationRequests.filter(v => v.status === 'pending').length
   const pendingReports = reports.filter(r => r.status === 'pending').length
-  const totalProfiles = profiles.length
+  const totalProfiles = totalProfilesCount
 
-  const filteredProfiles = profiles.filter(p =>
-    p.username.toLowerCase().includes(profileSearch.toLowerCase()) ||
-    p.email.toLowerCase().includes(profileSearch.toLowerCase())
-  )
+  // Calculer le nombre de pages
+  const totalPages = Math.ceil(totalProfilesCount / PROFILES_PER_PAGE)
 
   // Filtrer l'historique
   const filteredHistory = history.filter(entry => {
@@ -1246,60 +1271,147 @@ export default function AdminPage() {
                   type="text"
                   placeholder="Rechercher par nom d'utilisateur ou email..."
                   value={profileSearch}
-                  onChange={(e) => setProfileSearch(e.target.value)}
+                  onChange={(e) => {
+                    setProfileSearch(e.target.value)
+                    setProfilesPage(1) // Réinitialiser à la page 1 lors d'une recherche
+                  }}
                   className="w-full bg-gray-900 text-white pl-10 pr-4 py-3 rounded-xl border border-gray-800 focus:border-green-500 focus:outline-none text-sm"
                 />
               </div>
             </div>
 
+            {/* Info pagination */}
+            <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">
+                  Affichage de {profiles.length > 0 ? (profilesPage - 1) * PROFILES_PER_PAGE + 1 : 0} à {Math.min(profilesPage * PROFILES_PER_PAGE, totalProfilesCount)} sur {totalProfilesCount} profils
+                </span>
+                <span className="text-gray-400">
+                  Page {profilesPage} / {totalPages}
+                </span>
+              </div>
+            </div>
+
             {profilesLoading ? (
               <div className="text-center text-gray-400 py-12">Chargement...</div>
-            ) : filteredProfiles.length === 0 ? (
+            ) : profiles.length === 0 ? (
               <div className="bg-gray-900 rounded-xl p-12 border border-gray-800 text-center">
                 <Users className="w-12 h-12 text-gray-600 mx-auto mb-4" />
                 <p className="text-gray-400">Aucun profil trouvé</p>
               </div>
             ) : (
-              <div className="space-y-2">
-                {filteredProfiles.map((profile, index) => (
-                  <motion.div
-                    key={profile.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    className="bg-gray-900 rounded-xl p-4 border border-gray-800 hover:border-gray-700 transition-all"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-3 flex-1">
-                        <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
-                          {profile.username.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="text-white font-semibold">{profile.username}</h3>
-                            {profile.verified && <CheckCircle className="w-4 h-4 text-blue-500" />}
-                            {profile.is_admin && <Shield className="w-4 h-4 text-yellow-500" />}
+              <>
+                <div className="space-y-2">
+                  {profiles.map((profile, index) => (
+                    <motion.div
+                      key={profile.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="bg-gray-900 rounded-xl p-4 border border-gray-800 hover:border-gray-700 transition-all"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start gap-3 flex-1">
+                          <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
+                            {profile.username.charAt(0).toUpperCase()}
                           </div>
-                          <p className="text-gray-400 text-sm mb-2">{profile.email}</p>
-                          <div className="flex items-center gap-4 text-xs text-gray-500">
-                            <span>{profile.age} ans</span>
-                            <span>Rank: {profile.rank}</span>
-                            <span>{profile.adsCount} annonce{profile.adsCount !== 1 ? 's' : ''}</span>
-                            <span>{new Date(profile.created_at).toLocaleDateString('fr-FR')}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="text-white font-semibold">{profile.username}</h3>
+                              {profile.verified && <CheckCircle className="w-4 h-4 text-blue-500" />}
+                              {profile.is_admin && <Shield className="w-4 h-4 text-yellow-500" />}
+                            </div>
+                            <p className="text-gray-400 text-sm mb-2">{profile.email}</p>
+                            <div className="flex items-center gap-4 text-xs text-gray-500">
+                              <span>{profile.age} ans</span>
+                              <span>Rank: {profile.rank}</span>
+                              <span>{profile.adsCount} annonce{profile.adsCount !== 1 ? 's' : ''}</span>
+                              <span>{new Date(profile.created_at).toLocaleDateString('fr-FR')}</span>
+                            </div>
                           </div>
                         </div>
+                        <button
+                          onClick={() => router.push(`/admin/profile/${profile.id}`)}
+                          className="px-3 py-1.5 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg text-xs font-medium transition-all flex items-center gap-1"
+                        >
+                          <Eye className="w-3 h-3" />
+                          Voir
+                        </button>
                       </div>
-                      <button
-                        onClick={() => router.push(`/admin/profile/${profile.id}`)}
-                        className="px-3 py-1.5 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg text-xs font-medium transition-all flex items-center gap-1"
-                      >
-                        <Eye className="w-3 h-3" />
-                        Voir
-                      </button>
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-6">
+                    <button
+                      onClick={() => setProfilesPage(Math.max(1, profilesPage - 1))}
+                      disabled={profilesPage === 1}
+                      className="px-4 py-2 bg-gray-800 text-white rounded-lg text-sm font-medium transition-all hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                      Précédent
+                    </button>
+
+                    <div className="flex items-center gap-2">
+                      {/* Première page */}
+                      {profilesPage > 3 && (
+                        <>
+                          <button
+                            onClick={() => setProfilesPage(1)}
+                            className="px-3 py-2 bg-gray-800 text-white rounded-lg text-sm font-medium transition-all hover:bg-gray-700"
+                          >
+                            1
+                          </button>
+                          {profilesPage > 4 && <span className="text-gray-500">...</span>}
+                        </>
+                      )}
+
+                      {/* Pages autour de la page actuelle */}
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        const pageNum = Math.max(1, Math.min(profilesPage - 2, totalPages - 4)) + i
+                        if (pageNum > totalPages) return null
+                        return (
+                          <button
+                            key={pageNum}
+                            onClick={() => setProfilesPage(pageNum)}
+                            className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                              profilesPage === pageNum
+                                ? 'bg-green-500 text-white'
+                                : 'bg-gray-800 text-white hover:bg-gray-700'
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        )
+                      })}
+
+                      {/* Dernière page */}
+                      {profilesPage < totalPages - 2 && (
+                        <>
+                          {profilesPage < totalPages - 3 && <span className="text-gray-500">...</span>}
+                          <button
+                            onClick={() => setProfilesPage(totalPages)}
+                            className="px-3 py-2 bg-gray-800 text-white rounded-lg text-sm font-medium transition-all hover:bg-gray-700"
+                          >
+                            {totalPages}
+                          </button>
+                        </>
+                      )}
                     </div>
-                  </motion.div>
-                ))}
-              </div>
+
+                    <button
+                      onClick={() => setProfilesPage(Math.min(totalPages, profilesPage + 1))}
+                      disabled={profilesPage === totalPages}
+                      className="px-4 py-2 bg-gray-800 text-white rounded-lg text-sm font-medium transition-all hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                      Suivant
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         ) : activeTab === 'reports' ? (
