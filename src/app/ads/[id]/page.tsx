@@ -17,6 +17,7 @@ import { translateHairColor, translateEyeColor, translateEthnicity, translateHai
 import { AdComments } from '@/components/AdComments'
 import { GiftModal } from '@/components/GiftModal'
 import { VoteButton } from '@/components/VoteButton'
+import { VoteStats, VoteBadgeCompact } from '@/components/VoteStats'
 import { supabase } from '@/lib/supabase'
 import { translateAdData } from '@/i18n/config'
 
@@ -559,6 +560,7 @@ export default function AdDetailPage() {
                   </div>
                 )}
                 <RankBadge rank={ad.rank} />
+                <VoteBadgeCompact profileId={ad.userId} />
               </div>
               <div className="flex items-center gap-4 text-gray-400 text-sm">
                 <button
@@ -614,6 +616,9 @@ export default function AdDetailPage() {
             </div>
           </div>
         </motion.div>
+
+        {/* Vote Stats - Classement et XP */}
+        <VoteStats profileId={ad.userId} showProgress={true} />
 
         {/* Description */}
         <motion.div
