@@ -617,8 +617,6 @@ export default function AdDetailPage() {
           </div>
         </motion.div>
 
-        {/* Vote Stats - Classement et XP */}
-        <VoteStats profileId={ad.userId} showProgress={true} />
 
         {/* Description */}
         <motion.div
@@ -966,6 +964,17 @@ export default function AdDetailPage() {
           </div>
         </motion.div>
           </div>
+        </div>
+
+        {/* Vote Stats - Classement et XP */}
+        <div className="max-w-4xl mx-auto px-4 mt-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.55 }}
+          >
+            <VoteStats profileId={ad.userId} showProgress={true} />
+          </motion.div>
         </div>
 
         {/* Section Commentaires */}

@@ -14,8 +14,8 @@ interface VoteButtonProps {
 
 const VOTE_OPTIONS: { type: VoteType; label: string; emoji: string; color: string }[] = [
   { type: 'top1', label: 'Top 1', emoji: '🥇', color: 'from-yellow-400 to-amber-500' },
-  { type: 'top5', label: 'Top 5', emoji: '🥈', color: 'from-gray-300 to-gray-400' },
-  { type: 'top10', label: 'Top 10', emoji: '🥉', color: 'from-amber-600 to-amber-700' },
+  { type: 'top5', label: 'Top 2', emoji: '🥈', color: 'from-gray-300 to-gray-400' },
+  { type: 'top10', label: 'Top 3', emoji: '🥉', color: 'from-amber-600 to-amber-700' },
   { type: 'top50', label: 'Top 50', emoji: '⭐', color: 'from-blue-400 to-cyan-500' },
 ]
 
@@ -129,12 +129,6 @@ export function VoteButton({ profileId, className = '' }: VoteButtonProps) {
         <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </motion.button>
 
-      {/* Stats de vote */}
-      {voteStats.totalScore > 0 && (
-        <div className="absolute -top-2 -right-2 bg-gradient-to-r from-amber-400 to-yellow-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-lg">
-          {voteStats.totalScore} pts
-        </div>
-      )}
 
       {/* Menu déroulant */}
       <AnimatePresence>

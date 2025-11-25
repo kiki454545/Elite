@@ -1,10 +1,12 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Trophy, TrendingUp } from 'lucide-react'
 import { useVoting } from '@/hooks/useVoting'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { XPBadge, XPProgress } from './XPBadge'
+import { supabase } from '@/lib/supabase'
 
 interface VoteStatsProps {
   profileId: string
@@ -15,9 +17,32 @@ interface VoteStatsProps {
 export function VoteStats({ profileId, className = '', showProgress = false }: VoteStatsProps) {
   const { language } = useLanguage()
   const { loading, voteStats } = useVoting(profileId)
+  const [hasAd, setHasAd] = useState<boolean | null>(null)
 
-  // Ne pas afficher si pas de votes
-  if (loading || voteStats.totalScore === 0) return null
+  // Vérifier si le profil a une annonce
+  useEffect(() => {
+    async function checkHasAd() {
+      const { data, error } = await supabase
+        .from('ads')
+        .select('id')
+        .eq('user_id', profileId)
+        .eq('status', 'approved')
+        .limit(1)
+
+      if (!error && data && data.length > 0) {
+        setHasAd(true)
+      } else {
+        setHasAd(false)
+      }
+    }
+
+    if (profileId) {
+      checkHasAd()
+    }
+  }, [profileId])
+
+  // Ne pas afficher si pas d'annonce ou pas de votes
+  if (loading || hasAd === null || !hasAd || voteStats.totalScore === 0) return null
 
   const totalVotes = voteStats.top1Count + voteStats.top5Count + voteStats.top10Count + voteStats.top50Count
 
@@ -57,14 +82,14 @@ export function VoteStats({ profileId, className = '', showProgress = false }: V
         />
         <VoteCountBadge
           emoji="🥈"
-          label="Top 5"
+          label="Top 2"
           count={voteStats.top5Count}
           color="from-gray-300 to-gray-400"
           bgColor="bg-gray-500/20"
         />
         <VoteCountBadge
           emoji="🥉"
-          label="Top 10"
+          label="Top 3"
           count={voteStats.top10Count}
           color="from-amber-600 to-amber-700"
           bgColor="bg-amber-500/20"

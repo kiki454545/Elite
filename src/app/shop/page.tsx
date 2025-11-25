@@ -9,6 +9,8 @@ import { RANK_CONFIG } from '@/types/profile'
 import { supabase } from '@/lib/supabase'
 import { Notification, NotificationType } from '@/components/Notification'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { VoteStats } from '@/components/VoteStats'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface CoinPackage {
   id: string
@@ -166,6 +168,7 @@ const DURATION_OPTIONS = [
 export default function ShopPage() {
   const router = useRouter()
   const { t } = useLanguage()
+  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState<'coins' | 'ranks'>('coins')
   const [eliteCoins, setEliteCoins] = useState<number>(0)
   const [selectedDurations, setSelectedDurations] = useState<Record<string, number>>({
@@ -747,6 +750,18 @@ export default function ShopPage() {
         )}
 
         {/* Trust Section */}
+        {/* Vote Stats - Classement et XP */}
+        {user?.id && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.65 }}
+            className="mt-8"
+          >
+            <VoteStats profileId={user.id} showProgress={true} />
+          </motion.div>
+        )}
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

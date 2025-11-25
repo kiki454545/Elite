@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { Header } from '@/components/Header'
 import { User, Eye, Heart, Phone, Settings } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { VoteStats } from '@/components/VoteStats'
 
 type Gender = 'female' | 'male' | 'couple' | 'transsexual'
 type Orientation = 'heterosexual' | 'bisexual' | 'homosexual'
@@ -275,6 +276,13 @@ export default function EditProfilePage() {
         <Header title={t('editProfilePage.title')} />
 
         <div className="max-w-5xl mx-auto px-4 py-6">
+          {/* Vote Stats - Classement et XP */}
+          {user?.id && (
+            <div className="mb-6">
+              <VoteStats profileId={user.id} showProgress={true} />
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
 
           {/* Section: Informations de base */}

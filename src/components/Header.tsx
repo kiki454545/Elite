@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { useCountry, COUNTRIES } from '@/contexts/CountryContext'
 import { useLanguage, Language } from '@/contexts/LanguageContext'
 import { useStats } from '@/hooks/useStats'
-import { ChevronDown, ArrowLeft, Users, FileText, Coins, Home, Flame } from 'lucide-react'
+import { ChevronDown, ArrowLeft, Users, FileText, Coins, Home, Flame, Trophy } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 
@@ -276,6 +276,28 @@ export function Header({ title, showBackButton = false, backUrl = '/' }: HeaderP
                 : 'text-gray-300'
             }`}>
               {t('nav.premium')}
+            </span>
+          </button>
+
+          <button
+            onClick={() => router.push('/top-50')}
+            className={`flex items-center gap-1.5 px-4 py-3 rounded-lg transition-all active:scale-95 touch-manipulation ${
+              pathname === '/top-50'
+                ? 'bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/30'
+                : 'bg-gray-800/50 active:bg-gray-700/50'
+            }`}
+          >
+            <Trophy className={`w-4 h-4 pointer-events-none ${
+              pathname === '/top-50'
+                ? 'text-amber-500'
+                : 'text-gray-400'
+            }`} />
+            <span className={`text-sm font-medium pointer-events-none ${
+              pathname === '/top-50'
+                ? 'text-amber-500'
+                : 'text-gray-300'
+            }`}>
+              Top 50
             </span>
           </button>
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { Home, Search, MessageCircle, Heart, User, LogIn, Flame, Crown, Coins, X, MapPin } from 'lucide-react'
+import { Home, Search, MessageCircle, Heart, User, LogIn, Flame, Crown, Coins, X, MapPin, Trophy } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
@@ -92,6 +92,7 @@ export function BottomNavigation() {
     { id: 'home', icon: Home, label: t('nav.home'), path: '/' },
     { id: 'topWeek', icon: Flame, label: t('nav.topWeek'), path: '/top-week' },
     { id: 'premium', icon: Crown, label: t('nav.premium'), path: '/premium' },
+    { id: 'top50', icon: Trophy, label: 'Top 50', path: '/top-50' },
     { id: 'search', icon: Search, label: t('nav.search'), path: '/search' },
     { id: 'messages', icon: MessageCircle, label: t('nav.messages'), path: '/messages' },
     { id: 'favorites', icon: Heart, label: t('nav.favorites'), path: '/favorites' },
