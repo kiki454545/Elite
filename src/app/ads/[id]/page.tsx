@@ -16,6 +16,7 @@ import { DAYS_OF_WEEK } from '@/types/ad'
 import { translateHairColor, translateEyeColor, translateEthnicity, translateHairRemoval, translateBreastType, getCountryName, getLanguageName } from '@/types/constants'
 import { AdComments } from '@/components/AdComments'
 import { GiftModal } from '@/components/GiftModal'
+import { VoteButton } from '@/components/VoteButton'
 import { supabase } from '@/lib/supabase'
 import { translateAdData } from '@/i18n/config'
 
@@ -580,7 +581,7 @@ export default function AdDetailPage() {
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={handleToggleFavorite}
@@ -592,6 +593,8 @@ export default function AdDetailPage() {
               >
                 <Heart className={`w-5 h-5 ${isFavorite(ad.id) ? 'fill-current' : ''}`} />
               </motion.button>
+              {/* Bouton de vote */}
+              <VoteButton profileId={ad.userId} />
               {ad && user && ad.userId !== user.id && (
                 <motion.button
                   whileTap={{ scale: 0.9 }}
