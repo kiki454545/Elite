@@ -215,7 +215,7 @@ export default function Top50Page() {
         // Récupérer les annonces de ces profils
         const { data: adsData, error: adsError } = await supabase
           .from('ads')
-          .select('id, user_id, photos, location, country, video_url, arrondissement, created_at, status')
+          .select('id, user_id, photos, location, country, video_url, arrondissement, created_at, status, verified')
           .in('user_id', topProfileIds)
 
 
@@ -251,7 +251,7 @@ export default function Top50Page() {
               age: profile.age || 25,
               location: ad.location,
               photos: ad.photos || [],
-              verified: profile.verified,
+              verified: ad.verified || profile.verified,
               online: false,
               rank: profile.rank as RankType,
               video: ad.video_url,

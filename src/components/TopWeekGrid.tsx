@@ -11,6 +11,7 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Ad } from '@/types/ad'
+import { VoteBadgeCompact } from './VoteStats'
 
 function RankBadge({ rank }: { rank: RankType }) {
   if (!rank || rank === 'standard') return null
@@ -383,6 +384,8 @@ export function TopWeekGrid() {
                       </svg>
                     </div>
                   )}
+                  {/* XP Badge */}
+                  <VoteBadgeCompact profileId={ad.userId} />
                 </div>
                 <div className="flex items-center gap-1 text-gray-300 text-xs mb-2">
                   <MapPin className="w-3 h-3" />
