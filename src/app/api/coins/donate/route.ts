@@ -151,14 +151,14 @@ export async function POST(request: NextRequest) {
 
     console.log(`✅ Don de ${parsedAmount} EC de ${fromProfile.username} à ${toProfile.username}`)
 
-    // Créer ou récupérer la conversation entre les deux utilisateurs (SÉCURISÉ avec .or())
+    // Créer ou récupérer la conversation entre les deux utilisateurs (SÉCURISÉ)
     const { data: conversations } = await supabase
       .from('conversations')
-      .select('id')
+      .select('id, user1_id, user2_id')
       .or(`user1_id.eq.${fromUserId},user2_id.eq.${fromUserId}`)
 
     // Filtrer côté JS pour éviter SQL injection
-    const existingConversation = conversations?.find(conv =>
+    const existingConversation = conversations?.find((conv: any) =>
       (conv.user1_id === fromUserId && conv.user2_id === toUserId) ||
       (conv.user1_id === toUserId && conv.user2_id === fromUserId)
     )
