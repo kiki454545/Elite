@@ -6,11 +6,32 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-// Grille de prix SERVEUR (source de vérité!)
-const RANK_PRICES: Record<string, Record<number, number>> = {
-  'premium': { 30: 500, 90: 1350, 180: 2520 },
-  'diamond': { 30: 1500, 90: 4050, 180: 7560 },
-  'legend': { 30: 3000, 90: 8100, 180: 15120 }
+// Prix de base pour 30 jours (source de vérité!)
+const BASE_PRICES: Record<string, number> = {
+  'plus': 300,
+  'vip': 950,
+  'elite': 2100
+}
+
+// Multiplicateurs de durée (mêmes que le client)
+const DURATION_MULTIPLIERS: Record<number, number> = {
+  1: 0.055,
+  2: 0.105,
+  3: 0.15,
+  5: 0.24,
+  7: 0.32,
+  10: 0.43,
+  15: 0.6,
+  20: 0.75,
+  30: 1
+}
+
+// Calcule le prix en coins pour un rang et une durée
+function calculateCoinPrice(rank: string, days: number): number | null {
+  const basePrice = BASE_PRICES[rank]
+  const multiplier = DURATION_MULTIPLIERS[days]
+  if (!basePrice || !multiplier) return null
+  return Math.ceil(basePrice * multiplier)
 }
 
 export async function POST(request: NextRequest) {
@@ -53,7 +74,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validation du rang
-    if (!['premium', 'diamond', 'legend'].includes(rank)) {
+    if (!['plus', 'vip', 'elite'].includes(rank)) {
       return NextResponse.json(
         { error: 'Rang invalide' },
         { status: 400 }
@@ -62,7 +83,8 @@ export async function POST(request: NextRequest) {
 
     // Validation de la durée
     const parsedDays = parseInt(days)
-    if (![30, 90, 180].includes(parsedDays)) {
+    const validDurations = [1, 2, 3, 5, 7, 10, 15, 20, 30]
+    if (!validDurations.includes(parsedDays)) {
       return NextResponse.json(
         { error: 'Durée invalide' },
         { status: 400 }
@@ -70,7 +92,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 5. CALCULER LE PRIX CÔTÉ SERVEUR (NE JAMAIS FAIRE CONFIANCE AU CLIENT!)
-    const coinPrice = RANK_PRICES[rank][parsedDays]
+    const coinPrice = calculateCoinPrice(rank, parsedDays)
 
     if (!coinPrice) {
       return NextResponse.json(
