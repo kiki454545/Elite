@@ -728,11 +728,18 @@ export default function AdminPage() {
     try {
       setProcessingCoins(true)
 
+      // Récupérer le token d'authentification
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        throw new Error('Non authentifié')
+      }
+
       // Appeler l'API admin pour gérer les coins (bypass RLS)
       const response = await fetch('/api/admin/manage-coins', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           userId,

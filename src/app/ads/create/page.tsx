@@ -521,9 +521,9 @@ export default function CreateAdPage() {
           <h1 className="text-3xl font-bold text-white mb-2">
             {t('createAdPage.title')}
           </h1>
-          <p className="text-gray-400">{t('createAdPage.stepIndicator', { step })}</p>
+          <p className="text-gray-400">{t('createAdPage.stepIndicator', { step, total: 4 })}</p>
           <div className="mt-4 flex gap-2">
-            {[1, 2, 3].map((s) => (
+            {[1, 2, 3, 4].map((s) => (
               <div
                 key={s}
                 className={`flex-1 h-2 rounded-full ${
@@ -964,18 +964,18 @@ export default function CreateAdPage() {
                 {t('createAdPage.back')}
               </button>
               <button
-                onClick={handleSubmit}
-                disabled={photoPreviews.length === 0 || isSubmitting}
+                onClick={() => setStep(4)}
+                disabled={photoPreviews.length === 0}
                 className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 text-white py-4 rounded-lg font-medium hover:from-pink-600 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? t('createAdPage.creating') : t('createAdPage.publishAd')}
+                {t('createAdPage.continue')}
               </button>
             </div>
           </motion.div>
         )}
 
         {/* Step 4: Disponibilité et Contact */}
-        {step === 999 && (
+        {step === 4 && (
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}

@@ -153,7 +153,13 @@
       "Bash(wc:*)",
       "Bash(git log:*)",
       "Bash(test:*)",
-      "Bash(git rev-list:*)"
+      "Bash(git rev-list:*)",
+      "Bash(exit 0)",
+      "Bash(echo \"curl -s https://www.sexelite.eu/sitemap.xml | grep -m 5 ''<loc>''\")",
+      "Bash(node:*)",
+      "Bash(copy:*)",
+      "Bash($env:SUPABASE_SERVICE_ROLE_KEY=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVwZnNncHpjdmR2dHV5Z3dhaXpkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2Mjk2NTEwOSwiZXhwIjoyMDc4NTQxMTA5fQ.QzeSZvbBIz-kL85FM_CoVTTQ6fRRtPl6GSGq4WqrZpU\")",
+      "Bash(nslookup:*)"
     ],
     "deny": [],
     "ask": []
