@@ -162,7 +162,7 @@ export function useAdById(id: string) {
         // 2. Récupérer le profil de l'utilisateur avec ses infos de contact et attributs physiques
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('username, age, rank, verified, languages, available24_7, availability, phone_number, contact_method, has_whatsapp, contact_email, interested_in, height, weight, measurements, breast_size, breast_type, hair_color, eye_color, hair_removal, tattoo, ethnicity, body_type, piercings, nationality, gender, accepts_messages')
+          .select('username, age, rank, verified, languages, available24_7, availability, phone_number, contact_method, has_whatsapp, contact_email, interested_in, height, weight, measurements, breast_size, breast_type, hair_color, eye_color, hair_removal, tattoo, ethnicity, body_type, piercings, nationality, gender, accepts_messages, mym_url, onlyfans_url')
           .eq('id', data.user_id)
           .single()
 
@@ -209,6 +209,8 @@ export function useAdById(id: string) {
             acceptsCalls: acceptsCalls,
             whatsapp: profileData.has_whatsapp || false,
             email: profileData.contact_email || undefined,
+            mymUrl: profileData.mym_url || undefined,
+            onlyfansUrl: profileData.onlyfans_url || undefined,
             availability: {
               available247: profileData.available24_7 || false,
               days: days,

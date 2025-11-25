@@ -70,6 +70,8 @@ export default function EditProfilePage() {
   const [hasWhatsapp, setHasWhatsapp] = useState(false)
   const [contactEmail, setContactEmail] = useState('')
   const [contactMethod, setContactMethod] = useState<ContactMethod | ''>()
+  const [mymUrl, setMymUrl] = useState('')
+  const [onlyfansUrl, setOnlyfansUrl] = useState('')
 
   // Charger les données du profil une fois qu'elles sont disponibles
   useEffect(() => {
@@ -138,6 +140,8 @@ export default function EditProfilePage() {
           setHasWhatsapp(data.has_whatsapp || false)
           setContactEmail(data.contact_email || '')
           setContactMethod(data.contact_method || '')
+          setMymUrl(data.mym_url || '')
+          setOnlyfansUrl(data.onlyfans_url || '')
         }
       }
     }
@@ -205,6 +209,8 @@ export default function EditProfilePage() {
           has_whatsapp: hasWhatsapp,
           contact_email: contactEmail || null,
           contact_method: contactMethod || null,
+          mym_url: mymUrl || null,
+          onlyfans_url: onlyfansUrl || null,
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id)
@@ -1077,6 +1083,50 @@ export default function EditProfilePage() {
                   placeholder="contact@exemple.com"
                   className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20"
                 />
+              </div>
+
+              {/* MYM */}
+              <div>
+                <label className="text-white text-sm font-medium mb-2 block">
+                  MYM
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <img src="/icons/mym.svg" alt="MYM" className="w-6 h-6 rounded" />
+                  </div>
+                  <input
+                    type="url"
+                    value={mymUrl}
+                    onChange={(e) => setMymUrl(e.target.value)}
+                    placeholder="https://mym.fans/votre-profil"
+                    className="w-full bg-gray-800 border border-gray-700 rounded-xl pl-12 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20"
+                  />
+                </div>
+                <p className="text-gray-500 text-xs mt-1">
+                  {language === 'fr' ? 'Lien vers votre profil MYM' : 'Link to your MYM profile'}
+                </p>
+              </div>
+
+              {/* OnlyFans */}
+              <div>
+                <label className="text-white text-sm font-medium mb-2 block">
+                  OnlyFans
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <img src="/icons/onlyfans.svg" alt="OnlyFans" className="w-6 h-6 rounded-full" />
+                  </div>
+                  <input
+                    type="url"
+                    value={onlyfansUrl}
+                    onChange={(e) => setOnlyfansUrl(e.target.value)}
+                    placeholder="https://onlyfans.com/votre-profil"
+                    className="w-full bg-gray-800 border border-gray-700 rounded-xl pl-12 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20"
+                  />
+                </div>
+                <p className="text-gray-500 text-xs mt-1">
+                  {language === 'fr' ? 'Lien vers votre profil OnlyFans' : 'Link to your OnlyFans profile'}
+                </p>
               </div>
 
               {/* Méthode de contact préférée */}

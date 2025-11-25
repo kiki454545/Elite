@@ -708,16 +708,15 @@ function VoteStatsSection({ profileId, language, router }: VoteStatsSectionProps
           </div>
         </div>
         {currentBadge ? (
-          <div className={`${currentBadge.bgColor} ${currentBadge.borderColor} border px-4 py-2 rounded-xl flex items-center gap-2`}>
-            <span className="text-2xl">{currentBadge.icon}</span>
+          <div className="flex items-center gap-2">
+            <Image src={currentBadge.image} alt={currentBadge.name} width={40} height={40} className="object-contain" />
             <span className={`font-bold bg-gradient-to-r ${currentBadge.color} bg-clip-text text-transparent`}>
               {language === 'fr' ? currentBadge.nameFr : currentBadge.name}
             </span>
           </div>
         ) : (
           <div className="bg-gray-800/50 border border-gray-700 px-4 py-2 rounded-xl flex items-center gap-2">
-            <span className="text-2xl">🎯</span>
-            <span className="font-bold text-gray-400">
+            <span className="text-gray-400 text-sm">
               {language === 'fr' ? 'Aucun badge' : 'No badge'}
             </span>
           </div>

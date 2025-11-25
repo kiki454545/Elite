@@ -25,9 +25,12 @@ export interface ContactInfo {
   phone?: string
   acceptsCalls?: boolean
   acceptsSMS?: boolean
+  acceptsEmail?: boolean
   whatsapp?: boolean
   telegram?: boolean
-  email?: boolean
+  email?: string
+  mymUrl?: string
+  onlyfansUrl?: string
   availability?: Availability
 }
 

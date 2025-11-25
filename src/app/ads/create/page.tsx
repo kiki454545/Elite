@@ -50,7 +50,7 @@ export default function CreateAdPage() {
     phone: '',
     whatsapp: false,
     telegram: false,
-    email: false,
+    acceptsEmail: false,
     acceptsSMS: false,
     availability: {
       available247: false,
@@ -1112,10 +1112,10 @@ export default function CreateAdPage() {
                     <label className="flex items-center gap-3 cursor-pointer">
                       <input
                         type="checkbox"
-                        checked={contactInfo.email || false}
+                        checked={contactInfo.acceptsEmail || false}
                         onChange={(e) => setContactInfo(prev => ({
                           ...prev,
-                          email: e.target.checked
+                          acceptsEmail: e.target.checked
                         }))}
                         className="w-5 h-5 rounded border-gray-700 bg-gray-800 text-pink-600 focus:ring-2 focus:ring-pink-500"
                       />

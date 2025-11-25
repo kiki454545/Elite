@@ -960,6 +960,44 @@ export default function AdDetailPage() {
                   </div>
                 </div>
               )}
+
+              {/* MYM */}
+              {ad.contactInfo?.mymUrl && (
+                <a
+                  href={ad.contactInfo.mymUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-gradient-to-r from-pink-500/20 to-rose-500/20 rounded-lg p-4 border border-pink-500/30 hover:border-pink-500/50 transition-all flex items-center gap-3 group"
+                >
+                  <img src="/icons/mym.svg" alt="MYM" className="w-10 h-10 rounded-lg shadow-lg shadow-pink-500/20 group-hover:shadow-pink-500/40 transition-all" />
+                  <div className="flex-1">
+                    <p className="text-white font-semibold group-hover:text-pink-400 transition-colors">MYM</p>
+                    <p className="text-gray-400 text-xs">{language === 'fr' ? 'Voir mon profil MYM' : 'View my MYM profile'}</p>
+                  </div>
+                  <svg className="w-5 h-5 text-gray-400 group-hover:text-pink-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
+              )}
+
+              {/* OnlyFans */}
+              {ad.contactInfo?.onlyfansUrl && (
+                <a
+                  href={ad.contactInfo.onlyfansUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-gradient-to-r from-[#00AFF0]/20 to-[#008CCF]/20 rounded-lg p-4 border border-[#00AFF0]/30 hover:border-[#00AFF0]/50 transition-all flex items-center gap-3 group"
+                >
+                  <img src="/icons/onlyfans.svg" alt="OnlyFans" className="w-10 h-10 rounded-full shadow-lg shadow-[#00AFF0]/20 group-hover:shadow-[#00AFF0]/40 transition-all" />
+                  <div className="flex-1">
+                    <p className="text-white font-semibold group-hover:text-[#00AFF0] transition-colors">OnlyFans</p>
+                    <p className="text-gray-400 text-xs">{language === 'fr' ? 'Voir mon profil OnlyFans' : 'View my OnlyFans profile'}</p>
+                  </div>
+                  <svg className="w-5 h-5 text-gray-400 group-hover:text-[#00AFF0] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
+              )}
             </div>
           </div>
         </motion.div>
