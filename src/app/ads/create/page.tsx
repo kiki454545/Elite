@@ -51,7 +51,11 @@ export default function CreateAdPage() {
     whatsapp: false,
     telegram: false,
     acceptsEmail: false,
+    acceptsCalls: true,
     acceptsSMS: false,
+    email: '',
+    mymUrl: '',
+    onlyfansUrl: '',
     availability: {
       available247: false,
       days: [],
@@ -170,7 +174,6 @@ export default function CreateAdPage() {
       const filteredNearbyCities = nearbyCityInputs.filter(c => c.trim() !== '')
 
       // 3. Créer l'annonce
-      // NOTE: contact_info sera ajouté une fois que vous aurez exécuté le SQL dans Supabase
       const { data: ad, error: adError } = await supabase
         .from('ads')
         .insert({
@@ -193,7 +196,18 @@ export default function CreateAdPage() {
           video_url: videoUrl,
           latitude: latitude,
           longitude: longitude,
-          // contact_info: contactInfo, // TODO: Décommenter après avoir exécuté le SQL
+          // Informations de contact
+          phone_number: contactInfo.phone || null,
+          has_whatsapp: contactInfo.whatsapp || false,
+          has_telegram: contactInfo.telegram || false,
+          accepts_sms: contactInfo.acceptsSMS || false,
+          accepts_calls: contactInfo.acceptsCalls || false,
+          contact_email: contactInfo.email || null,
+          mym_url: contactInfo.mymUrl || null,
+          onlyfans_url: contactInfo.onlyfansUrl || null,
+          available24_7: contactInfo.availability?.available247 || false,
+          availability_days: contactInfo.availability?.days || [],
+          availability_hours: contactInfo.availability?.hours || null,
           status: 'approved' // Publié directement
         })
         .select()
@@ -1112,16 +1126,78 @@ export default function CreateAdPage() {
                     <label className="flex items-center gap-3 cursor-pointer">
                       <input
                         type="checkbox"
-                        checked={contactInfo.acceptsEmail || false}
+                        checked={contactInfo.acceptsCalls || false}
                         onChange={(e) => setContactInfo(prev => ({
                           ...prev,
-                          acceptsEmail: e.target.checked
+                          acceptsCalls: e.target.checked
                         }))}
                         className="w-5 h-5 rounded border-gray-700 bg-gray-800 text-pink-600 focus:ring-2 focus:ring-pink-500"
                       />
-                      <Mail className="w-5 h-5 text-gray-400" />
-                      <span className="text-white">Email</span>
+                      <Phone className="w-5 h-5 text-gray-400" />
+                      <span className="text-white">{language === 'fr' ? 'Appels' : 'Calls'}</span>
                     </label>
+                  </div>
+                </div>
+
+                {/* Email de contact */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <Mail className="w-4 h-4 inline mr-2" />
+                    {language === 'fr' ? 'Email de contact' : 'Contact Email'}
+                  </label>
+                  <input
+                    type="email"
+                    value={contactInfo.email || ''}
+                    onChange={(e) => setContactInfo(prev => ({
+                      ...prev,
+                      email: e.target.value
+                    }))}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 px-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    placeholder="contact@exemple.com"
+                  />
+                </div>
+
+                {/* MYM */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    MYM
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                      <img src="/icons/mym.svg" alt="MYM" className="w-6 h-6 rounded" />
+                    </div>
+                    <input
+                      type="url"
+                      value={contactInfo.mymUrl || ''}
+                      onChange={(e) => setContactInfo(prev => ({
+                        ...prev,
+                        mymUrl: e.target.value
+                      }))}
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 pl-12 pr-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                      placeholder="https://mym.fans/votre-profil"
+                    />
+                  </div>
+                </div>
+
+                {/* OnlyFans */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    OnlyFans
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                      <img src="/icons/onlyfans.svg" alt="OnlyFans" className="w-6 h-6 rounded" />
+                    </div>
+                    <input
+                      type="url"
+                      value={contactInfo.onlyfansUrl || ''}
+                      onChange={(e) => setContactInfo(prev => ({
+                        ...prev,
+                        onlyfansUrl: e.target.value
+                      }))}
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 pl-12 pr-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                      placeholder="https://onlyfans.com/votre-profil"
+                    />
                   </div>
                 </div>
               </div>

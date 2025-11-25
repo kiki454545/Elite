@@ -159,10 +159,10 @@ export function useAdById(id: string) {
       }
 
       if (data) {
-        // 2. Récupérer le profil de l'utilisateur avec ses infos de contact et attributs physiques
+        // 2. Récupérer le profil de l'utilisateur avec ses attributs physiques
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('username, age, rank, verified, languages, available24_7, availability, phone_number, contact_method, has_whatsapp, contact_email, interested_in, height, weight, measurements, breast_size, breast_type, hair_color, eye_color, hair_removal, tattoo, ethnicity, body_type, piercings, nationality, gender, accepts_messages, mym_url, onlyfans_url')
+          .select('username, age, rank, verified, languages, interested_in, height, weight, measurements, breast_size, breast_type, hair_color, eye_color, hair_removal, tattoo, ethnicity, body_type, piercings, nationality, gender, accepts_messages')
           .eq('id', data.user_id)
           .single()
 
@@ -170,52 +170,20 @@ export function useAdById(id: string) {
           console.error('Erreur lors de la récupération du profil:', profileError)
         }
 
-        // TOUJOURS utiliser les données du profil pour contact_info
-        let contactInfo = null
-        if (profileData) {
-          // Parser availability si c'est une string JSON
-          const parsedAvailability = profileData.availability
-            ? (typeof profileData.availability === 'string'
-                ? JSON.parse(profileData.availability)
-                : profileData.availability)
-            : {}
-
-          // Convertir availability du profil vers le format de l'annonce
-          const days: string[] = []
-          let hours: string | undefined = undefined
-          if (parsedAvailability) {
-            const dayNames = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche']
-            const dayKeys = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-
-            dayKeys.forEach((key, index) => {
-              if (parsedAvailability[key]?.enabled) {
-                days.push(dayNames[index])
-                // Récupérer les heures du premier jour disponible
-                if (!hours && parsedAvailability[key]?.start && parsedAvailability[key]?.end) {
-                  hours = `${parsedAvailability[key].start} - ${parsedAvailability[key].end}`
-                }
-              }
-            })
-          }
-
-          // Déterminer acceptsCalls et acceptsSMS selon contact_method
-          const contactMethod = profileData.contact_method
-          const acceptsCalls = !contactMethod || contactMethod === 'call_only' || contactMethod === 'call_and_sms'
-          const acceptsSMS = !contactMethod || contactMethod === 'sms_only' || contactMethod === 'call_and_sms'
-
-          contactInfo = {
-            phone: profileData.phone_number || undefined,
-            acceptsSMS: acceptsSMS,
-            acceptsCalls: acceptsCalls,
-            whatsapp: profileData.has_whatsapp || false,
-            email: profileData.contact_email || undefined,
-            mymUrl: profileData.mym_url || undefined,
-            onlyfansUrl: profileData.onlyfans_url || undefined,
-            availability: {
-              available247: profileData.available24_7 || false,
-              days: days,
-              hours: hours
-            }
+        // Récupérer les infos de contact depuis l'annonce (ads)
+        const contactInfo = {
+          phone: data.phone_number || undefined,
+          acceptsSMS: data.accepts_sms || false,
+          acceptsCalls: data.accepts_calls ?? true,
+          whatsapp: data.has_whatsapp || false,
+          telegram: data.has_telegram || false,
+          email: data.contact_email || undefined,
+          mymUrl: data.mym_url || undefined,
+          onlyfansUrl: data.onlyfans_url || undefined,
+          availability: {
+            available247: data.available24_7 || false,
+            days: data.availability_days || [],
+            hours: data.availability_hours || undefined
           }
         }
 

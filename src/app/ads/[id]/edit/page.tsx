@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { CreateAdFormData, AdCategory, AD_CATEGORIES, MEETING_PLACES, ESCORT_SERVICES } from '@/types/ad'
+import { CreateAdFormData, AdCategory, AD_CATEGORIES, MEETING_PLACES, ESCORT_SERVICES, DAYS_OF_WEEK, ContactInfo } from '@/types/ad'
 import { RANK_CONFIG } from '@/types/profile'
-import { Upload, X, MapPin } from 'lucide-react'
+import { Upload, X, MapPin, Phone, MessageCircle, Mail, Clock } from 'lucide-react'
 import LocationSelector from '@/components/LocationSelector'
 import { searchCities } from '@/data/cities'
 import { supabase } from '@/lib/supabase'
@@ -50,6 +50,23 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
+  // États pour les informations de contact
+  const [contactInfo, setContactInfo] = useState<ContactInfo>({
+    phone: '',
+    whatsapp: false,
+    telegram: false,
+    acceptsEmail: false,
+    acceptsCalls: true,
+    acceptsSMS: false,
+    email: '',
+    mymUrl: '',
+    onlyfansUrl: '',
+    availability: {
+      available247: false,
+      days: [],
+      hours: ''
+    }
+  })
 
   useEffect(() => {
     if (!loading && !user) {
@@ -124,6 +141,23 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
         setNearbyCityInputs(inputs)
       }
 
+      // Charger les informations de contact
+      setContactInfo({
+        phone: ad.phone_number || '',
+        whatsapp: ad.has_whatsapp || false,
+        telegram: ad.has_telegram || false,
+        acceptsEmail: !!ad.contact_email,
+        acceptsCalls: ad.accepts_calls ?? true,
+        acceptsSMS: ad.accepts_sms || false,
+        email: ad.contact_email || '',
+        mymUrl: ad.mym_url || '',
+        onlyfansUrl: ad.onlyfans_url || '',
+        availability: {
+          available247: ad.available24_7 || false,
+          days: ad.availability_days || [],
+          hours: ad.availability_hours || ''
+        }
+      })
 
       setIsLoading(false)
     } catch (error) {
@@ -276,21 +310,38 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
         services: formData.services,
         price: formData.price,
         photos: photoUrls,
-        video_url: videoUrl
-        // Note: availability et contact_info sont gérés dans le profil, pas dans l'annonce
+        video_url: videoUrl,
+        // Informations de contact
+        phone_number: contactInfo.phone || null,
+        has_whatsapp: contactInfo.whatsapp || false,
+        has_telegram: contactInfo.telegram || false,
+        accepts_sms: contactInfo.acceptsSMS || false,
+        accepts_calls: contactInfo.acceptsCalls || false,
+        contact_email: contactInfo.email || null,
+        mym_url: contactInfo.mymUrl || null,
+        onlyfans_url: contactInfo.onlyfansUrl || null,
+        available24_7: contactInfo.availability?.available247 || false,
+        availability_days: contactInfo.availability?.days || [],
+        availability_hours: contactInfo.availability?.hours || null
       }
 
       console.log('🚀 Envoi de la mise à jour via API...')
+
+      // Récupérer le token d'authentification
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        throw new Error(t('adEditPage.errors.notAuthenticated') || 'Non authentifié')
+      }
 
       // Utiliser la route API pour éviter les problèmes CORS
       const response = await fetch('/api/ads/update', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           adId,
-          userId: user.id,
           updateData,
         }),
       })
@@ -527,6 +578,35 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
     setExistingVideoUrl(null)
   }
 
+  // Fonctions pour les informations de contact
+  const toggleAvailable247 = () => {
+    setContactInfo(prev => ({
+      ...prev,
+      availability: {
+        ...prev.availability,
+        available247: !prev.availability?.available247
+      }
+    }))
+  }
+
+  const toggleDay = (day: string) => {
+    setContactInfo(prev => {
+      const currentDays = prev.availability?.days || []
+      const newDays = currentDays.includes(day)
+        ? currentDays.filter(d => d !== day)
+        : [...currentDays, day]
+      return {
+        ...prev,
+        availability: {
+          ...prev.availability,
+          available247: prev.availability?.available247 || false,
+          days: newDays,
+          hours: prev.availability?.hours || ''
+        }
+      }
+    })
+  }
+
   const setAsMainPhoto = (index: number) => {
     if (index === 0) return // Déjà la photo principale
 
@@ -576,9 +656,9 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
           <h1 className="text-3xl font-bold text-white mb-2">
             {t('adEditPage.title')}
           </h1>
-          <p className="text-gray-400">{t('adEditPage.stepProgress', { step, total: 3 })}</p>
+          <p className="text-gray-400">{t('adEditPage.stepProgress', { step, total: 4 })}</p>
           <div className="mt-4 flex gap-2">
-            {[1, 2, 3].map((s) => (
+            {[1, 2, 3, 4].map((s) => (
               <div
                 key={s}
                 className={`flex-1 h-2 rounded-full ${
@@ -1013,6 +1093,250 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
             <div className="flex gap-4">
               <button
                 onClick={() => setStep(2)}
+                className="flex-1 bg-gray-800 text-white py-4 rounded-lg font-medium hover:bg-gray-700 transition-all"
+              >
+                {t('adEditPage.back')}
+              </button>
+              <button
+                onClick={() => setStep(4)}
+                className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 text-white py-4 rounded-lg font-medium hover:from-pink-600 hover:to-purple-700 transition-all"
+              >
+                {language === 'fr' ? 'Suivant' : 'Next'}
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Étape 4: Contact */}
+        {step === 4 && (
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="space-y-6"
+          >
+            <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
+              <h2 className="text-xl font-semibold text-white mb-2">
+                {language === 'fr' ? 'Disponibilités et Contact' : 'Availability and Contact'}
+              </h2>
+              <p className="text-gray-400 mb-6">
+                {language === 'fr' ? 'Configurez vos disponibilités et moyens de contact' : 'Set up your availability and contact methods'}
+              </p>
+
+              <div className="space-y-6">
+                {/* Disponible 24/7 */}
+                <div>
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <div className="relative">
+                      <input
+                        type="checkbox"
+                        checked={contactInfo.availability?.available247 || false}
+                        onChange={toggleAvailable247}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-pink-800 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-600"></div>
+                    </div>
+                    <div>
+                      <span className="text-white font-medium">{language === 'fr' ? 'Disponible 24h/24, 7j/7' : 'Available 24/7'}</span>
+                      <p className="text-sm text-gray-400">{language === 'fr' ? 'Activez si vous êtes disponible à tout moment' : 'Enable if you are available anytime'}</p>
+                    </div>
+                  </label>
+                </div>
+
+                {/* Jours de la semaine */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-3">
+                    {language === 'fr' ? 'Jours de disponibilité' : 'Available days'}
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {DAYS_OF_WEEK.map((day) => (
+                      <button
+                        key={day}
+                        type="button"
+                        onClick={() => toggleDay(day)}
+                        className={`py-3 px-4 rounded-lg font-medium transition-all text-sm border-2 ${
+                          contactInfo.availability?.days?.includes(day)
+                            ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white border-transparent'
+                            : 'bg-gray-800/50 text-gray-400 hover:text-white border-gray-700 hover:border-gray-600'
+                        }`}
+                      >
+                        {day}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Horaires */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <Clock className="w-4 h-4 inline mr-2" />
+                    {language === 'fr' ? 'Horaires' : 'Schedule'}
+                  </label>
+                  <input
+                    type="text"
+                    value={contactInfo.availability?.hours || ''}
+                    onChange={(e) => setContactInfo(prev => ({
+                      ...prev,
+                      availability: {
+                        available247: prev.availability?.available247 || false,
+                        days: prev.availability?.days || [],
+                        hours: e.target.value
+                      }
+                    }))}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 px-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    placeholder={language === 'fr' ? 'Ex: 9h-23h' : 'Ex: 9am-11pm'}
+                  />
+                </div>
+
+                {/* Téléphone */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <Phone className="w-4 h-4 inline mr-2" />
+                    {language === 'fr' ? 'Numéro de téléphone' : 'Phone number'}
+                  </label>
+                  <input
+                    type="tel"
+                    value={contactInfo.phone || ''}
+                    onChange={(e) => setContactInfo(prev => ({
+                      ...prev,
+                      phone: e.target.value
+                    }))}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 px-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    placeholder="+33 6 12 34 56 78"
+                  />
+                </div>
+
+                {/* Moyens de contact */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-3">
+                    {language === 'fr' ? 'Moyens de contact acceptés' : 'Accepted contact methods'}
+                  </label>
+                  <div className="space-y-3">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={contactInfo.whatsapp || false}
+                        onChange={(e) => setContactInfo(prev => ({
+                          ...prev,
+                          whatsapp: e.target.checked
+                        }))}
+                        className="w-5 h-5 rounded border-gray-700 bg-gray-800 text-pink-600 focus:ring-2 focus:ring-pink-500"
+                      />
+                      <MessageCircle className="w-5 h-5 text-green-500" />
+                      <span className="text-white">WhatsApp</span>
+                    </label>
+
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={contactInfo.telegram || false}
+                        onChange={(e) => setContactInfo(prev => ({
+                          ...prev,
+                          telegram: e.target.checked
+                        }))}
+                        className="w-5 h-5 rounded border-gray-700 bg-gray-800 text-pink-600 focus:ring-2 focus:ring-pink-500"
+                      />
+                      <MessageCircle className="w-5 h-5 text-blue-500" />
+                      <span className="text-white">Telegram</span>
+                    </label>
+
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={contactInfo.acceptsSMS || false}
+                        onChange={(e) => setContactInfo(prev => ({
+                          ...prev,
+                          acceptsSMS: e.target.checked
+                        }))}
+                        className="w-5 h-5 rounded border-gray-700 bg-gray-800 text-pink-600 focus:ring-2 focus:ring-pink-500"
+                      />
+                      <MessageCircle className="w-5 h-5 text-gray-400" />
+                      <span className="text-white">SMS</span>
+                    </label>
+
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={contactInfo.acceptsCalls || false}
+                        onChange={(e) => setContactInfo(prev => ({
+                          ...prev,
+                          acceptsCalls: e.target.checked
+                        }))}
+                        className="w-5 h-5 rounded border-gray-700 bg-gray-800 text-pink-600 focus:ring-2 focus:ring-pink-500"
+                      />
+                      <Phone className="w-5 h-5 text-gray-400" />
+                      <span className="text-white">{language === 'fr' ? 'Appels' : 'Calls'}</span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Email de contact */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <Mail className="w-4 h-4 inline mr-2" />
+                    {language === 'fr' ? 'Email de contact' : 'Contact Email'}
+                  </label>
+                  <input
+                    type="email"
+                    value={contactInfo.email || ''}
+                    onChange={(e) => setContactInfo(prev => ({
+                      ...prev,
+                      email: e.target.value
+                    }))}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 px-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    placeholder="contact@exemple.com"
+                  />
+                </div>
+
+                {/* MYM */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    MYM
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                      <img src="/icons/mym.svg" alt="MYM" className="w-6 h-6 rounded" />
+                    </div>
+                    <input
+                      type="url"
+                      value={contactInfo.mymUrl || ''}
+                      onChange={(e) => setContactInfo(prev => ({
+                        ...prev,
+                        mymUrl: e.target.value
+                      }))}
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 pl-12 pr-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                      placeholder="https://mym.fans/votre-profil"
+                    />
+                  </div>
+                </div>
+
+                {/* OnlyFans */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    OnlyFans
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                      <img src="/icons/onlyfans.svg" alt="OnlyFans" className="w-6 h-6 rounded" />
+                    </div>
+                    <input
+                      type="url"
+                      value={contactInfo.onlyfansUrl || ''}
+                      onChange={(e) => setContactInfo(prev => ({
+                        ...prev,
+                        onlyfansUrl: e.target.value
+                      }))}
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 pl-12 pr-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                      placeholder="https://onlyfans.com/votre-profil"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <button
+                onClick={() => setStep(3)}
                 className="flex-1 bg-gray-800 text-white py-4 rounded-lg font-medium hover:bg-gray-700 transition-all"
               >
                 {t('adEditPage.back')}

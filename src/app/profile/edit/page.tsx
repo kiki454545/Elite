@@ -6,7 +6,7 @@ import { motion } from 'framer-motion'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { Header } from '@/components/Header'
-import { User, Eye, Heart, Phone, Settings } from 'lucide-react'
+import { User, Eye, Settings } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { VoteStats } from '@/components/VoteStats'
 
@@ -17,7 +17,6 @@ type HairColor = 'blond' | 'chestnut' | 'brown' | 'red' | 'black'
 type EyeColor = 'blue' | 'gray' | 'brown' | 'hazel' | 'green'
 type BreastType = 'natural' | 'silicone'
 type HairRemoval = 'fully' | 'partially' | 'circumcised' | 'natural'
-type ContactMethod = 'sms_only' | 'call_only' | 'call_and_sms'
 
 export default function EditProfilePage() {
   const router = useRouter()
@@ -52,26 +51,6 @@ export default function EditProfilePage() {
   const [tattoo, setTattoo] = useState(false)
   const [piercings, setPiercings] = useState(false)
   const [languages, setLanguages] = useState<string[]>([])
-  const [availability, setAvailability] = useState<{
-    [key: string]: { enabled: boolean; start: string; end: string }
-  }>({
-    monday: { enabled: false, start: '09:00', end: '17:00' },
-    tuesday: { enabled: false, start: '09:00', end: '17:00' },
-    wednesday: { enabled: false, start: '09:00', end: '17:00' },
-    thursday: { enabled: false, start: '09:00', end: '17:00' },
-    friday: { enabled: false, start: '09:00', end: '17:00' },
-    saturday: { enabled: false, start: '09:00', end: '17:00' },
-    sunday: { enabled: false, start: '09:00', end: '17:00' },
-  })
-  const [available24_7, setAvailable24_7] = useState(false)
-
-  // Coordonnées
-  const [phoneNumber, setPhoneNumber] = useState('')
-  const [hasWhatsapp, setHasWhatsapp] = useState(false)
-  const [contactEmail, setContactEmail] = useState('')
-  const [contactMethod, setContactMethod] = useState<ContactMethod | ''>()
-  const [mymUrl, setMymUrl] = useState('')
-  const [onlyfansUrl, setOnlyfansUrl] = useState('')
 
   // Charger les données du profil une fois qu'elles sont disponibles
   useEffect(() => {
@@ -121,27 +100,6 @@ export default function EditProfilePage() {
           setTattoo(data.tattoo || false)
           setPiercings(data.piercings || false)
           setLanguages(data.languages || [])
-          if (data.availability) {
-            console.log('✅ availability existe, on la charge')
-            // Si c'est une string JSON, la parser en objet
-            const parsedAvailability = typeof data.availability === 'string'
-              ? JSON.parse(data.availability)
-              : data.availability
-            console.log('📦 Availability parsée:', parsedAvailability)
-            setAvailability(parsedAvailability)
-          } else {
-            console.log('❌ availability n\'existe pas dans la DB')
-          }
-          setAvailable24_7(data.available24_7 || false)
-          console.log('📥 APRÈS CHARGEMENT - État des states:')
-          console.log('  - available24_7 sera:', data.available24_7 || false)
-          console.log('  - availability sera:', data.availability)
-          setPhoneNumber(data.phone_number || '')
-          setHasWhatsapp(data.has_whatsapp || false)
-          setContactEmail(data.contact_email || '')
-          setContactMethod(data.contact_method || '')
-          setMymUrl(data.mym_url || '')
-          setOnlyfansUrl(data.onlyfans_url || '')
         }
       }
     }
@@ -175,9 +133,6 @@ export default function EditProfilePage() {
 
     if (!user?.id) return
 
-    console.log('💾 SAUVEGARDE - available24_7:', available24_7)
-    console.log('💾 SAUVEGARDE - availability:', availability)
-
     try {
       // Mettre à jour le profil dans Supabase avec TOUTES les données
       const { error } = await supabase
@@ -203,14 +158,6 @@ export default function EditProfilePage() {
           tattoo: tattoo,
           piercings: piercings,
           languages: languages,
-          availability: availability,
-          available24_7: available24_7,
-          phone_number: phoneNumber || null,
-          has_whatsapp: hasWhatsapp,
-          contact_email: contactEmail || null,
-          contact_method: contactMethod || null,
-          mym_url: mymUrl || null,
-          onlyfans_url: onlyfansUrl || null,
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id)
@@ -867,310 +814,6 @@ export default function EditProfilePage() {
                   ))}
                 </div>
               </div>
-            </div>
-          </motion.div>
-
-          {/* Section: Disponibilités */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 rounded-3xl p-6 md:p-8 border border-gray-800 shadow-2xl"
-          >
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
-                  <Heart className="w-6 h-6 text-white" />
-                </div>
-                <h2 className="text-2xl font-bold text-white">
-                  {t('editProfilePage.availability')}
-                </h2>
-              </div>
-
-              {/* Bouton Disponible 24/7 */}
-              <button
-                type="button"
-                onClick={() => {
-                  console.log('🔴 CLICK 24/7 - État avant:', available24_7)
-                  const newValue = !available24_7
-                  console.log('🔴 CLICK 24/7 - Nouvelle valeur:', newValue)
-                  setAvailable24_7(newValue)
-                  if (newValue) {
-                    console.log('✅ Activation 24/7 - Activation de tous les jours')
-                    // Activer tous les jours avec horaires 00:00 - 23:59
-                    setAvailability({
-                      monday: { enabled: true, start: '00:00', end: '23:59' },
-                      tuesday: { enabled: true, start: '00:00', end: '23:59' },
-                      wednesday: { enabled: true, start: '00:00', end: '23:59' },
-                      thursday: { enabled: true, start: '00:00', end: '23:59' },
-                      friday: { enabled: true, start: '00:00', end: '23:59' },
-                      saturday: { enabled: true, start: '00:00', end: '23:59' },
-                      sunday: { enabled: true, start: '00:00', end: '23:59' },
-                    })
-                  } else {
-                    console.log('❌ Désactivation 24/7 - Désactivation de tous les jours')
-                    // Désactiver tous les jours
-                    setAvailability({
-                      monday: { enabled: false, start: '09:00', end: '17:00' },
-                      tuesday: { enabled: false, start: '09:00', end: '17:00' },
-                      wednesday: { enabled: false, start: '09:00', end: '17:00' },
-                      thursday: { enabled: false, start: '09:00', end: '17:00' },
-                      friday: { enabled: false, start: '09:00', end: '17:00' },
-                      saturday: { enabled: false, start: '09:00', end: '17:00' },
-                      sunday: { enabled: false, start: '09:00', end: '17:00' },
-                    })
-                  }
-                }}
-                className={`px-4 py-2 rounded-xl border-2 transition-all font-medium text-sm whitespace-nowrap ${
-                  available24_7
-                    ? 'border-green-500 bg-green-500/10 text-green-500'
-                    : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600'
-                }`}
-              >
-                {t('editProfilePage.available247')}
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              {[
-                { key: 'monday', label: t('editProfilePage.monday') },
-                { key: 'tuesday', label: t('editProfilePage.tuesday') },
-                { key: 'wednesday', label: t('editProfilePage.wednesday') },
-                { key: 'thursday', label: t('editProfilePage.thursday') },
-                { key: 'friday', label: t('editProfilePage.friday') },
-                { key: 'saturday', label: t('editProfilePage.saturday') },
-                { key: 'sunday', label: t('editProfilePage.sunday') },
-              ].map((day) => (
-                <div key={day.key} className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                    {/* Jour avec checkbox */}
-                    <div className="flex items-center gap-3 sm:w-40">
-                      <input
-                        type="checkbox"
-                        checked={availability[day.key]?.enabled || false}
-                        onChange={(e) => {
-                          setAvailability({
-                            ...availability,
-                            [day.key]: {
-                              ...(availability[day.key] || { start: '09:00', end: '17:00' }),
-                              enabled: e.target.checked
-                            }
-                          })
-                        }}
-                        className="w-5 h-5 rounded border-gray-600 text-pink-500 focus:ring-pink-500 focus:ring-offset-gray-900"
-                      />
-                      <label className="text-white font-medium">
-                        {day.label}
-                      </label>
-                    </div>
-
-                    {/* Horaires */}
-                    {availability[day.key]?.enabled && (
-                      <div className="flex items-center gap-3 flex-1">
-                        <div className="flex items-center gap-2">
-                          <label className="text-gray-400 text-sm">{t('editProfilePage.from')}</label>
-                          <input
-                            type="time"
-                            value={availability[day.key]?.start || '09:00'}
-                            onChange={(e) => {
-                              setAvailability({
-                                ...availability,
-                                [day.key]: {
-                                  ...(availability[day.key] || { enabled: true, end: '17:00' }),
-                                  start: e.target.value
-                                }
-                              })
-                            }}
-                            className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20"
-                          />
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <label className="text-gray-400 text-sm">{t('editProfilePage.to')}</label>
-                          <input
-                            type="time"
-                            value={availability[day.key]?.end || '17:00'}
-                            onChange={(e) => {
-                              setAvailability({
-                                ...availability,
-                                [day.key]: {
-                                  ...(availability[day.key] || { enabled: true, start: '09:00' }),
-                                  end: e.target.value
-                                }
-                              })
-                            }}
-                            className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20"
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Section: Coordonnées */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 rounded-3xl p-6 md:p-8 border border-gray-800 shadow-2xl"
-          >
-            <div className="flex items-center gap-3 mb-8">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-2xl flex items-center justify-center shadow-lg">
-                <Phone className="w-6 h-6 text-white" />
-              </div>
-              <h2 className="text-2xl font-bold text-white">
-                {t('editProfilePage.contactInfo')}
-              </h2>
-            </div>
-
-            <div className="space-y-6">
-              {/* Numéro de téléphone */}
-              <div>
-                <label className="text-white text-sm font-medium mb-2 block">
-                  {t('editProfilePage.phoneNumber')}
-                </label>
-                <input
-                  type="tel"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  placeholder="+33 6 12 34 56 78"
-                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20"
-                />
-              </div>
-
-              {/* WhatsApp */}
-              <div>
-                <label className="text-white text-sm font-medium mb-3 block">
-                  {t('editProfilePage.haveWhatsapp')}
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setHasWhatsapp(true)}
-                    className={`p-3 rounded-xl border-2 transition-all font-medium ${
-                      hasWhatsapp
-                        ? 'border-green-500 bg-green-500/10 text-green-500'
-                        : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600'
-                    }`}
-                  >
-                    {t('editProfilePage.yes')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setHasWhatsapp(false)}
-                    className={`p-3 rounded-xl border-2 transition-all font-medium ${
-                      !hasWhatsapp
-                        ? 'border-pink-500 bg-pink-500/10 text-pink-500'
-                        : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600'
-                    }`}
-                  >
-                    {t('editProfilePage.no')}
-                  </button>
-                </div>
-              </div>
-
-              {/* Email de contact */}
-              <div>
-                <label className="text-white text-sm font-medium mb-2 block">
-                  {t('editProfilePage.contactEmail')}
-                </label>
-                <input
-                  type="email"
-                  value={contactEmail}
-                  onChange={(e) => setContactEmail(e.target.value)}
-                  placeholder="contact@exemple.com"
-                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20"
-                />
-              </div>
-
-              {/* MYM */}
-              <div>
-                <label className="text-white text-sm font-medium mb-2 block">
-                  MYM
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <img src="/icons/mym.svg" alt="MYM" className="w-6 h-6 rounded" />
-                  </div>
-                  <input
-                    type="url"
-                    value={mymUrl}
-                    onChange={(e) => setMymUrl(e.target.value)}
-                    placeholder="https://mym.fans/votre-profil"
-                    className="w-full bg-gray-800 border border-gray-700 rounded-xl pl-12 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20"
-                  />
-                </div>
-                <p className="text-gray-500 text-xs mt-1">
-                  {language === 'fr' ? 'Lien vers votre profil MYM' : 'Link to your MYM profile'}
-                </p>
-              </div>
-
-              {/* OnlyFans */}
-              <div>
-                <label className="text-white text-sm font-medium mb-2 block">
-                  OnlyFans
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <img src="/icons/onlyfans.svg" alt="OnlyFans" className="w-6 h-6 rounded-full" />
-                  </div>
-                  <input
-                    type="url"
-                    value={onlyfansUrl}
-                    onChange={(e) => setOnlyfansUrl(e.target.value)}
-                    placeholder="https://onlyfans.com/votre-profil"
-                    className="w-full bg-gray-800 border border-gray-700 rounded-xl pl-12 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20"
-                  />
-                </div>
-                <p className="text-gray-500 text-xs mt-1">
-                  {language === 'fr' ? 'Lien vers votre profil OnlyFans' : 'Link to your OnlyFans profile'}
-                </p>
-              </div>
-
-              {/* Méthode de contact préférée */}
-              <div>
-                <label className="text-white text-sm font-medium mb-3 block">
-                  {t('editProfilePage.contactMethod')}
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setContactMethod('sms_only')}
-                    className={`p-4 rounded-xl border-2 transition-all font-medium ${
-                      contactMethod === 'sms_only'
-                        ? 'border-pink-500 bg-pink-500/10 text-pink-500'
-                        : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600'
-                    }`}
-                  >
-                    {t('editProfilePage.smsOnly')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setContactMethod('call_only')}
-                    className={`p-4 rounded-xl border-2 transition-all font-medium ${
-                      contactMethod === 'call_only'
-                        ? 'border-pink-500 bg-pink-500/10 text-pink-500'
-                        : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600'
-                    }`}
-                  >
-                    {t('editProfilePage.callOnly')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setContactMethod('call_and_sms')}
-                    className={`p-4 rounded-xl border-2 transition-all font-medium ${
-                      contactMethod === 'call_and_sms'
-                        ? 'border-pink-500 bg-pink-500/10 text-pink-500'
-                        : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600'
-                    }`}
-                  >
-                    {t('editProfilePage.callAndSms')}
-                  </button>
-                </div>
-              </div>
-
             </div>
           </motion.div>
 
