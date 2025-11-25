@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('Error managing coins:', error)
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: 'Erreur serveur' },
       { status: 500 }
     )
   }

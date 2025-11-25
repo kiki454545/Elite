@@ -54,6 +54,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Validation du prix si présent dans updateData (sécurité)
+    if (updateData.price !== undefined) {
+      const price = parseFloat(updateData.price)
+      if (isNaN(price) || price < 0 || price > 100000) {
+        return NextResponse.json(
+          { error: 'Prix invalide (0-100000)' },
+          { status: 400 }
+        )
+      }
+      updateData.price = price // Assurer le type number
+    }
+
     // 5. Mettre à jour l'annonce (SEULEMENT si elle appartient à l'utilisateur)
     const { data, error } = await supabase
       .from('ads')
@@ -66,7 +78,7 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error('Erreur mise à jour annonce:', error)
       return NextResponse.json(
-        { error: error.message },
+        { error: 'Erreur lors de la mise à jour' },
         { status: 500 }
       )
     }
@@ -76,7 +88,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('Erreur serveur:', error)
     return NextResponse.json(
-      { error: error.message || 'Erreur serveur' },
+      { error: 'Erreur serveur' },
       { status: 500 }
     )
   }

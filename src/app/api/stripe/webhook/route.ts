@@ -10,6 +10,18 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
+// Grille de prix SERVEUR (source de vérité!) - doit correspondre à checkout/route.ts
+const COIN_PACKAGES: Record<string, { coins: number; price: number }> = {
+  'pack_100': { coins: 100, price: 9.99 },
+  'pack_500': { coins: 500, price: 39.99 },
+  'pack_1000': { coins: 1000, price: 69.99 },
+  'pack_2500': { coins: 2500, price: 149.99 },
+  'pack_5000': { coins: 5000, price: 249.99 }
+}
+
+// Regex pour valider les UUID
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 export async function POST(request: NextRequest) {
   const body = await request.text()
   const signature = request.headers.get('stripe-signature')!
@@ -36,13 +48,33 @@ export async function POST(request: NextRequest) {
     const session = event.data.object as Stripe.Checkout.Session
 
     const userId = session.metadata?.userId
-    const coins = parseInt(session.metadata?.coins || '0')
     const packageId = session.metadata?.packageId
 
-    if (!userId || !coins) {
-      console.error('Métadonnées manquantes dans la session')
+    // Validation stricte du userId (UUID)
+    if (!userId || !UUID_REGEX.test(userId)) {
+      console.error('userId manquant ou invalide dans les métadonnées')
       return NextResponse.json(
-        { error: 'Métadonnées manquantes' },
+        { error: 'Métadonnées invalides' },
+        { status: 400 }
+      )
+    }
+
+    // Validation stricte du packageId contre la table serveur
+    if (!packageId || !COIN_PACKAGES[packageId]) {
+      console.error('packageId manquant ou invalide:', packageId)
+      return NextResponse.json(
+        { error: 'Package invalide' },
+        { status: 400 }
+      )
+    }
+
+    // SÉCURITÉ: Utiliser les coins de la table serveur, PAS des métadonnées
+    const coins = COIN_PACKAGES[packageId].coins
+
+    if (!coins) {
+      console.error('Coins invalides pour le package:', packageId)
+      return NextResponse.json(
+        { error: 'Configuration invalide' },
         { status: 400 }
       )
     }

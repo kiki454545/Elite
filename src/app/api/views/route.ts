@@ -31,12 +31,26 @@ function getClientIp(request: NextRequest): string {
   return '0.0.0.0'
 }
 
+// Regex pour valider les UUID
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 export async function POST(request: NextRequest) {
   try {
     const { adId, userId } = await request.json()
 
     if (!adId) {
       return NextResponse.json({ error: 'adId requis' }, { status: 400 })
+    }
+
+    // Validation UUID pour adId (sécurité)
+    if (!UUID_REGEX.test(adId)) {
+      return NextResponse.json({ error: 'Format adId invalide' }, { status: 400 })
+    }
+
+    // Validation UUID pour userId si fourni (optionnel mais sécurisé)
+    if (userId && !UUID_REGEX.test(userId)) {
+      // Ignorer silencieusement un userId invalide plutôt que bloquer
+      // La vue sera quand même comptée, juste sans mise à jour du profil
     }
 
     // Obtenir l'IP du client
@@ -105,8 +119,8 @@ export async function POST(request: NextRequest) {
     // Incrémenter le compteur global de l'annonce
     await incrementAdViewCount(adId)
 
-    // 4. Si un userId est fourni, mettre à jour la dernière IP dans le profil
-    if (userId) {
+    // 4. Si un userId valide est fourni, mettre à jour la dernière IP dans le profil
+    if (userId && UUID_REGEX.test(userId)) {
       await updateUserLastIp(userId, ipAddress)
     }
 
