@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { cookies } from 'next/headers'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -8,22 +9,57 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 export async function POST(request: NextRequest) {
   try {
+    // 1. VÉRIFICATION AUTHENTIFICATION
+    const cookieStore = await cookies()
+    const accessToken = cookieStore.get('sb-access-token')?.value
+
+    if (!accessToken) {
+      return NextResponse.json(
+        { error: 'Non authentifié' },
+        { status: 401 }
+      )
+    }
+
+    // 2. RÉCUPÉRER L'UTILISATEUR DEPUIS LE TOKEN
+    const { data: { user }, error: authError } = await supabase.auth.getUser(accessToken)
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Token invalide' },
+        { status: 401 }
+      )
+    }
+
     const body = await request.json()
-    const { fromUserId, toUserId, amount } = body
+    const { toUserId, amount } = body
+
+    // 3. UTILISER LE USER.ID DU TOKEN (PAS DU BODY!)
+    const fromUserId = user.id
 
     console.log('💰 Don d\'EliteCoins:', { fromUserId, toUserId, amount })
 
-    // Validation
-    if (!fromUserId || !toUserId || !amount) {
+    // 4. VALIDATION STRICTE
+    if (!toUserId || !amount) {
       return NextResponse.json(
         { error: 'Paramètres manquants' },
         { status: 400 }
       )
     }
 
-    if (amount <= 0) {
+    // Validation UUID pour toUserId
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    if (!uuidRegex.test(toUserId)) {
       return NextResponse.json(
-        { error: 'Le montant doit être supérieur à 0' },
+        { error: 'ID destinataire invalide' },
+        { status: 400 }
+      )
+    }
+
+    // Validation montant
+    const parsedAmount = parseInt(amount)
+    if (isNaN(parsedAmount) || parsedAmount <= 0 || parsedAmount > 100000) {
+      return NextResponse.json(
+        { error: 'Le montant doit être entre 1 et 100,000' },
         { status: 400 }
       )
     }
@@ -78,7 +114,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Débiter le donateur
-    const newFromBalance = fromProfile.elite_coins - amount
+    const newFromBalance = fromProfile.elite_coins - parsedAmount
     const { error: debitError } = await supabase
       .from('profiles')
       .update({ elite_coins: newFromBalance })
@@ -93,7 +129,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Créditer le destinataire
-    const newToBalance = toProfile.elite_coins + amount
+    const newToBalance = toProfile.elite_coins + parsedAmount
     const { error: creditError } = await supabase
       .from('profiles')
       .update({ elite_coins: newToBalance })
@@ -113,14 +149,19 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log(`✅ Don de ${amount} EC de ${fromProfile.username} à ${toProfile.username}`)
+    console.log(`✅ Don de ${parsedAmount} EC de ${fromProfile.username} à ${toProfile.username}`)
 
-    // Créer ou récupérer la conversation entre les deux utilisateurs
-    const { data: existingConversation } = await supabase
+    // Créer ou récupérer la conversation entre les deux utilisateurs (SÉCURISÉ avec .or())
+    const { data: conversations } = await supabase
       .from('conversations')
       .select('id')
-      .or(`and(user1_id.eq.${fromUserId},user2_id.eq.${toUserId}),and(user1_id.eq.${toUserId},user2_id.eq.${fromUserId})`)
-      .maybeSingle()
+      .or(`user1_id.eq.${fromUserId},user2_id.eq.${fromUserId}`)
+
+    // Filtrer côté JS pour éviter SQL injection
+    const existingConversation = conversations?.find(conv =>
+      (conv.user1_id === fromUserId && conv.user2_id === toUserId) ||
+      (conv.user1_id === toUserId && conv.user2_id === fromUserId)
+    )
 
     let conversationId = existingConversation?.id
 
@@ -131,7 +172,7 @@ export async function POST(request: NextRequest) {
         .insert([{
           user1_id: fromUserId,
           user2_id: toUserId,
-          last_message: `🎁 Don de ${amount} EliteCoins reçu !`,
+          last_message: `🎁 Don de ${parsedAmount} EliteCoins reçu !`,
           last_message_at: new Date().toISOString()
         }])
         .select('id')
@@ -146,7 +187,7 @@ export async function POST(request: NextRequest) {
 
     // Envoyer le message automatique
     if (conversationId) {
-      const donMessage = `🎁 Vous avez reçu un don de ${amount} EliteCoins de la part de ${fromProfile.username} ! Merci pour votre soutien. 💝`
+      const donMessage = `🎁 Vous avez reçu un don de ${parsedAmount} EliteCoins de la part de ${fromProfile.username} ! Merci pour votre soutien. 💝`
 
       const { error: messageError } = await supabase
         .from('messages')
@@ -177,7 +218,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      amount,
+      amount: parsedAmount,
       fromBalance: newFromBalance,
       toBalance: newToBalance,
       from: fromProfile.username,

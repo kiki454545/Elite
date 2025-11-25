@@ -1,30 +1,65 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { cookies } from 'next/headers'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { adId, userId, updateData } = body
+    // 1. VÉRIFICATION AUTHENTIFICATION
+    const cookieStore = await cookies()
+    const accessToken = cookieStore.get('sb-access-token')?.value
 
-    if (!adId || !userId || !updateData) {
+    if (!accessToken) {
       return NextResponse.json(
-        { error: 'Paramètres manquants' },
-        { status: 400 }
+        { error: 'Non authentifié' },
+        { status: 401 }
       )
     }
 
     // Créer un client Supabase côté serveur avec la clé service
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    // Mettre à jour l'annonce
+    // 2. RÉCUPÉRER L'UTILISATEUR DEPUIS LE TOKEN
+    const { data: { user }, error: authError } = await supabase.auth.getUser(accessToken)
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Token invalide' },
+        { status: 401 }
+      )
+    }
+
+    const body = await request.json()
+    const { adId, updateData } = body
+
+    // 3. UTILISER LE USER.ID DU TOKEN (PAS DU BODY!)
+    const userId = user.id
+
+    // 4. VALIDATION
+    if (!adId || !updateData) {
+      return NextResponse.json(
+        { error: 'Paramètres manquants' },
+        { status: 400 }
+      )
+    }
+
+    // Validation UUID pour adId
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    if (!uuidRegex.test(adId)) {
+      return NextResponse.json(
+        { error: 'ID annonce invalide' },
+        { status: 400 }
+      )
+    }
+
+    // 5. Mettre à jour l'annonce (SEULEMENT si elle appartient à l'utilisateur)
     const { data, error } = await supabase
       .from('ads')
       .update(updateData)
       .eq('id', adId)
-      .eq('user_id', userId)
+      .eq('user_id', userId) // ← userId vient du token maintenant!
       .select()
       .single()
 
