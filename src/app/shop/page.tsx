@@ -303,11 +303,19 @@ export default function ShopPage() {
     }
 
     try {
+      // Récupérer le token d'authentification
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        showNotification('error', 'Erreur', 'Session expirée, veuillez vous reconnecter')
+        return
+      }
+
       // Appeler l'API d'achat de grade
       const response = await fetch('/api/ranks/purchase', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           userId: user.id,

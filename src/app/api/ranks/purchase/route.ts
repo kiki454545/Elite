@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -16,9 +15,9 @@ const RANK_PRICES: Record<string, Record<number, number>> = {
 
 export async function POST(request: NextRequest) {
   try {
-    // 1. VÉRIFICATION AUTHENTIFICATION
-    const cookieStore = await cookies()
-    const accessToken = cookieStore.get('sb-access-token')?.value
+    // 1. VÉRIFICATION AUTHENTIFICATION via header Authorization
+    const authHeader = request.headers.get('Authorization')
+    const accessToken = authHeader?.replace('Bearer ', '')
 
     if (!accessToken) {
       return NextResponse.json(
