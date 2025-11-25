@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import { getCurrentBadge, getNextBadge, getBadgeProgress, Badge } from '@/types/badges'
 import { useLanguage } from '@/contexts/LanguageContext'
 
@@ -17,28 +18,25 @@ export function XPBadge({ xp, showProgress = false, size = 'md', className = '' 
 
   if (!badge || xp === 0) return null
 
-  const sizeClasses = {
-    sm: 'text-xs px-1.5 py-0.5',
-    md: 'text-sm px-2 py-1',
-    lg: 'text-base px-3 py-1.5',
-  }
-
-  const iconSizes = {
-    sm: 'text-sm',
-    md: 'text-base',
-    lg: 'text-lg',
+  const imageSizes = {
+    sm: 20,
+    md: 28,
+    lg: 36,
   }
 
   return (
     <motion.div
       initial={{ scale: 0.8, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
-      className={`inline-flex items-center gap-1 ${badge.bgColor} border ${badge.borderColor} rounded-full ${sizeClasses[size]} shadow-lg ${badge.glowColor} ${className}`}
+      className={`inline-flex items-center ${className}`}
     >
-      <span className={iconSizes[size]}>{badge.icon}</span>
-      <span className={`font-semibold bg-gradient-to-r ${badge.color} bg-clip-text text-transparent`}>
-        {language === 'fr' ? badge.nameFr : badge.name}
-      </span>
+      <Image
+        src={badge.image}
+        alt={badge.name}
+        width={imageSizes[size]}
+        height={imageSizes[size]}
+        className="object-contain"
+      />
     </motion.div>
   )
 }
@@ -59,9 +57,13 @@ export function XPProgress({ xp, className = '' }: XPProgressProps) {
       {/* Barre de progression */}
       <div className="flex items-center gap-2 mb-1">
         {current && (
-          <span className="text-sm">
-            {current.icon}
-          </span>
+          <Image
+            src={current.image}
+            alt={current.name}
+            width={20}
+            height={20}
+            className="object-contain"
+          />
         )}
         <div className="flex-1 h-2 bg-gray-800 rounded-full overflow-hidden">
           <motion.div
@@ -72,9 +74,13 @@ export function XPProgress({ xp, className = '' }: XPProgressProps) {
           />
         </div>
         {next && (
-          <span className="text-sm opacity-50">
-            {next.icon}
-          </span>
+          <Image
+            src={next.image}
+            alt={next.name}
+            width={20}
+            height={20}
+            className="object-contain opacity-50"
+          />
         )}
       </div>
 
@@ -102,19 +108,25 @@ interface BadgeDisplayProps {
 export function BadgeDisplay({ badge, size = 'md', showTooltip = true }: BadgeDisplayProps) {
   const { language } = useLanguage()
 
-  const sizeClasses = {
-    sm: 'w-6 h-6 text-sm',
-    md: 'w-8 h-8 text-lg',
-    lg: 'w-10 h-10 text-xl',
+  const imageSizes = {
+    sm: 24,
+    md: 32,
+    lg: 40,
   }
 
   return (
     <div className="relative group">
       <motion.div
         whileHover={{ scale: 1.1 }}
-        className={`${sizeClasses[size]} flex items-center justify-center ${badge.bgColor} border ${badge.borderColor} rounded-full shadow-lg ${badge.glowColor}`}
+        className="flex items-center justify-center"
       >
-        <span>{badge.icon}</span>
+        <Image
+          src={badge.image}
+          alt={badge.name}
+          width={imageSizes[size]}
+          height={imageSizes[size]}
+          className="object-contain"
+        />
       </motion.div>
 
       {/* Tooltip */}

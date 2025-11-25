@@ -2,19 +2,23 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
-import { Plus, Settings, LogOut, Crown, Eye, Heart, Loader2, Trash2, Edit, Pause, Play, Shield, MessageCircle, AlertTriangle, ShoppingBag, Star, Sparkles, Zap } from 'lucide-react'
+import { Plus, Settings, LogOut, Crown, Eye, Heart, Loader2, Trash2, Edit, Pause, Play, Shield, MessageCircle, AlertTriangle, ShoppingBag, Star, Sparkles, Zap, Trophy, TrendingUp } from 'lucide-react'
 import { RANK_CONFIG, RankType } from '@/types/profile'
 import { Header } from '@/components/Header'
 import { supabase } from '@/lib/supabase'
 import { Ad } from '@/types/ad'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { useVoting } from '@/hooks/useVoting'
+import { XPBadge } from '@/components/XPBadge'
+import { getCurrentBadge, getNextBadge, getBadgeProgress } from '@/types/badges'
 
 export default function MyAdsPage() {
   const router = useRouter()
   const { user, profile, logout, loading } = useAuth()
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const [myAds, setMyAds] = useState<Ad[]>([])
   const [adsLoading, setAdsLoading] = useState(true)
   const [totalViews, setTotalViews] = useState(0)
@@ -483,6 +487,9 @@ export default function MyAdsPage() {
           </div>
         )}
 
+        {/* Section Classement & Votes - après les annonces/shop */}
+        {myAds.length > 0 && user && <VoteStatsSection profileId={user.id} language={language} router={router} />}
+
         {/* Settings Links */}
         <div className="bg-gray-900 rounded-2xl border border-gray-800 divide-y divide-gray-800 mb-6">
           {isAdmin && (
@@ -657,5 +664,129 @@ export default function MyAdsPage() {
         )}
       </AnimatePresence>
     </div>
+  )
+}
+
+// Composant pour afficher les stats de votes - section pleine largeur
+interface VoteStatsSectionProps {
+  profileId: string
+  language: string
+  router: ReturnType<typeof useRouter>
+}
+
+function VoteStatsSection({ profileId, language, router }: VoteStatsSectionProps) {
+  const { loading, voteStats } = useVoting(profileId)
+
+  // Afficher même avec 0 votes (le composant parent vérifie déjà qu'il y a une annonce)
+  if (loading) return null
+
+  const totalVotes = voteStats.top1Count + voteStats.top5Count + voteStats.top10Count + voteStats.top50Count
+  const currentBadge = getCurrentBadge(voteStats.totalScore)
+  const nextBadge = getNextBadge(voteStats.totalScore)
+  const { progress } = getBadgeProgress(voteStats.totalScore)
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.15 }}
+      className="w-full bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-orange-500/10 border border-amber-500/30 rounded-2xl p-6 mb-6"
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/30">
+            <Trophy className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h3 className="text-white font-bold text-lg">
+              {language === 'fr' ? 'Classement & Votes' : 'Ranking & Votes'}
+            </h3>
+            <p className="text-gray-400 text-sm">
+              {totalVotes} {language === 'fr' ? 'votes reçus' : 'votes received'}
+            </p>
+          </div>
+        </div>
+        {currentBadge ? (
+          <div className={`${currentBadge.bgColor} ${currentBadge.borderColor} border px-4 py-2 rounded-xl flex items-center gap-2`}>
+            <span className="text-2xl">{currentBadge.icon}</span>
+            <span className={`font-bold bg-gradient-to-r ${currentBadge.color} bg-clip-text text-transparent`}>
+              {language === 'fr' ? currentBadge.nameFr : currentBadge.name}
+            </span>
+          </div>
+        ) : (
+          <div className="bg-gray-800/50 border border-gray-700 px-4 py-2 rounded-xl flex items-center gap-2">
+            <span className="text-2xl">🎯</span>
+            <span className="font-bold text-gray-400">
+              {language === 'fr' ? 'Aucun badge' : 'No badge'}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Stats de votes */}
+      <div className="grid grid-cols-4 gap-3 mb-4">
+        <div className="bg-yellow-500/20 rounded-xl p-3 text-center">
+          <div className="text-2xl mb-1">🥇</div>
+          <div className="text-xl font-bold text-yellow-400">{voteStats.top1Count}</div>
+          <div className="text-xs text-gray-400">Top 1</div>
+        </div>
+        <div className="bg-gray-500/20 rounded-xl p-3 text-center">
+          <div className="text-2xl mb-1">🥈</div>
+          <div className="text-xl font-bold text-gray-300">{voteStats.top5Count}</div>
+          <div className="text-xs text-gray-400">Top 2</div>
+        </div>
+        <div className="bg-amber-500/20 rounded-xl p-3 text-center">
+          <div className="text-2xl mb-1">🥉</div>
+          <div className="text-xl font-bold text-amber-400">{voteStats.top10Count}</div>
+          <div className="text-xs text-gray-400">Top 3</div>
+        </div>
+        <div className="bg-blue-500/20 rounded-xl p-3 text-center">
+          <div className="text-2xl mb-1">⭐</div>
+          <div className="text-xl font-bold text-blue-400">{voteStats.top50Count}</div>
+          <div className="text-xs text-gray-400">Top 50</div>
+        </div>
+      </div>
+
+      {/* Score XP et progression */}
+      <div className="bg-gray-800/50 rounded-xl p-4">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-green-400" />
+            <span className="text-white font-semibold">
+              {voteStats.totalScore} XP{nextBadge && <span className="text-gray-400">/{nextBadge.minXP.toLocaleString()}</span>}
+            </span>
+          </div>
+          {nextBadge && (
+            <span className="text-sm text-gray-400 flex items-center gap-1">
+              {language === 'fr' ? 'Prochain' : 'Next'}:
+              <Image src={nextBadge.image} alt={nextBadge.name} width={16} height={16} className="inline-block" />
+              {language === 'fr' ? nextBadge.nameFr : nextBadge.name}
+            </span>
+          )}
+        </div>
+        {nextBadge && (
+          <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 1, ease: 'easeOut' }}
+              className="h-full bg-gradient-to-r from-amber-400 to-yellow-500 rounded-full"
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Lien vers le classement */}
+      <button
+        onClick={() => router.push('/ranking')}
+        className="flex items-center justify-center gap-2 mt-4 text-amber-400 text-sm font-medium w-full hover:text-amber-300 transition-colors cursor-pointer"
+      >
+        <span>{language === 'fr' ? 'Voir le classement complet' : 'View full ranking'}</span>
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+    </motion.div>
   )
 }
