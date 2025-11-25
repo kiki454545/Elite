@@ -728,52 +728,38 @@ export default function AdminPage() {
     try {
       setProcessingCoins(true)
 
-      // Récupérer le solde actuel
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('elite_coins, username')
-        .eq('id', userId)
-        .single()
-
-      if (!profileData) {
-        throw new Error('Profil non trouvé')
-      }
-
-      const currentCoins = profileData.elite_coins || 0
-      let newCoins = currentCoins
-
-      if (operation === 'add') {
-        newCoins = currentCoins + amount
-      } else {
-        newCoins = Math.max(0, currentCoins - amount) // Ne pas descendre en dessous de 0
-      }
-
-      // Mettre à jour le solde
-      const { error } = await supabase
-        .from('profiles')
-        .update({ elite_coins: newCoins })
-        .eq('id', userId)
-
-      if (error) {
-        setToast({
-          message: `Erreur: ${error.message}`,
-          type: 'error'
+      // Appeler l'API admin pour gérer les coins (bypass RLS)
+      const response = await fetch('/api/admin/manage-coins', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          amount,
+          operation
         })
-        setTimeout(() => setToast(null), 5000)
-        throw error
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erreur lors de la mise à jour')
       }
+
+      const { previousBalance, newBalance, username } = data
 
       // Ajouter à l'historique
       await addHistoryEntry(
         'coins_adjusted' as any,
         'profile',
         userId,
-        selectedProfileForCoins?.username,
+        username,
         {
           operation,
           amount,
-          previousBalance: currentCoins,
-          newBalance: newCoins
+          previousBalance,
+          newBalance
         }
       )
 
