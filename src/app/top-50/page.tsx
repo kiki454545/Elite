@@ -17,7 +17,7 @@ import { getCurrentBadge } from '@/types/badges'
 
 interface TopProfile {
   id: string
-  odId: string
+  adId: string
   username: string
   age: number
   location: string
@@ -247,7 +247,7 @@ export default function Top50Page() {
 
             return {
               id: profile.id,
-              odId: ad.id,
+              adId: ad.id,
               username: profile.username,
               age: profile.age || 25,
               location: ad.location,
@@ -263,7 +263,7 @@ export default function Top50Page() {
               total_score: scores.score,
               arrondissement: ad.arrondissement || undefined,
               createdAt: new Date(ad.created_at),
-            }
+            } as TopProfile
           })
           .filter((p): p is TopProfile => p !== null)
 
@@ -386,7 +386,7 @@ export default function Top50Page() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.03 }}
                 className="group cursor-pointer"
-                onClick={() => handleViewAd(profile.odId)}
+                onClick={() => handleViewAd(profile.adId)}
               >
                 <div className="relative aspect-[3/4] bg-gray-800 rounded-2xl overflow-hidden">
                   {/* Carousel */}
@@ -394,7 +394,7 @@ export default function Top50Page() {
                     <motion.div
                       className="flex h-full"
                       animate={{
-                        x: `-${getCurrentPhotoIndex(profile.odId) * 100}%`
+                        x: `-${getCurrentPhotoIndex(profile.adId) * 100}%`
                       }}
                       transition={{
                         type: "spring",
@@ -423,14 +423,14 @@ export default function Top50Page() {
                   <div className="hidden md:flex absolute inset-0 items-center justify-between px-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                     <motion.button
                       whileTap={{ scale: 0.9 }}
-                      onClick={(e) => handlePrevPhoto(e, profile.odId, getPhotoCount(profile))}
+                      onClick={(e) => handlePrevPhoto(e, profile.adId, getPhotoCount(profile))}
                       className="pointer-events-auto bg-black/60 backdrop-blur-sm p-2.5 rounded-full hover:bg-black/80 transition-colors"
                     >
                       <ChevronLeft className="w-5 h-5 text-white" />
                     </motion.button>
                     <motion.button
                       whileTap={{ scale: 0.9 }}
-                      onClick={(e) => handleNextPhoto(e, profile.odId, getPhotoCount(profile))}
+                      onClick={(e) => handleNextPhoto(e, profile.adId, getPhotoCount(profile))}
                       className="pointer-events-auto bg-black/60 backdrop-blur-sm p-2.5 rounded-full hover:bg-black/80 transition-colors"
                     >
                       <ChevronRight className="w-5 h-5 text-white" />
@@ -443,7 +443,7 @@ export default function Top50Page() {
                       <div
                         key={i}
                         className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                          i === getCurrentPhotoIndex(profile.odId) ? 'bg-white' : 'bg-white/40'
+                          i === getCurrentPhotoIndex(profile.adId) ? 'bg-white' : 'bg-white/40'
                         }`}
                       />
                     ))}
@@ -505,14 +505,14 @@ export default function Top50Page() {
                         )}
                         <motion.button
                           whileTap={{ scale: 0.9 }}
-                          onClick={(e) => handleToggleFavorite(e, profile.odId, profile.id)}
+                          onClick={(e) => handleToggleFavorite(e, profile.adId, profile.id)}
                           className={`backdrop-blur-sm p-1.5 rounded-full transition-colors ${
-                            isFavorite(profile.odId)
+                            isFavorite(profile.adId)
                               ? 'bg-pink-500 text-white'
                               : 'bg-gray-800/80 text-pink-500 hover:bg-gray-700/80'
                           }`}
                         >
-                          <Heart className={`w-3.5 h-3.5 ${isFavorite(profile.odId) ? 'fill-current' : ''}`} />
+                          <Heart className={`w-3.5 h-3.5 ${isFavorite(profile.adId) ? 'fill-current' : ''}`} />
                         </motion.button>
                       </div>
                     </div>
