@@ -318,30 +318,27 @@ export default function TopWeekPage() {
                       <h3 className="text-white font-semibold truncate">{profile.username}</h3>
                       <RankBadge rank={profile.rank} />
                     </div>
-                    <div className="flex items-center gap-3 mt-1">
-                      <span className="text-amber-400 font-bold">{profile.vote_score} pts</span>
-                      <div className="flex items-center gap-1.5 text-xs text-gray-400">
-                        {profile.top1_votes > 0 && (
-                          <span className="bg-yellow-500/20 text-yellow-400 px-1.5 py-0.5 rounded">
-                            🥇{profile.top1_votes}
-                          </span>
-                        )}
-                        {profile.top5_votes > 0 && (
-                          <span className="bg-gray-500/20 text-gray-300 px-1.5 py-0.5 rounded">
-                            🥈{profile.top5_votes}
-                          </span>
-                        )}
-                        {profile.top10_votes > 0 && (
-                          <span className="bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded">
-                            🥉{profile.top10_votes}
-                          </span>
-                        )}
-                        {profile.top50_votes > 0 && (
-                          <span className="bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded">
-                            ⭐{profile.top50_votes}
-                          </span>
-                        )}
-                      </div>
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                      {profile.top1_votes > 0 && (
+                        <span className="text-xs bg-yellow-500/20 text-yellow-400 px-1.5 py-0.5 rounded">
+                          🥇 {profile.top1_votes}
+                        </span>
+                      )}
+                      {profile.top5_votes > 0 && (
+                        <span className="text-xs bg-gray-500/20 text-gray-300 px-1.5 py-0.5 rounded">
+                          🥈 {profile.top5_votes}
+                        </span>
+                      )}
+                      {profile.top10_votes > 0 && (
+                        <span className="text-xs bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded">
+                          🥉 {profile.top10_votes}
+                        </span>
+                      )}
+                      {profile.top50_votes > 0 && (
+                        <span className="text-xs bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded">
+                          ⭐ {profile.top50_votes}
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -364,25 +361,18 @@ export default function TopWeekPage() {
             <Star className="w-5 h-5 text-amber-400" />
             {language === 'fr' ? 'Comment fonctionne le classement ?' : 'How does the ranking work?'}
           </h3>
-          <ul className="text-sm text-gray-300 space-y-2">
-            <li className="flex items-center gap-2">
-              <span className="text-lg">🥇</span>
-              <span>Top 1 = <strong className="text-amber-400">50 points</strong></span>
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="text-lg">🥈</span>
-              <span>Top 5 = <strong className="text-amber-400">20 points</strong></span>
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="text-lg">🥉</span>
-              <span>Top 10 = <strong className="text-amber-400">10 points</strong></span>
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="text-lg">⭐</span>
-              <span>Top 50 = <strong className="text-amber-400">5 points</strong></span>
-            </li>
-          </ul>
-          <p className="text-xs text-gray-400 mt-3">
+          <p className="text-sm text-gray-300 mb-3">
+            {language === 'fr'
+              ? 'Votez pour vos profils préférés ! Plus un profil reçoit de votes, plus il monte dans le classement.'
+              : 'Vote for your favorite profiles! The more votes a profile receives, the higher it ranks.'}
+          </p>
+          <div className="flex flex-wrap gap-2 mb-3">
+            <span className="text-sm bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full">🥇 Top 1</span>
+            <span className="text-sm bg-gray-500/20 text-gray-300 px-3 py-1 rounded-full">🥈 Top 5</span>
+            <span className="text-sm bg-amber-500/20 text-amber-400 px-3 py-1 rounded-full">🥉 Top 10</span>
+            <span className="text-sm bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full">⭐ Top 50</span>
+          </div>
+          <p className="text-xs text-gray-400">
             {language === 'fr'
               ? 'Note : Seuls les comptes créés depuis plus de 7 jours peuvent voter.'
               : 'Note: Only accounts created more than 7 days ago can vote.'}

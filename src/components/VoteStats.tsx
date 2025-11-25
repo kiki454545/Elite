@@ -38,19 +38,12 @@ export function VoteStats({ profileId, className = '', showProgress = false }: V
         <XPBadge xp={voteStats.totalScore} size="sm" />
       </div>
 
-      {/* Score total et nombre de votes */}
-      <div className="flex items-center gap-4 mb-3">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl font-bold text-amber-400">{voteStats.totalScore}</span>
-          <span className="text-sm text-gray-400">XP</span>
-        </div>
-        <div className="h-6 w-px bg-gray-700" />
-        <div className="flex items-center gap-1.5">
-          <TrendingUp className="w-4 h-4 text-green-400" />
-          <span className="text-sm text-gray-300">
-            {totalVotes} {language === 'fr' ? 'votes' : 'votes'}
-          </span>
-        </div>
+      {/* Nombre de votes */}
+      <div className="flex items-center gap-1.5 mb-3">
+        <TrendingUp className="w-4 h-4 text-green-400" />
+        <span className="text-sm text-gray-300">
+          {totalVotes} {language === 'fr' ? 'votes reçus' : 'votes received'}
+        </span>
       </div>
 
       {/* Détail des votes */}

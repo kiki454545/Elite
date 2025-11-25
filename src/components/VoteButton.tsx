@@ -12,11 +12,11 @@ interface VoteButtonProps {
   className?: string
 }
 
-const VOTE_OPTIONS: { type: VoteType; label: string; emoji: string; color: string; points: number }[] = [
-  { type: 'top1', label: 'Top 1', emoji: '🥇', color: 'from-yellow-400 to-amber-500', points: 50 },
-  { type: 'top5', label: 'Top 5', emoji: '🥈', color: 'from-gray-300 to-gray-400', points: 20 },
-  { type: 'top10', label: 'Top 10', emoji: '🥉', color: 'from-amber-600 to-amber-700', points: 10 },
-  { type: 'top50', label: 'Top 50', emoji: '⭐', color: 'from-blue-400 to-cyan-500', points: 5 },
+const VOTE_OPTIONS: { type: VoteType; label: string; emoji: string; color: string }[] = [
+  { type: 'top1', label: 'Top 1', emoji: '🥇', color: 'from-yellow-400 to-amber-500' },
+  { type: 'top5', label: 'Top 5', emoji: '🥈', color: 'from-gray-300 to-gray-400' },
+  { type: 'top10', label: 'Top 10', emoji: '🥉', color: 'from-amber-600 to-amber-700' },
+  { type: 'top50', label: 'Top 50', emoji: '⭐', color: 'from-blue-400 to-cyan-500' },
 ]
 
 export function VoteButton({ profileId, className = '' }: VoteButtonProps) {
@@ -188,10 +188,7 @@ export function VoteButton({ profileId, className = '' }: VoteButtonProps) {
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-xl">{option.emoji}</span>
-                      <div className="text-left">
-                        <p className="font-medium">{option.label}</p>
-                        <p className="text-xs opacity-70">+{option.points} points</p>
-                      </div>
+                      <p className="font-medium">{option.label}</p>
                     </div>
                     {voteInfo.currentVote === option.type && <Check className="w-5 h-5" />}
                   </button>

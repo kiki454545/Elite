@@ -28,7 +28,7 @@ export const BADGES: Badge[] = [
     bgColor: 'bg-green-500/20',
     borderColor: 'border-green-500/50',
     glowColor: 'shadow-green-500/30',
-    minXP: 10,
+    minXP: 100,
   },
   {
     id: 'rising_star',
@@ -41,7 +41,7 @@ export const BADGES: Badge[] = [
     bgColor: 'bg-blue-500/20',
     borderColor: 'border-blue-500/50',
     glowColor: 'shadow-blue-500/30',
-    minXP: 50,
+    minXP: 500,
   },
   {
     id: 'popular',
@@ -54,7 +54,7 @@ export const BADGES: Badge[] = [
     bgColor: 'bg-orange-500/20',
     borderColor: 'border-orange-500/50',
     glowColor: 'shadow-orange-500/30',
-    minXP: 150,
+    minXP: 1500,
   },
   {
     id: 'trending',
@@ -67,7 +67,7 @@ export const BADGES: Badge[] = [
     bgColor: 'bg-pink-500/20',
     borderColor: 'border-pink-500/50',
     glowColor: 'shadow-pink-500/30',
-    minXP: 300,
+    minXP: 3500,
   },
   {
     id: 'star',
@@ -80,7 +80,7 @@ export const BADGES: Badge[] = [
     bgColor: 'bg-yellow-500/20',
     borderColor: 'border-yellow-500/50',
     glowColor: 'shadow-yellow-500/30',
-    minXP: 500,
+    minXP: 7500,
   },
   {
     id: 'superstar',
@@ -93,7 +93,7 @@ export const BADGES: Badge[] = [
     bgColor: 'bg-purple-500/20',
     borderColor: 'border-purple-500/50',
     glowColor: 'shadow-purple-500/30',
-    minXP: 1000,
+    minXP: 15000,
   },
   {
     id: 'legend',
@@ -106,7 +106,7 @@ export const BADGES: Badge[] = [
     bgColor: 'bg-gradient-to-r from-amber-500/20 to-yellow-500/20',
     borderColor: 'border-amber-400',
     glowColor: 'shadow-amber-500/50',
-    minXP: 2500,
+    minXP: 35000,
   },
   {
     id: 'icon',
@@ -119,7 +119,7 @@ export const BADGES: Badge[] = [
     bgColor: 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20',
     borderColor: 'border-cyan-400',
     glowColor: 'shadow-cyan-500/50',
-    minXP: 5000,
+    minXP: 75000,
   },
 ]
 

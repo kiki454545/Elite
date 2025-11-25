@@ -80,10 +80,10 @@ export function XPProgress({ xp, className = '' }: XPProgressProps) {
 
       {/* Texte */}
       <div className="flex justify-between text-xs text-gray-400">
-        <span>{xp} XP</span>
+        <span>{current ? (language === 'fr' ? current.nameFr : current.name) : ''}</span>
         {next ? (
           <span>
-            {language === 'fr' ? 'Prochain :' : 'Next:'} {language === 'fr' ? next.nameFr : next.name} ({next.minXP} XP)
+            {language === 'fr' ? 'Prochain :' : 'Next:'} {language === 'fr' ? next.nameFr : next.name}
           </span>
         ) : (
           <span className="text-amber-400">{language === 'fr' ? 'Niveau max atteint !' : 'Max level reached!'}</span>
