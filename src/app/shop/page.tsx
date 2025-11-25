@@ -245,11 +245,20 @@ export default function ShopPage() {
     setIsProcessingPayment(true)
 
     try {
+      // Récupérer le token d'authentification
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        showNotification('error', 'Erreur', 'Session expirée, veuillez vous reconnecter')
+        setIsProcessingPayment(false)
+        return
+      }
+
       // Créer une session de paiement Stripe
       const response = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           packageId,

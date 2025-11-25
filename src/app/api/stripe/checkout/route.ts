@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-11-17.clover',
@@ -22,9 +21,9 @@ const COIN_PACKAGES: Record<string, { coins: number; price: number }> = {
 
 export async function POST(request: NextRequest) {
   try {
-    // 1. VÉRIFICATION AUTHENTIFICATION
-    const cookieStore = await cookies()
-    const accessToken = cookieStore.get('sb-access-token')?.value
+    // 1. VÉRIFICATION AUTHENTIFICATION via header Authorization
+    const authHeader = request.headers.get('Authorization')
+    const accessToken = authHeader?.replace('Bearer ', '')
 
     if (!accessToken) {
       return NextResponse.json(
