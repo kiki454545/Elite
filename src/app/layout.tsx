@@ -51,10 +51,10 @@ export async function generateMetadata(): Promise<Metadata> {
       title: 'SexElite - Plateforme N°1 d\'Escorts à Malte',
       description,
       type: 'website',
-      url: 'https://sexelite.eu',
+      url: 'https://www.sexelite.eu',
       images: [
         {
-          url: 'https://sexelite.eu/apple-touch-icon.png',
+          url: 'https://www.sexelite.eu/apple-touch-icon.png',
           width: 180,
           height: 180,
           alt: 'SexElite Logo',
@@ -65,7 +65,7 @@ export async function generateMetadata(): Promise<Metadata> {
       card: 'summary',
       title: 'SexElite - Plateforme N°1 d\'Escorts à Malte',
       description,
-      images: ['https://sexelite.eu/apple-touch-icon.png'],
+      images: ['https://www.sexelite.eu/apple-touch-icon.png'],
     },
   }
 }
@@ -93,12 +93,12 @@ export default async function RootLayout({
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'SexElite',
-    url: 'https://sexelite.eu',
+    url: 'https://www.sexelite.eu',
     description: `Rejoins plus de ${totalUsers} membres et découvre plus de ${totalAds} annonces d'escorts et libertines de luxe à Malte. Plateforme N°1 avec profils vérifiés.`,
     inLanguage: 'fr',
     potentialAction: {
       '@type': 'SearchAction',
-      target: 'https://sexelite.eu/search?q={search_term_string}',
+      target: 'https://www.sexelite.eu/search?q={search_term_string}',
       'query-input': 'required name=search_term_string'
     }
   }

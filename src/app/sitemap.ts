@@ -5,7 +5,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://sexelite.eu'
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.sexelite.eu'
   const supabase = createClient(supabaseUrl, supabaseKey)
 
   // Récupérer toutes les annonces actives
