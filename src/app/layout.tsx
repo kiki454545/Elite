@@ -9,6 +9,7 @@ import { CityFilterProvider } from '@/contexts/CityFilterContext'
 import { AdsProvider } from '@/contexts/AdsContext'
 import { AgeVerificationModal } from '@/components/AgeVerificationModal'
 import { Footer } from '@/components/Footer'
+import CookieBanner from '@/components/CookieBanner'
 
 export const metadata: Metadata = {
   title: 'SexElite - Annonces d\'Escorts de Luxe',
@@ -76,6 +77,7 @@ export default function RootLayout({
                         {children}
                       </div>
                       <Footer />
+                      <CookieBanner />
                     </AdsProvider>
                   </CityFilterProvider>
                 </CountryProvider>
