@@ -32,10 +32,10 @@ export async function generateMetadata(): Promise<Metadata> {
   const totalUsers = usersCount || 270
   const totalAds = adsCount || 150
 
-  const description = `Rejoins plus de ${totalUsers} membres et découvre plus de ${totalAds} annonces d'escorts et libertines de luxe à Malte. Plateforme N°1 avec profils vérifiés.`
+  const description = `Rejoins plus de ${totalUsers} membres et découvre plus de ${totalAds} annonces d'escorts et libertines de luxe en Europe. Plateforme N°1 avec profils vérifiés.`
 
   return {
-    title: 'SexElite - Plateforme N°1 d\'Escorts et Libertines à Malte',
+    title: 'SexElite - Plateforme N°1 d\'Escorts et Libertines en Europe',
     description,
     icons: {
       icon: [
@@ -48,7 +48,7 @@ export async function generateMetadata(): Promise<Metadata> {
       ],
     },
     openGraph: {
-      title: 'SexElite - Plateforme N°1 d\'Escorts à Malte',
+      title: 'SexElite - Plateforme N°1 d\'Escorts en Europe',
       description,
       type: 'website',
       url: 'https://www.sexelite.eu',
@@ -63,7 +63,7 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: 'summary',
-      title: 'SexElite - Plateforme N°1 d\'Escorts à Malte',
+      title: 'SexElite - Plateforme N°1 d\'Escorts en Europe',
       description,
       images: ['https://www.sexelite.eu/apple-touch-icon.png'],
     },
@@ -94,7 +94,7 @@ export default async function RootLayout({
     '@type': 'WebSite',
     name: 'SexElite',
     url: 'https://www.sexelite.eu',
-    description: `Rejoins plus de ${totalUsers} membres et découvre plus de ${totalAds} annonces d'escorts et libertines de luxe à Malte. Plateforme N°1 avec profils vérifiés.`,
+    description: `Rejoins plus de ${totalUsers} membres et découvre plus de ${totalAds} annonces d'escorts et libertines de luxe en Europe. Plateforme N°1 avec profils vérifiés.`,
     inLanguage: 'fr',
     potentialAction: {
       '@type': 'SearchAction',
