@@ -113,12 +113,11 @@ function XPBadgeDisplay({ score }: { score: number }) {
   if (!badge) return null
 
   return (
-    <div className={`flex items-center gap-1 ${badge.bgColor} border ${badge.borderColor} rounded-full px-2 py-0.5 shadow-lg ${badge.glowColor}`}>
-      <span className="text-sm">{badge.icon}</span>
-      <span className={`text-[10px] font-semibold bg-gradient-to-r ${badge.color} bg-clip-text text-transparent`}>
-        {badge.nameFr}
-      </span>
-    </div>
+    <img
+      src={badge.image}
+      alt={badge.name}
+      className="w-7 h-7 object-contain"
+    />
   )
 }
 
