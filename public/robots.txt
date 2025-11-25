@@ -8,4 +8,4 @@ Disallow: /auth/verify-email
 Disallow: /messages/
 
 # Sitemap
-Sitemap: https://sexelite.eu/sitemap.xml
+Sitemap: https://www.sexelite.eu/sitemap.xml
