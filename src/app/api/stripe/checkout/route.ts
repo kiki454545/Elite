@@ -1,22 +1,65 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { createClient } from '@supabase/supabase-js'
+import { cookies } from 'next/headers'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-11-17.clover',
 })
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+// Grille de prix SERVEUR (source de vérité!)
+const COIN_PACKAGES: Record<string, { coins: number; price: number }> = {
+  'pack_100': { coins: 100, price: 9.99 },
+  'pack_500': { coins: 500, price: 39.99 },
+  'pack_1000': { coins: 1000, price: 69.99 },
+  'pack_2500': { coins: 2500, price: 149.99 },
+  'pack_5000': { coins: 5000, price: 249.99 }
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const { packageId, price, coins, userId } = await request.json()
+    // 1. VÉRIFICATION AUTHENTIFICATION
+    const cookieStore = await cookies()
+    const accessToken = cookieStore.get('sb-access-token')?.value
 
-    if (!packageId || !price || !coins || !userId) {
+    if (!accessToken) {
       return NextResponse.json(
-        { error: 'Paramètres manquants' },
+        { error: 'Non authentifié' },
+        { status: 401 }
+      )
+    }
+
+    // 2. RÉCUPÉRER L'UTILISATEUR DEPUIS LE TOKEN
+    const { data: { user }, error: authError } = await supabase.auth.getUser(accessToken)
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Token invalide' },
+        { status: 401 }
+      )
+    }
+
+    const { packageId } = await request.json()
+
+    // 3. UTILISER LE USER.ID DU TOKEN (PAS DU BODY!)
+    const userId = user.id
+
+    // 4. VALIDATION DU PACKAGE
+    if (!packageId || !COIN_PACKAGES[packageId]) {
+      return NextResponse.json(
+        { error: 'Package invalide' },
         { status: 400 }
       )
     }
 
-    // Créer une session de paiement Stripe
+    // 5. RÉCUPÉRER PRIX ET COINS DEPUIS LE SERVEUR (NE JAMAIS FAIRE CONFIANCE AU CLIENT!)
+    const { coins, price } = COIN_PACKAGES[packageId]
+
+    // 6. Créer une session de paiement Stripe avec les VRAIS prix
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -25,7 +68,7 @@ export async function POST(request: NextRequest) {
             currency: 'eur',
             product_data: {
               name: `${coins} EliteCoins`,
-              description: `Pack de ${coins} EliteCoins pour EliteEscortHub`,
+              description: `Pack de ${coins} EliteCoins pour SexElite`,
             },
             unit_amount: Math.round(price * 100), // Convertir en centimes
           },
