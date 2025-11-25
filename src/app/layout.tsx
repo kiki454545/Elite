@@ -10,38 +10,91 @@ import { AdsProvider } from '@/contexts/AdsContext'
 import { AgeVerificationModal } from '@/components/AgeVerificationModal'
 import { Footer } from '@/components/Footer'
 import CookieBanner from '@/components/CookieBanner'
+import { createClient } from '@supabase/supabase-js'
 
-export const metadata: Metadata = {
-  title: 'SexElite - Annonces d\'Escorts de Luxe',
-  description: 'Plateforme d\'annonces libertines premium. Découvrez des profils vérifiés d\'escorts de luxe à Malte.',
-  icons: {
-    icon: [
-      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
-      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
-      { url: '/favicon.ico', sizes: 'any' },
-    ],
-    apple: [
-      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
-    ],
-  },
-  openGraph: {
-    title: 'SexElite - Annonces d\'Escorts de Luxe',
-    description: 'Plateforme d\'annonces libertines premium',
-    type: 'website',
-  },
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+
+// Fonction pour générer les metadata dynamiques
+export async function generateMetadata(): Promise<Metadata> {
+  const supabase = createClient(supabaseUrl, supabaseKey)
+
+  // Compter le nombre total d'utilisateurs
+  const { count: usersCount } = await supabase
+    .from('profiles')
+    .select('*', { count: 'exact', head: true })
+
+  // Compter le nombre d'annonces actives
+  const { count: adsCount } = await supabase
+    .from('ads')
+    .select('*', { count: 'exact', head: true })
+
+  const totalUsers = usersCount || 270
+  const totalAds = adsCount || 150
+
+  const description = `Rejoins plus de ${totalUsers} membres et découvre plus de ${totalAds} annonces d'escorts et libertines de luxe à Malte. Plateforme N°1 avec profils vérifiés.`
+
+  return {
+    title: 'SexElite - Plateforme N°1 d\'Escorts et Libertines à Malte',
+    description,
+    icons: {
+      icon: [
+        { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+        { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+        { url: '/favicon.ico', sizes: 'any' },
+      ],
+      apple: [
+        { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+      ],
+    },
+    openGraph: {
+      title: 'SexElite - Plateforme N°1 d\'Escorts à Malte',
+      description,
+      type: 'website',
+      url: 'https://sexelite.eu',
+      images: [
+        {
+          url: 'https://sexelite.eu/apple-touch-icon.png',
+          width: 180,
+          height: 180,
+          alt: 'SexElite Logo',
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary',
+      title: 'SexElite - Plateforme N°1 d\'Escorts à Malte',
+      description,
+      images: ['https://sexelite.eu/apple-touch-icon.png'],
+    },
+  }
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const supabase = createClient(supabaseUrl, supabaseKey)
+
+  // Récupérer les stats pour le JSON-LD
+  const { count: usersCount } = await supabase
+    .from('profiles')
+    .select('*', { count: 'exact', head: true })
+
+  const { count: adsCount } = await supabase
+    .from('ads')
+    .select('*', { count: 'exact', head: true })
+
+  const totalUsers = usersCount || 270
+  const totalAds = adsCount || 150
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'SexElite',
     url: 'https://sexelite.eu',
-    description: 'Plateforme N°1 d\'annonces escortes et libertines à Malte',
+    description: `Rejoins plus de ${totalUsers} membres et découvre plus de ${totalAds} annonces d'escorts et libertines de luxe à Malte. Plateforme N°1 avec profils vérifiés.`,
     inLanguage: 'fr',
     potentialAction: {
       '@type': 'SearchAction',
