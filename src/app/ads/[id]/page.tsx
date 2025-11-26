@@ -921,7 +921,6 @@ export default function AdDetailPage() {
                         {ad.contactInfo.whatsapp && (
                           <a
                             href={`https://wa.me/${ad.contactInfo.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(getWhatsAppMessage(ad.username, ad.title, ad.country))}`}
-                            target="_blank"
                             rel="noopener noreferrer"
                             className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded flex items-center gap-1 hover:bg-green-500/30 transition-colors cursor-pointer"
                           >
