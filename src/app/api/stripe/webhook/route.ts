@@ -10,13 +10,16 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-// Grille de prix SERVEUR (source de vérité!) - doit correspondre à checkout/route.ts
+// Grille de prix SERVEUR (source de vérité!) - doit correspondre à checkout/route.ts et shop/page.tsx
 const COIN_PACKAGES: Record<string, { coins: number; price: number }> = {
-  'pack_100': { coins: 100, price: 9.99 },
-  'pack_500': { coins: 500, price: 39.99 },
-  'pack_1000': { coins: 1000, price: 69.99 },
-  'pack_2500': { coins: 2500, price: 149.99 },
-  'pack_5000': { coins: 5000, price: 249.99 }
+  'pack_5': { coins: 75, price: 5 },
+  'pack_10': { coins: 150, price: 10 },
+  'pack_20': { coins: 300, price: 20 },
+  'pack_30': { coins: 500, price: 30 },      // 450 + 50 bonus
+  'pack_40': { coins: 700, price: 40 },      // 600 + 100 bonus
+  'pack_50': { coins: 950, price: 50 },      // 750 + 200 bonus
+  'pack_80': { coins: 1600, price: 80 },     // 1200 + 400 bonus
+  'pack_100': { coins: 2100, price: 100 }    // 1500 + 600 bonus
 }
 
 // Regex pour valider les UUID
