@@ -388,7 +388,7 @@ function ShopContent() {
             </div>
             <div className="flex items-start gap-3">
               <span className="text-green-400 font-bold">2.</span>
-              <p>Retournez sur SexElite.eu pour utiliser vos coins</p>
+              <p>Retournez sur votre profil pour utiliser vos coins</p>
             </div>
             <div className="flex items-start gap-3">
               <span className="text-green-400 font-bold">3.</span>
