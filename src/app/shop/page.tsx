@@ -75,6 +75,7 @@ function ShopContent() {
   const [error, setError] = useState<string | null>(null)
   const [autoLoginLoading, setAutoLoginLoading] = useState(true)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
 
   // Gérer l'auto-connexion avec token depuis SexElite.eu
   useEffect(() => {
@@ -110,6 +111,7 @@ function ShopContent() {
 
           // L'utilisateur est authentifié via le token
           setIsAuthenticated(true)
+          setCurrentUserId(tokenData.user_id)
 
           // Charger les coins de l'utilisateur
           const { data: profile } = await supabase
@@ -142,6 +144,7 @@ function ShopContent() {
 
         if (user) {
           setIsAuthenticated(true)
+          setCurrentUserId(user.id)
           const { data: profile } = await supabase
             .from('profiles')
             .select('elite_coins')
@@ -166,9 +169,7 @@ function ShopContent() {
 
     try {
       // Vérifier que l'utilisateur est connecté
-      const { data: { user } } = await supabase.auth.getUser()
-
-      if (!user && !isAuthenticated) {
+      if (!currentUserId && !isAuthenticated) {
         setError('Vous devez être connecté pour acheter des EliteCoins')
         router.push('/auth')
         return
@@ -182,7 +183,7 @@ function ShopContent() {
         },
         body: JSON.stringify({
           packageId,
-          userId: user?.id,
+          userId: currentUserId,
         }),
       })
 
