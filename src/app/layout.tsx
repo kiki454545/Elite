@@ -13,7 +13,7 @@ import CookieBanner from '@/components/CookieBanner'
 
 // Fonction pour générer les metadata dynamiques
 export async function generateMetadata(): Promise<Metadata> {
-  const description = `Rejoins des dizaines de milliers de membres et découvre des centaines d'annonces d'escorts et libertines de luxe en Europe. Plateforme N°1 avec profils vérifiés et communauté active.`
+  const description = `Rejoins des dizaines de milliers de membres et découvre des milliers d'annonces d'escorts et libertines de luxe en Europe. Plateforme N°1 avec profils vérifiés et communauté active.`
 
   return {
     title: 'SexElite - Plateforme N°1 d\'Escorts et Libertines en Europe',
