@@ -108,6 +108,12 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
       if (ad.meeting_in_car) meetingPlaces.push('Plan voiture')
       if (ad.meeting_at_escort) meetingPlaces.push('Outcall')
 
+      console.log('📥 Données chargées depuis DB:', {
+        description: ad.description,
+        services: ad.services,
+        meetingPlaces: meetingPlaces
+      })
+
       setFormData({
         title: ad.title || '',
         description: ad.description || '',
@@ -115,7 +121,7 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
         categories: ad.categories || [],
         photos: ad.photos || [],
         price: ad.price || undefined,
-        services: [],
+        services: ad.services || [],  // Charger les services existants!
         availability: '',
         meetingPlaces: meetingPlaces,
       })
@@ -287,6 +293,8 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
 
       // 3. Mettre à jour l'annonce
       console.log('📝 Données à mettre à jour:', {
+        description: formData.description,
+        descriptionLength: formData.description?.length || 0,
         categories: formData.categories,
         meeting_places: formData.meetingPlaces,
         services: formData.services,
