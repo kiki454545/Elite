@@ -10,29 +10,10 @@ import { AdsProvider } from '@/contexts/AdsContext'
 import { AgeVerificationModal } from '@/components/AgeVerificationModal'
 import { Footer } from '@/components/Footer'
 import CookieBanner from '@/components/CookieBanner'
-import { createClient } from '@supabase/supabase-js'
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 // Fonction pour générer les metadata dynamiques
 export async function generateMetadata(): Promise<Metadata> {
-  const supabase = createClient(supabaseUrl, supabaseKey)
-
-  // Compter le nombre total d'utilisateurs
-  const { count: usersCount } = await supabase
-    .from('profiles')
-    .select('*', { count: 'exact', head: true })
-
-  // Compter le nombre d'annonces actives
-  const { count: adsCount } = await supabase
-    .from('ads')
-    .select('*', { count: 'exact', head: true })
-
-  const totalUsers = usersCount || 270
-  const totalAds = adsCount || 150
-
-  const description = `Rejoins plus de ${totalUsers} membres et découvre plus de ${totalAds} annonces d'escorts et libertines de luxe en Europe. Plateforme N°1 avec profils vérifiés.`
+  const description = `Rejoins des dizaines de milliers de membres et découvre des centaines d'annonces d'escorts et libertines de luxe en Europe. Plateforme N°1 avec profils vérifiés et communauté active.`
 
   return {
     title: 'SexElite - Plateforme N°1 d\'Escorts et Libertines en Europe',
@@ -70,31 +51,17 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const supabase = createClient(supabaseUrl, supabaseKey)
-
-  // Récupérer les stats pour le JSON-LD
-  const { count: usersCount } = await supabase
-    .from('profiles')
-    .select('*', { count: 'exact', head: true })
-
-  const { count: adsCount } = await supabase
-    .from('ads')
-    .select('*', { count: 'exact', head: true })
-
-  const totalUsers = usersCount || 270
-  const totalAds = adsCount || 150
-
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'SexElite',
     url: 'https://www.sexelite.eu',
-    description: `Rejoins plus de ${totalUsers} membres et découvre plus de ${totalAds} annonces d'escorts et libertines de luxe en Europe. Plateforme N°1 avec profils vérifiés.`,
+    description: `Rejoins des dizaines de milliers de membres et découvre des centaines d'annonces d'escorts et libertines de luxe en Europe. Plateforme N°1 avec profils vérifiés et communauté active.`,
     inLanguage: 'fr',
     potentialAction: {
       '@type': 'SearchAction',
