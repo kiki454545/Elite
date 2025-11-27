@@ -195,13 +195,6 @@ function AuthContent() {
             </button>
           </div>
 
-          {/* Info box */}
-          <div className="bg-green-900/20 border border-green-700 rounded-lg p-3 mb-6">
-            <p className="text-green-400 text-sm text-center">
-              🔗 Utilisez le même compte que sur SexElite.eu
-            </p>
-          </div>
-
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
