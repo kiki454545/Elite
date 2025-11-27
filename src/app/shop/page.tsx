@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Coins, Sparkles, ShoppingCart, Shield, TrendingUp, Loader2 } from 'lucide-react'
+import { Coins, Sparkles, ShoppingCart, Shield, TrendingUp, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 interface CoinPackage {
@@ -239,17 +239,6 @@ function ShopContent() {
       </header>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Back Button - Retour vers SexElite */}
-        <motion.a
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          href="https://sexelite.eu"
-          className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-6"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          <span>Retour sur SexElite.eu</span>
-        </motion.a>
-
         {/* Hero Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
