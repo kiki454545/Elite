@@ -46,8 +46,8 @@ export async function POST(request: NextRequest) {
             currency: 'eur',
             product_data: {
               name: packageData.name,
-              description: `Pack de ${packageData.coins} EliteCoins pour SexElite MinecraftBoost`,
-              images: ['https://sexelite.eu/favicon.svg'],
+              description: `Pack de ${packageData.coins} EliteCoins`,
+              images: ['https://shopelite.eu/favicon.svg'],
             },
             unit_amount: packageData.price * 100, // Prix en centimes
           },

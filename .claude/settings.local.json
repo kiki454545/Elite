@@ -109,7 +109,9 @@
       "Bash(temp_fix_price.sql)",
       "Bash(node scripts/delete-duplicate-st-julians.mjs:*)",
       "Bash(node scripts/find-st-julians-duplicates.mjs:*)",
-      "Bash(git tag:*)"
+      "Bash(git tag:*)",
+      "Bash(nslookup:*)",
+      "Bash(curl -I https://shopelite.eu)"
     ],
     "deny": [],
     "ask": []
