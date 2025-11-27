@@ -905,6 +905,9 @@ export default function AdDetailPage() {
                       >
                         {ad.contactInfo.phone}
                       </a>
+                      <p className="text-xs text-pink-400/80 mt-1 italic">
+                        {language === 'fr' ? '💬 Dites que vous venez de SexElite.eu' : '💬 Say you come from SexElite.eu'}
+                      </p>
                       <div className="flex flex-wrap gap-1.5 mt-2">
                         {ad.contactInfo.acceptsCalls && (
                           <span className="text-xs bg-gray-700 px-2 py-1 rounded flex items-center gap-1 text-gray-300">
