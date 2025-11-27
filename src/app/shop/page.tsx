@@ -263,7 +263,7 @@ function ShopContent() {
             <Sparkles className="w-12 h-12 text-green-400" />
           </div>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-            Achetez des EliteCoins pour booster vos annonces sur SexElite.eu !
+            Achetez des EliteCoins pour booster vos annonces !
           </p>
         </motion.div>
 
