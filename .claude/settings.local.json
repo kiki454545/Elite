@@ -1,12 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git add:*)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nfeat: Ajouter message \"Dites que vous venez de SexElite.eu\" sur page annonce\n\nAjout d''un petit message sous le numéro de téléphone dans la section contact\npour encourager les utilisateurs à mentionner le site lors du contact.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git push)",
-      "Bash(npx vercel --prod)",
-      "Bash(npx vercel --prod --yes)",
-      "Bash(git commit:*)"
+      "Bash(node -e:*)"
     ],
     "deny": [],
     "ask": []

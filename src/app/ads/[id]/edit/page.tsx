@@ -102,11 +102,11 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
 
       // Remplir le formulaire avec les données existantes
       // Transformer les champs booléens en array pour le formulaire
-      const meetingPlaces = []
-      if (ad.meeting_at_home) meetingPlaces.push('home')
-      if (ad.meeting_at_hotel) meetingPlaces.push('hotel')
-      if (ad.meeting_in_car) meetingPlaces.push('car')
-      if (ad.meeting_at_escort) meetingPlaces.push('escort')
+      const meetingPlaces: string[] = []
+      if (ad.meeting_at_home) meetingPlaces.push('Incall')
+      if (ad.meeting_at_hotel) meetingPlaces.push('Hôtel')
+      if (ad.meeting_in_car) meetingPlaces.push('Plan voiture')
+      if (ad.meeting_at_escort) meetingPlaces.push('Outcall')
 
       setFormData({
         title: ad.title || '',
@@ -303,10 +303,10 @@ export default function EditAdPage({ params }: { params: { id: string } }) {
         nearby_cities: filteredNearbyCities,
         categories: formData.categories,
         // Transformer meeting_places en champs booléens
-        meeting_at_home: formData.meetingPlaces.includes('home'),
-        meeting_at_hotel: formData.meetingPlaces.includes('hotel'),
-        meeting_in_car: formData.meetingPlaces.includes('car'),
-        meeting_at_escort: formData.meetingPlaces.includes('escort'),
+        meeting_at_home: formData.meetingPlaces.includes('Incall'),
+        meeting_at_hotel: formData.meetingPlaces.includes('Hôtel'),
+        meeting_in_car: formData.meetingPlaces.includes('Plan voiture'),
+        meeting_at_escort: formData.meetingPlaces.includes('Outcall'),
         services: formData.services,
         price: formData.price,
         photos: photoUrls,
