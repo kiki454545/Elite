@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Coins, Sparkles, ShoppingCart, Shield, TrendingUp } from 'lucide-react'
+import { ArrowLeft, Coins, Sparkles, ShoppingCart, Shield, TrendingUp, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 interface CoinPackage {
@@ -67,31 +67,98 @@ const COIN_PACKAGES: CoinPackage[] = [
   },
 ]
 
-export default function ShopPage() {
+function ShopContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [eliteCoins, setEliteCoins] = useState<number>(0)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [autoLoginLoading, setAutoLoginLoading] = useState(true)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
 
+  // Gérer l'auto-connexion avec token depuis SexElite.eu
   useEffect(() => {
-    const fetchUserCoins = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+    const handleAutoLogin = async () => {
+      const token = searchParams.get('token')
 
-      if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('elite_coins')
-          .eq('id', user.id)
-          .single()
+      if (token) {
+        try {
+          // Vérifier le token dans la base de données
+          const { data: tokenData, error: tokenError } = await supabase
+            .from('auth_tokens')
+            .select('user_id, expires_at')
+            .eq('token', token)
+            .single()
 
-        if (profile) {
-          setEliteCoins(profile.elite_coins || 0)
+          if (tokenError || !tokenData) {
+            console.error('Token invalide:', tokenError)
+            setError('Session invalide. Veuillez vous reconnecter sur SexElite.eu')
+            setAutoLoginLoading(false)
+            return
+          }
+
+          // Vérifier l'expiration du token
+          if (new Date(tokenData.expires_at) < new Date()) {
+            setError('Session expirée. Veuillez vous reconnecter sur SexElite.eu')
+            await supabase.from('auth_tokens').delete().eq('token', token)
+            setAutoLoginLoading(false)
+            return
+          }
+
+          // Supprimer le token utilisé (usage unique)
+          await supabase.from('auth_tokens').delete().eq('token', token)
+
+          // L'utilisateur est authentifié via le token
+          setIsAuthenticated(true)
+
+          // Charger les coins de l'utilisateur
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('elite_coins')
+            .eq('id', tokenData.user_id)
+            .single()
+
+          if (profile) {
+            setEliteCoins(profile.elite_coins || 0)
+          }
+
+          // Nettoyer l'URL (retirer le token)
+          const packageId = searchParams.get('package')
+          if (packageId) {
+            window.history.replaceState({}, '', `/shop?package=${packageId}`)
+          } else {
+            window.history.replaceState({}, '', '/shop')
+          }
+
+          setAutoLoginLoading(false)
+        } catch (err) {
+          console.error('Erreur auto-login:', err)
+          setError('Erreur lors de la connexion automatique')
+          setAutoLoginLoading(false)
         }
+      } else {
+        // Pas de token, vérifier si déjà connecté via Supabase Auth
+        const { data: { user } } = await supabase.auth.getUser()
+
+        if (user) {
+          setIsAuthenticated(true)
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('elite_coins')
+            .eq('id', user.id)
+            .single()
+
+          if (profile) {
+            setEliteCoins(profile.elite_coins || 0)
+          }
+        }
+
+        setAutoLoginLoading(false)
       }
     }
 
-    fetchUserCoins()
-  }, [])
+    handleAutoLogin()
+  }, [searchParams])
 
   const handleBuyCoins = async (packageId: string, price: number, coins: number) => {
     setIsLoading(true)
@@ -101,7 +168,7 @@ export default function ShopPage() {
       // Vérifier que l'utilisateur est connecté
       const { data: { user } } = await supabase.auth.getUser()
 
-      if (!user) {
+      if (!user && !isAuthenticated) {
         setError('Vous devez être connecté pour acheter des EliteCoins')
         router.push('/auth')
         return
@@ -115,7 +182,7 @@ export default function ShopPage() {
         },
         body: JSON.stringify({
           packageId,
-          userId: user.id,
+          userId: user?.id,
         }),
       })
 
@@ -137,6 +204,19 @@ export default function ShopPage() {
     }
   }
 
+  // Afficher un loader pendant l'auto-connexion
+  if (autoLoginLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-green-400 animate-spin mx-auto mb-4" />
+          <p className="text-white text-lg">Connexion en cours...</p>
+          <p className="text-gray-400 text-sm mt-2">Transfert depuis SexElite.eu</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900">
       {/* Header */}
@@ -145,8 +225,8 @@ export default function ShopPage() {
           <div className="flex items-center space-x-2">
             <span className="text-3xl">⛏️</span>
             <div>
-              <h1 className="text-2xl font-bold text-white">SexElite</h1>
-              <p className="text-xs text-green-400 font-semibold">MinecraftBoost</p>
+              <h1 className="text-2xl font-bold text-white">ShopElite</h1>
+              <p className="text-xs text-green-400 font-semibold">Paiements SexElite</p>
             </div>
           </div>
 
@@ -160,16 +240,16 @@ export default function ShopPage() {
       </header>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Back Button */}
-        <motion.button
+        {/* Back Button - Retour vers SexElite */}
+        <motion.a
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          onClick={() => router.push('/')}
+          href="https://sexelite.eu"
           className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-6"
         >
           <ArrowLeft className="w-5 h-5" />
-          <span>Retour</span>
-        </motion.button>
+          <span>Retour sur SexElite.eu</span>
+        </motion.a>
 
         {/* Hero Section */}
         <motion.div
@@ -183,7 +263,7 @@ export default function ShopPage() {
             <Sparkles className="w-12 h-12 text-green-400" />
           </div>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-            Achetez des EliteCoins pour booster votre serveur Minecraft et atteindre des milliers de joueurs !
+            Achetez des EliteCoins pour booster vos annonces sur SexElite.eu !
           </p>
         </motion.div>
 
@@ -215,7 +295,7 @@ export default function ShopPage() {
             </div>
             <h3 className="text-white font-bold text-lg mb-2">Paiement Sécurisé</h3>
             <p className="text-gray-400 text-sm">
-              Transactions 100% sécurisées via Dedipass
+              Transactions 100% sécurisées via Stripe
             </p>
           </div>
         </div>
@@ -308,15 +388,30 @@ export default function ShopPage() {
             </div>
             <div className="flex items-start gap-3">
               <span className="text-green-400 font-bold">2.</span>
-              <p>Utilisez vos coins pour acheter des packages publicitaires (Starter, Pro, Premium)</p>
+              <p>Retournez sur SexElite.eu pour utiliser vos coins</p>
             </div>
             <div className="flex items-start gap-3">
               <span className="text-green-400 font-bold">3.</span>
-              <p>Boostez votre serveur et attirez des milliers de nouveaux joueurs !</p>
+              <p>Boostez vos annonces et attirez plus de visiteurs !</p>
             </div>
           </div>
         </div>
       </div>
     </div>
+  )
+}
+
+export default function ShopPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-green-400 animate-spin mx-auto mb-4" />
+          <p className="text-white text-lg">Chargement...</p>
+        </div>
+      </div>
+    }>
+      <ShopContent />
+    </Suspense>
   )
 }
