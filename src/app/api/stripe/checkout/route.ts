@@ -2,13 +2,23 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-11-17.clover',
-})
+function getStripe() {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error('Missing STRIPE_SECRET_KEY')
+  }
+  return new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: '2025-11-17.clover',
+  })
+}
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-const supabase = createClient(supabaseUrl, supabaseServiceKey)
+function getSupabaseAdmin() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error('Missing Supabase environment variables')
+  }
+  return createClient(supabaseUrl, supabaseServiceKey)
+}
 
 // Grille de prix SERVEUR (source de vérité!) - doit correspondre à shop/page.tsx
 const COIN_PACKAGES: Record<string, { coins: number; price: number }> = {
@@ -23,6 +33,8 @@ const COIN_PACKAGES: Record<string, { coins: number; price: number }> = {
 }
 
 export async function POST(request: NextRequest) {
+  const stripe = getStripe()
+  const supabase = getSupabaseAdmin()
   try {
     // 1. VÉRIFICATION AUTHENTIFICATION via header Authorization
     const authHeader = request.headers.get('Authorization')
