@@ -47,6 +47,12 @@ export default function HomePage() {
           </div>
           <div className="flex items-center gap-4">
             <Link
+              href="/auth"
+              className="text-gray-300 hover:text-white px-4 py-2 font-medium transition-colors"
+            >
+              Connexion
+            </Link>
+            <Link
               href="/shop"
               className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2"
             >
