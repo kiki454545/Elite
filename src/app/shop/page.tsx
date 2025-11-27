@@ -238,51 +238,38 @@ export default function ShopPage() {
 
     if (!user) {
       showNotification('warning', 'Connexion requise', 'Vous devez être connecté pour acheter des EliteCoins')
-      router.push('/login')
+      router.push('/auth')
       return
     }
 
     setIsProcessingPayment(true)
 
     try {
-      // Récupérer le token d'authentification
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session?.access_token) {
-        showNotification('error', 'Erreur', 'Session expirée, veuillez vous reconnecter')
+      // Générer un token unique pour l'auto-connexion sur ShopElite
+      const token = crypto.randomUUID()
+      const expiresAt = new Date(Date.now() + 5 * 60 * 1000) // Expire dans 5 minutes
+
+      // Sauvegarder le token dans la base de données
+      const { error: tokenError } = await supabase
+        .from('auth_tokens')
+        .insert({
+          token,
+          user_id: user.id,
+          expires_at: expiresAt.toISOString()
+        })
+
+      if (tokenError) {
+        console.error('Erreur création token:', tokenError)
+        showNotification('error', 'Erreur', 'Impossible de préparer la redirection')
         setIsProcessingPayment(false)
         return
       }
 
-      // Créer une session de paiement Stripe
-      const response = await fetch('/api/stripe/checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          packageId,
-          price,
-          coins,
-          userId: user.id,
-        }),
-      })
-
-      const data = await response.json()
-
-      if (response.ok && data.url) {
-        // Rediriger vers Stripe Checkout
-        window.location.href = data.url
-      } else {
-        showNotification(
-          'error',
-          'Erreur',
-          data.error || 'Impossible de créer la session de paiement'
-        )
-        setIsProcessingPayment(false)
-      }
+      // Rediriger vers ShopElite avec le token et le package sélectionné
+      const shopEliteUrl = `https://shopelite.eu/shop?token=${token}&package=${packageId}`
+      window.location.href = shopEliteUrl
     } catch (error) {
-      console.error('Erreur lors de la création de la session Stripe:', error)
+      console.error('Erreur lors de la redirection vers ShopElite:', error)
       showNotification(
         'error',
         'Erreur serveur',
