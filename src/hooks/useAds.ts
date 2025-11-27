@@ -101,7 +101,12 @@ export function useAds(country?: string, city?: string) {
           video: ad.video_url,
           price: ad.price,
           services: ad.services || [],
-          meetingPlaces: ad.meeting_places || [],
+          meetingPlaces: [
+            ad.meeting_at_home && 'Incall',
+            ad.meeting_at_hotel && 'Hôtel',
+            ad.meeting_in_car && 'Plan voiture',
+            ad.meeting_at_escort && 'Outcall'
+          ].filter(Boolean) as string[],
           availability: '',
           verified: ad.verified || false,
           rank: profile?.rank || 'standard',
@@ -190,7 +195,7 @@ export function useAdById(id: string) {
         // Debug: Log les données brutes
         console.log('🔍 DEBUG useAdById - Données brutes de Supabase:')
         console.log('  services:', data.services)
-        console.log('  meeting_places:', data.meeting_places)
+        console.log('  meeting_at_home:', data.meeting_at_home, 'meeting_at_hotel:', data.meeting_at_hotel)
 
         const transformedAd: Ad = {
           id: data.id,
@@ -208,7 +213,12 @@ export function useAdById(id: string) {
           video: data.video_url,
           price: data.price,
           services: data.services || [],
-          meetingPlaces: data.meeting_places || [],
+          meetingPlaces: [
+            data.meeting_at_home && 'Incall',
+            data.meeting_at_hotel && 'Hôtel',
+            data.meeting_in_car && 'Plan voiture',
+            data.meeting_at_escort && 'Outcall'
+          ].filter(Boolean) as string[],
           availability: '',
           verified: profileData?.verified || false,
           rank: profileData?.rank || 'standard',
