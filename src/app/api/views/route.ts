@@ -140,6 +140,7 @@ export async function POST(request: NextRequest) {
 
 // Fonction helper pour incrémenter le compteur global de vues
 async function incrementAdViewCount(adId: string) {
+  const supabase = getSupabaseAdmin()
   const { data: ad } = await supabase
     .from('ads')
     .select('views, weekly_views')
@@ -159,6 +160,7 @@ async function incrementAdViewCount(adId: string) {
 
 // Fonction helper pour mettre à jour la dernière IP de l'utilisateur
 async function updateUserLastIp(userId: string, ipAddress: string) {
+  const supabase = getSupabaseAdmin()
   await supabase
     .from('profiles')
     .update({ last_ip: ipAddress })
