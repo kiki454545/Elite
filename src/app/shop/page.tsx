@@ -223,10 +223,9 @@ function ShopContent() {
       <header className="bg-gray-900/50 backdrop-blur-sm border-b border-gray-700 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <span className="text-3xl">⛏️</span>
             <div>
               <h1 className="text-2xl font-bold text-white">ShopElite</h1>
-              <p className="text-xs text-green-400 font-semibold">Paiements SexElite</p>
+              <p className="text-xs text-green-400 font-semibold">Paiements sécurisés</p>
             </div>
           </div>
 
