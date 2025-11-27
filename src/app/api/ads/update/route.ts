@@ -67,6 +67,8 @@ export async function POST(request: NextRequest) {
     }
 
     // 5. Mettre à jour l'annonce (SEULEMENT si elle appartient à l'utilisateur)
+    console.log('📝 Update annonce:', { adId, userId, description: updateData.description?.substring(0, 50) })
+
     const { data, error } = await supabase
       .from('ads')
       .update(updateData)
@@ -76,13 +78,22 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (error) {
-      console.error('Erreur mise à jour annonce:', error)
+      console.error('❌ Erreur mise à jour annonce:', error)
       return NextResponse.json(
         { error: 'Erreur lors de la mise à jour' },
         { status: 500 }
       )
     }
 
+    if (!data) {
+      console.error('❌ Aucune donnée retournée - annonce non trouvée ou pas à cet utilisateur')
+      return NextResponse.json(
+        { error: 'Annonce non trouvée ou accès refusé' },
+        { status: 404 }
+      )
+    }
+
+    console.log('✅ Annonce mise à jour:', { id: data.id, description: data.description?.substring(0, 50) })
     return NextResponse.json({ data }, { status: 200 })
 
   } catch (error: any) {

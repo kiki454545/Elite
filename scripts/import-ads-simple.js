@@ -6,177 +6,412 @@ const supabase = createClient(
 )
 
 // Compteur pour les emails (à modifier selon le dernier numéro utilisé)
-let START_NUMBER = 50 // Changer ce numéro pour continuer la numérotation
+let START_NUMBER = 55 // Changer ce numéro pour continuer la numérotation
 
 const PASSWORD = 'aaaaaa'
 
 const ads = [
   {
-    // Seyanaa
+    // Bianca
     profile: {
-      username: 'Seyanaa',
+      username: 'Bianca',
       age: 24,
       verified: false,
       rank: 'standard',
-      height: 165,
-      weight: 68,
-      measurements: '110-50-60',
-      nationality: 'Française',
-      languages: ['Français'],
+      height: 160,
+      weight: 48,
+      measurements: '90-60-90',
+      nationality: 'Italienne',
+      languages: ['Français', 'Italien'],
       gender: 'female'
     },
     ad: {
-      title: 'Seyanaa',
-      description: 'Française d\'origine algérienne, je suis une jeune femme de 24 ans avec une silhouette généreuse et naturelle. Je reçois dans un cadre discret et agréable. Je suis douce, attentionnée et je prends le temps de créer une vraie complicité. Hygiène irréprochable exigée.',
+      title: 'Bianca',
+      description: '',
       location: 'Paris',
+      arrondissement: '15',
       country: 'FR',
       categories: ['escort'],
-      phone_number: '0774711913',
+      phone_number: '0619176879',
       accepts_sms: true,
       accepts_calls: true,
-      has_whatsapp: false,
+      has_whatsapp: true,
       has_telegram: false,
-      services: ['Fellation protégée', 'Cunnilingus', 'Massage sensuel', 'Fétichisme'],
-      meeting_places: ['À domicile', 'Hôtel'],
+      services: [],
       incall: true,
       outcall: false,
-      accepts_couples: true,
+      accepts_couples: false,
       available24_7: false,
       photos: []
     }
   },
   {
-    // Naya Cruz
+    // meizim539
     profile: {
-      username: 'Naya Cruz',
-      age: 21,
+      username: 'Meizim',
+      age: 28,
       verified: false,
       rank: 'standard',
       height: 160,
-      weight: 63,
-      measurements: '95-56-95',
-      nationality: 'Espagnole',
-      languages: ['Anglais', 'Espagnol'],
+      weight: 50,
+      measurements: '90-60-90',
+      nationality: 'Chinoise',
+      languages: ['Français'],
       gender: 'female'
     },
     ad: {
-      title: 'Naya Cruz',
-      description: 'Jeune femme radieuse avec une silhouette naturellement harmonieuse et des courbes délicatement dessinées. Mes photos sont 100% authentiques. Je propose des rencontres discrètes dans un cadre chic et raffiné. Disponible 24h/24, 7j/7. Contact par SMS uniquement.',
+      title: 'Meizim',
+      description: '',
       location: 'Paris',
-      arrondissement: '15',
+      arrondissement: '9',
       country: 'FR',
-      categories: ['escort'],
-      phone_number: '0759691932',
-      accepts_sms: true,
-      accepts_calls: false,
-      has_whatsapp: true,
-      has_telegram: false,
-      services: ['GFE', 'Massage sensuel', 'Câlins'],
-      meeting_places: ['À domicile', 'Hôtel', 'Déplacement'],
-      incall: true,
-      outcall: true,
-      accepts_couples: false,
-      available24_7: true,
-      photos: []
-    }
-  },
-  {
-    // Jasmine
-    profile: {
-      username: 'Jasmine75',
-      age: 21,
-      verified: false,
-      rank: 'standard',
-      height: 160,
-      weight: 85,
-      measurements: '44-44-44',
-      nationality: 'Française',
-      languages: ['Français', 'Anglais'],
-      gender: 'female'
-    },
-    ad: {
-      title: 'Jasmine75',
-      description: 'Jasmine, d\'origine haïtienne et guadeloupéenne. Naturelle, douce et agréable. Jolie visage, bouche pulpeuse avec une hygiène irréprochable. Je reçois à domicile dans un cadre discret. Disponible 24h/24. Paiement en espèces uniquement. Pas de numéro masqué.',
-      location: 'Paris',
-      country: 'FR',
-      categories: ['escort'],
-      phone_number: '0658699930',
+      categories: ['massage'],
+      phone_number: '0768883090',
       accepts_sms: true,
       accepts_calls: true,
-      has_whatsapp: false,
+      has_whatsapp: true,
       has_telegram: false,
-      services: ['Tous services', 'Massage', 'GFE'],
-      meeting_places: ['À domicile'],
+      services: ['Massage chinois', 'Massage thaïlandais', 'Massage tantrique'],
       incall: true,
-      outcall: true,
+      outcall: false,
       accepts_couples: false,
       available24_7: true,
       photos: []
     }
   },
   {
-    // Angelina Glam
+    // CHANTAAL
     profile: {
-      username: 'Angelina Glam',
-      age: 20,
+      username: 'Chantaal',
+      age: 29,
       verified: false,
       rank: 'standard',
-      height: 154,
-      weight: 55,
-      measurements: '90-60-90',
+      height: 163,
+      weight: 50,
+      measurements: '80-60-90',
       nationality: 'Espagnole',
-      languages: ['Anglais', 'Espagnol'],
+      languages: ['Français', 'Espagnol'],
       gender: 'female'
     },
     ad: {
-      title: 'Angelina Glam',
-      description: 'Jeune femme latine de 20 ans, je propose des rendez-vous intenses et sensuels. Je reçois dans un lieu chic ou je peux me déplacer. Disponible 24h/24, 7j/7. Contact par SMS uniquement, les appels sont refusés. Photos 100% réelles.',
+      title: 'Chantaal',
+      description: '',
       location: 'Paris',
       arrondissement: '15',
       country: 'FR',
       categories: ['escort'],
-      phone_number: '0768361398',
+      phone_number: '0752747836',
       accepts_sms: true,
       accepts_calls: false,
       has_whatsapp: false,
       has_telegram: false,
-      services: ['GFE', 'Massage sensuel', 'Moments intenses'],
-      meeting_places: ['À domicile', 'Hôtel', 'Déplacement'],
+      services: [],
       incall: true,
-      outcall: true,
+      outcall: false,
       accepts_couples: false,
+      available24_7: false,
+      photos: []
+    }
+  },
+  {
+    // Baby 45 ans Montparnasse
+    profile: {
+      username: 'Baby',
+      age: 45,
+      verified: false,
+      rank: 'standard',
+      height: 155,
+      weight: 75,
+      measurements: '100-80-100',
+      nationality: 'Brésilienne',
+      languages: ['Français'],
+      gender: 'female'
+    },
+    ad: {
+      title: 'Baby',
+      description: '',
+      location: 'Paris',
+      arrondissement: '15',
+      country: 'FR',
+      categories: ['escort'],
+      phone_number: '0754888035',
+      accepts_sms: true,
+      accepts_calls: true,
+      has_whatsapp: true,
+      has_telegram: false,
+      services: [],
+      incall: true,
+      outcall: false,
+      accepts_couples: true,
       available24_7: true,
       photos: []
     }
   },
   {
-    // Nina GFE
+    // Monique Chaude
     profile: {
-      username: 'Nina GFE',
-      age: 37,
+      username: 'Monique',
+      age: 34,
       verified: false,
       rank: 'standard',
-      height: 160,
-      weight: 62,
-      measurements: '40-50-40',
-      nationality: 'Italienne',
-      languages: ['Anglais', 'Italien'],
+      height: 165,
+      weight: 60,
+      measurements: '95-60-95',
+      nationality: 'Argentine',
+      languages: ['Français', 'Espagnol'],
       gender: 'female'
     },
     ad: {
-      title: 'Nina GFE',
-      description: 'Femme italienne de 37 ans, je propose des moments de qualité et de complicité. Massages sensuels, tous les actes du Kama-sutra. Je demande le respect durant les appels et messages, ainsi qu\'une hygiène irréprochable. Disponible 24h/24, 7j/7.',
+      title: 'Monique',
+      description: '',
       location: 'Paris',
       arrondissement: '13',
       country: 'FR',
       categories: ['escort'],
-      phone_number: '0757844009',
+      phone_number: '0757824787',
       accepts_sms: true,
       accepts_calls: true,
       has_whatsapp: false,
       has_telegram: false,
-      services: ['GFE', 'Massage sensuel', 'Kama-sutra', 'Moments complices'],
-      meeting_places: ['À domicile', 'Hôtel'],
+      services: ['Massage', 'GFE'],
+      incall: true,
+      outcall: false,
+      accepts_couples: false,
+      available24_7: false,
+      photos: []
+    }
+  },
+  {
+    // Wendy
+    profile: {
+      username: 'Wendy',
+      age: 26,
+      verified: false,
+      rank: 'standard',
+      height: 160,
+      weight: 50,
+      measurements: '85-60-90',
+      nationality: 'Japonaise',
+      languages: ['Français', 'Anglais'],
+      gender: 'female'
+    },
+    ad: {
+      title: 'Wendy',
+      description: '',
+      location: 'Paris',
+      arrondissement: '15',
+      country: 'FR',
+      categories: ['escort'],
+      phone_number: '0678504531',
+      accepts_sms: true,
+      accepts_calls: false,
+      has_whatsapp: true,
+      has_telegram: false,
+      services: ['Massage'],
+      incall: true,
+      outcall: false,
+      accepts_couples: true,
+      available24_7: true,
+      photos: []
+    }
+  },
+  {
+    // nature salwa
+    profile: {
+      username: 'Salwa',
+      age: 22,
+      verified: false,
+      rank: 'standard',
+      height: 160,
+      weight: 55,
+      measurements: '90-65-90',
+      nationality: 'Française',
+      languages: ['Français'],
+      gender: 'female'
+    },
+    ad: {
+      title: 'Salwa',
+      description: '',
+      location: 'Paris',
+      arrondissement: '11',
+      country: 'FR',
+      categories: ['escort'],
+      phone_number: '0614144478',
+      accepts_sms: true,
+      accepts_calls: false,
+      has_whatsapp: false,
+      has_telegram: false,
+      services: [],
+      incall: true,
+      outcall: false,
+      accepts_couples: false,
+      available24_7: true,
+      photos: []
+    }
+  },
+  {
+    // jeune duoduo
+    profile: {
+      username: 'Duoduo',
+      age: 27,
+      verified: false,
+      rank: 'standard',
+      height: 164,
+      weight: 52,
+      measurements: '85-60-90',
+      nationality: 'Singapourienne',
+      languages: ['Français'],
+      gender: 'female'
+    },
+    ad: {
+      title: 'Duoduo',
+      description: '',
+      location: 'Paris',
+      arrondissement: '13',
+      country: 'FR',
+      categories: ['escort'],
+      phone_number: '0647051984',
+      accepts_sms: true,
+      accepts_calls: true,
+      has_whatsapp: false,
+      has_telegram: false,
+      services: ['Massage'],
+      incall: true,
+      outcall: false,
+      accepts_couples: false,
+      available24_7: false,
+      photos: []
+    }
+  },
+  {
+    // Sabrina caliente
+    profile: {
+      username: 'Sabrina',
+      age: 25,
+      verified: false,
+      rank: 'standard',
+      height: 171,
+      weight: 57,
+      measurements: '90-60-100',
+      nationality: 'Brésilienne',
+      languages: ['Espagnol', 'Portugais'],
+      gender: 'female'
+    },
+    ad: {
+      title: 'Sabrina',
+      description: '',
+      location: 'Paris',
+      arrondissement: '15',
+      country: 'FR',
+      categories: ['escort'],
+      phone_number: '0745559012',
+      accepts_sms: true,
+      accepts_calls: true,
+      has_whatsapp: false,
+      has_telegram: false,
+      services: ['Massage'],
+      incall: true,
+      outcall: false,
+      accepts_couples: false,
+      available24_7: false,
+      photos: []
+    }
+  },
+  {
+    // Lavinia
+    profile: {
+      username: 'Lavinia',
+      age: 25,
+      verified: false,
+      rank: 'standard',
+      height: 157,
+      weight: 58,
+      measurements: '90-75-100',
+      nationality: 'Portugaise',
+      languages: ['Français', 'Portugais'],
+      gender: 'female'
+    },
+    ad: {
+      title: 'Lavinia',
+      description: '',
+      location: 'Paris',
+      arrondissement: '9',
+      country: 'FR',
+      categories: ['escort'],
+      phone_number: '0780955168',
+      accepts_sms: true,
+      accepts_calls: false,
+      has_whatsapp: false,
+      has_telegram: false,
+      services: ['Massage tantrique', 'GFE'],
+      incall: true,
+      outcall: false,
+      accepts_couples: false,
+      available24_7: false,
+      photos: []
+    }
+  },
+  {
+    // Antho
+    profile: {
+      username: 'Antho',
+      age: 20,
+      verified: false,
+      rank: 'standard',
+      height: 165,
+      weight: 55,
+      measurements: '100-60-120',
+      nationality: 'Vénézuélienne',
+      languages: ['Français', 'Anglais', 'Espagnol'],
+      gender: 'female'
+    },
+    ad: {
+      title: 'Antho',
+      description: '',
+      location: 'Paris',
+      arrondissement: '9',
+      country: 'FR',
+      categories: ['escort'],
+      phone_number: '0644668519',
+      accepts_sms: true,
+      accepts_calls: true,
+      has_whatsapp: true,
+      has_telegram: false,
+      services: ['GFE', 'Massage', 'Fétichisme'],
+      incall: true,
+      outcall: false,
+      accepts_couples: false,
+      available24_7: true,
+      photos: []
+    }
+  },
+  {
+    // Ambar
+    profile: {
+      username: 'Ambar',
+      age: 20,
+      verified: false,
+      rank: 'standard',
+      height: 168,
+      weight: 63,
+      measurements: '90-60-90',
+      nationality: 'Colombienne',
+      languages: ['Français', 'Espagnol'],
+      gender: 'female'
+    },
+    ad: {
+      title: 'Ambar',
+      description: '',
+      location: 'Paris',
+      arrondissement: '10',
+      country: 'FR',
+      categories: ['escort'],
+      phone_number: '0773326091',
+      accepts_sms: true,
+      accepts_calls: true,
+      has_whatsapp: false,
+      has_telegram: false,
+      services: [],
       incall: true,
       outcall: false,
       accepts_couples: false,
@@ -251,8 +486,8 @@ async function importAds() {
           user_id: userId,
           ...ad,
           status: 'approved',
-          views: Math.floor(Math.random() * 100) + 10,
-          favorites_count: Math.floor(Math.random() * 20),
+          views: 0,
+          favorites_count: 0,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
