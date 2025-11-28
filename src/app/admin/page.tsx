@@ -110,7 +110,7 @@ export default function AdminPage() {
   const router = useRouter()
   const { user, loading } = useAuth()
   const [isAdmin, setIsAdmin] = useState(false)
-  const [activeTab, setActiveTab] = useState<'tickets' | 'verification' | 'profiles' | 'reports' | 'history'>('tickets')
+  const [activeTab, setActiveTab] = useState<'tickets' | 'verification' | 'profiles' | 'reports' | 'history' | 'stats'>('tickets')
 
   // Tickets
   const [tickets, setTickets] = useState<SupportTicket[]>([])
@@ -176,6 +176,18 @@ export default function AdminPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<{ type: 'message' | 'comment', id: string } | null>(null)
   const [showSuccessMessage, setShowSuccessMessage] = useState<{ type: 'message' | 'comment' } | null>(null)
+
+  // Stats
+  const [visitorStats, setVisitorStats] = useState<{
+    totalUniqueVisitors: number
+    totalVisits: number
+    todayUniqueVisitors: number
+    todayTotalVisits: number
+    yesterdayUniqueVisitors: number
+    yesterdayTotalVisits: number
+    dailyStats: { date: string; unique: number; total: number }[]
+  } | null>(null)
+  const [statsLoading, setStatsLoading] = useState(true)
 
   // Total EliteCoins
   const [totalCoins, setTotalCoins] = useState(0)
@@ -247,6 +259,13 @@ export default function AdminPage() {
   useEffect(() => {
     if (isAdmin) {
       loadTotalCoins()
+    }
+  }, [isAdmin])
+
+  // Charger les stats visiteurs
+  useEffect(() => {
+    if (isAdmin) {
+      loadVisitorStats()
     }
   }, [isAdmin])
 
@@ -979,6 +998,32 @@ export default function AdminPage() {
     }
   }
 
+  // Stats visiteurs
+  async function loadVisitorStats() {
+    try {
+      setStatsLoading(true)
+      const session = await supabase.auth.getSession()
+      const token = session.data.session?.access_token
+
+      if (!token) return
+
+      const response = await fetch('/api/stats/get', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setVisitorStats(data)
+      }
+    } catch (error) {
+      console.error('Erreur chargement stats:', error)
+    } finally {
+      setStatsLoading(false)
+    }
+  }
+
   async function loadConversationMessages(conversationId: string) {
     try {
       setLoadingConversation(true)
@@ -1310,6 +1355,19 @@ export default function AdminPage() {
             <div className="flex items-center justify-center gap-2">
               <History className="w-4 h-4" />
               <span className="hidden md:inline">Historique</span>
+            </div>
+          </button>
+          <button
+            onClick={() => setActiveTab('stats')}
+            className={`py-3 px-4 rounded-lg font-medium transition-all ${
+              activeTab === 'stats'
+                ? 'bg-cyan-500 text-white'
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <Eye className="w-4 h-4" />
+              <span className="hidden md:inline">Statistiques</span>
             </div>
           </button>
         </div>
@@ -2214,6 +2272,162 @@ export default function AdminPage() {
                     </motion.div>
                   )
                 })}
+              </div>
+            )}
+          </div>
+        ) : activeTab === 'stats' ? (
+          <div className="space-y-6">
+            {statsLoading ? (
+              <div className="text-center text-gray-400 py-12">Chargement des statistiques...</div>
+            ) : visitorStats ? (
+              <>
+                {/* Cartes principales */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Total visiteurs uniques */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-xl p-6 border border-cyan-500/30"
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="p-2 bg-cyan-500/20 rounded-lg">
+                        <Users className="w-5 h-5 text-cyan-400" />
+                      </div>
+                      <h3 className="text-gray-400 text-sm">Visiteurs uniques (total)</h3>
+                    </div>
+                    <p className="text-3xl font-bold text-white">{visitorStats.totalUniqueVisitors.toLocaleString()}</p>
+                    <p className="text-xs text-gray-500 mt-1">IP différentes depuis le début</p>
+                  </motion.div>
+
+                  {/* Visiteurs uniques aujourd'hui */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-xl p-6 border border-green-500/30"
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="p-2 bg-green-500/20 rounded-lg">
+                        <Eye className="w-5 h-5 text-green-400" />
+                      </div>
+                      <h3 className="text-gray-400 text-sm">Visiteurs uniques aujourd'hui</h3>
+                    </div>
+                    <p className="text-3xl font-bold text-white">{visitorStats.todayUniqueVisitors.toLocaleString()}</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Hier: {visitorStats.yesterdayUniqueVisitors.toLocaleString()}
+                      {visitorStats.todayUniqueVisitors > visitorStats.yesterdayUniqueVisitors && (
+                        <span className="text-green-400 ml-2">+{visitorStats.todayUniqueVisitors - visitorStats.yesterdayUniqueVisitors}</span>
+                      )}
+                      {visitorStats.todayUniqueVisitors < visitorStats.yesterdayUniqueVisitors && (
+                        <span className="text-red-400 ml-2">{visitorStats.todayUniqueVisitors - visitorStats.yesterdayUniqueVisitors}</span>
+                      )}
+                    </p>
+                  </motion.div>
+
+                  {/* Visites aujourd'hui (avec retours) */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-xl p-6 border border-purple-500/30"
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="p-2 bg-purple-500/20 rounded-lg">
+                        <Eye className="w-5 h-5 text-purple-400" />
+                      </div>
+                      <h3 className="text-gray-400 text-sm">Visites aujourd'hui (total)</h3>
+                    </div>
+                    <p className="text-3xl font-bold text-white">{visitorStats.todayTotalVisits.toLocaleString()}</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Inclut les retours (même IP = plusieurs visites)
+                    </p>
+                  </motion.div>
+                </div>
+
+                {/* Stats détaillées */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Total visites */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="bg-gray-900 rounded-xl p-6 border border-gray-800"
+                  >
+                    <h3 className="text-gray-400 text-sm mb-2">Total des visites (toutes périodes)</h3>
+                    <p className="text-2xl font-bold text-white">{visitorStats.totalVisits.toLocaleString()}</p>
+                    <p className="text-xs text-gray-500 mt-1">Chaque visite comptée (même IP = plusieurs visites)</p>
+                  </motion.div>
+
+                  {/* Hier */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="bg-gray-900 rounded-xl p-6 border border-gray-800"
+                  >
+                    <h3 className="text-gray-400 text-sm mb-2">Visites hier (total)</h3>
+                    <p className="text-2xl font-bold text-white">{visitorStats.yesterdayTotalVisits.toLocaleString()}</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {visitorStats.yesterdayUniqueVisitors} visiteurs uniques
+                    </p>
+                  </motion.div>
+                </div>
+
+                {/* Graphique des 7 derniers jours */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="bg-gray-900 rounded-xl p-6 border border-gray-800"
+                >
+                  <h3 className="text-white font-semibold mb-4">7 derniers jours</h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-800">
+                          <th className="text-left text-gray-400 py-2 px-2">Date</th>
+                          <th className="text-right text-gray-400 py-2 px-2">Visiteurs uniques</th>
+                          <th className="text-right text-gray-400 py-2 px-2">Total visites</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {visitorStats.dailyStats.map((day, index) => (
+                          <tr key={day.date} className="border-b border-gray-800/50">
+                            <td className="py-3 px-2 text-white">
+                              {new Date(day.date).toLocaleDateString('fr-FR', {
+                                weekday: 'short',
+                                day: 'numeric',
+                                month: 'short'
+                              })}
+                            </td>
+                            <td className="py-3 px-2 text-right">
+                              <span className="text-cyan-400 font-medium">{day.unique.toLocaleString()}</span>
+                            </td>
+                            <td className="py-3 px-2 text-right">
+                              <span className="text-purple-400 font-medium">{day.total.toLocaleString()}</span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </motion.div>
+
+                {/* Bouton refresh */}
+                <div className="flex justify-end">
+                  <button
+                    onClick={loadVisitorStats}
+                    className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition-colors text-sm flex items-center gap-2"
+                  >
+                    <Eye className="w-4 h-4" />
+                    Actualiser les stats
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="bg-gray-900 rounded-xl p-12 border border-gray-800 text-center">
+                <Eye className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                <p className="text-gray-400">Aucune donnée de statistiques disponible</p>
               </div>
             )}
           </div>

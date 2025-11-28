@@ -597,31 +597,31 @@ export default function PrivacySettingsPage() {
                 <ul className="space-y-2 text-sm text-gray-300">
                   <li className="flex gap-2">
                     <span className="text-blue-400">•</span>
-                    <span>{t('privacyPage.instruction1')}</span>
+                    <span>{t('privacyPage.instructionPhoto')}</span>
                   </li>
                   <li className="flex gap-2 ml-6">
                     <span className="text-pink-400">-</span>
-                    <span>{t('privacyPage.instruction2')} <span className="font-mono text-white">{user?.user_metadata?.username || 'N/A'}</span></span>
+                    <span>{t('privacyPage.instructionUsername')} <span className="font-mono text-white">{user?.user_metadata?.username || 'N/A'}</span></span>
                   </li>
                   <li className="flex gap-2 ml-6">
                     <span className="text-pink-400">-</span>
-                    <span>{t('privacyPage.instruction3')} <span className="font-mono text-white">{new Date().toLocaleDateString('fr-FR')}</span></span>
+                    <span>{t('privacyPage.instructionDate')} <span className="font-mono text-white">{new Date().toLocaleDateString('fr-FR')}</span></span>
                   </li>
                   <li className="flex gap-2 ml-6">
                     <span className="text-pink-400">-</span>
-                    <span>{t('privacyPage.instruction4')} <span className="font-mono text-white">SexElite.eu</span></span>
+                    <span>{t('privacyPage.instructionSite')} <span className="font-mono text-white">SexElite.eu</span></span>
                   </li>
                   <li className="flex gap-2">
                     <span className="text-blue-400">•</span>
-                    <span>{t('privacyPage.instruction5')}</span>
+                    <span>{t('privacyPage.instructionFaceVisible')}</span>
                   </li>
                   <li className="flex gap-2">
                     <span className="text-blue-400">•</span>
-                    <span>{t('privacyPage.instruction6')}</span>
+                    <span>{t('privacyPage.instructionReadable')}</span>
                   </li>
                   <li className="flex gap-2">
                     <span className="text-blue-400">•</span>
-                    <span>{t('privacyPage.instruction7')}</span>
+                    <span>{t('privacyPage.instructionMaxPhotos')}</span>
                   </li>
                 </ul>
               </div>
@@ -831,7 +831,7 @@ export default function PrivacySettingsPage() {
                   type="tel"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
-                  placeholder={t('privacyPage.phonePlaceholder')}
+                  placeholder={t('privacyPage.phoneNumberPlaceholder')}
                   className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-pink-500"
                 />
                 <textarea
@@ -893,7 +893,7 @@ export default function PrivacySettingsPage() {
             <div className="border-t border-gray-700 pt-6">
               <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
                 <Search className="w-5 h-5" />
-                {t('privacyPage.searchNumber')}
+                {t('privacyPage.searchPhone')}
               </h3>
               <form onSubmit={handleSearchPhone} className="mb-4">
                 <div className="flex gap-3">
@@ -901,7 +901,7 @@ export default function PrivacySettingsPage() {
                     type="tel"
                     value={searchPhone}
                     onChange={(e) => setSearchPhone(e.target.value)}
-                    placeholder={t('privacyPage.searchPlaceholder')}
+                    placeholder={t('privacyPage.phoneToSearch')}
                     className="flex-1 px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-pink-500"
                   />
                   <button

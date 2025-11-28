@@ -10,6 +10,7 @@ import { AdsProvider } from '@/contexts/AdsContext'
 import { AgeVerificationModal } from '@/components/AgeVerificationModal'
 import { Footer } from '@/components/Footer'
 import CookieBanner from '@/components/CookieBanner'
+import { VisitorTracker } from '@/components/VisitorTracker'
 
 // Fonction pour générer les metadata dynamiques
 export async function generateMetadata(): Promise<Metadata> {
@@ -87,6 +88,7 @@ export default function RootLayout({
                   <CityFilterProvider>
                     <AdsProvider>
                       <AgeVerificationModal />
+                      <VisitorTracker />
                       <div className="flex-1">
                         {children}
                       </div>
