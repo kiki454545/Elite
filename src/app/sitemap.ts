@@ -1,22 +1,8 @@
 import { MetadataRoute } from 'next'
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.sexelite.eu'
-  const supabase = createClient(supabaseUrl, supabaseKey)
-
-  // Récupérer toutes les annonces actives
-  const { data: ads } = await supabase
-    .from('ads')
-    .select('id, updated_at')
-    .order('updated_at', { ascending: false })
-    .limit(1000) // Google limite à 50k URLs par sitemap
-
-  // Pages statiques principales
-  const staticPages: MetadataRoute.Sitemap = [
+function getStaticPages(baseUrl: string): MetadataRoute.Sitemap {
+  return [
     {
       url: baseUrl,
       lastModified: new Date(),
@@ -72,6 +58,31 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.3,
     },
   ]
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.sexelite.eu'
+
+  // Créer le client Supabase au runtime seulement
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!supabaseUrl || !supabaseKey) {
+    // Retourner juste les pages statiques si pas de connexion à Supabase
+    return getStaticPages(baseUrl)
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseKey)
+
+  // Récupérer toutes les annonces actives
+  const { data: ads } = await supabase
+    .from('ads')
+    .select('id, updated_at')
+    .order('updated_at', { ascending: false })
+    .limit(1000) // Google limite à 50k URLs par sitemap
+
+  // Pages statiques principales
+  const staticPages = getStaticPages(baseUrl)
 
   // Pages dynamiques des annonces
   const adPages: MetadataRoute.Sitemap = ads?.map((ad) => ({

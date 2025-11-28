@@ -1,13 +1,18 @@
 'use client'
 
-import { useEffect } from 'react'
-import { usePathname } from 'next/navigation'
+import { useEffect, useRef } from 'react'
 
 export function VisitorTracker() {
-  const pathname = usePathname()
+  const hasTracked = useRef(false)
 
   useEffect(() => {
-    // Tracker la visite
+    // Ne tracker qu'une seule fois par session
+    if (hasTracked.current) return
+
+    // Vérifier si déjà tracké dans cette session
+    const sessionTracked = sessionStorage.getItem('visitor_tracked')
+    if (sessionTracked) return
+
     const trackVisit = async () => {
       try {
         await fetch('/api/stats/track', {
@@ -16,9 +21,13 @@ export function VisitorTracker() {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            path: pathname
+            path: window.location.pathname
           })
         })
+
+        // Marquer comme tracké pour cette session
+        sessionStorage.setItem('visitor_tracked', 'true')
+        hasTracked.current = true
       } catch (error) {
         // Silencieux en cas d'erreur
         console.error('Tracking error:', error)
@@ -26,7 +35,7 @@ export function VisitorTracker() {
     }
 
     trackVisit()
-  }, [pathname])
+  }, [])
 
   // Composant invisible
   return null
