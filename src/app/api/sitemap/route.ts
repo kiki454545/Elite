@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 export const dynamic = 'force-dynamic'
-export const revalidate = 3600 // Revalider toutes les heures
 
 export async function GET() {
   const baseUrl = 'https://www.sexelite.eu'
