@@ -1,9 +1,8 @@
-import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+const { createClient } = require('@supabase/supabase-js')
+const fs = require('fs')
+const path = require('path')
 
-export const dynamic = 'force-dynamic'
-
-export async function GET() {
+async function generateSitemap() {
   const baseUrl = 'https://www.sexelite.eu'
 
   // Pages statiques
@@ -19,7 +18,7 @@ export async function GET() {
     { url: `${baseUrl}/cookies`, priority: '0.3', changefreq: 'monthly' },
   ]
 
-  let adPages: { url: string; lastmod: string; priority: string; changefreq: string }[] = []
+  let adPages = []
 
   // Récupérer les annonces depuis Supabase
   try {
@@ -43,9 +42,12 @@ export async function GET() {
           changefreq: 'daily'
         }))
       }
+      console.log(`Récupéré ${adPages.length} annonces pour le sitemap`)
+    } else {
+      console.log('Variables Supabase non définies, sitemap sans annonces')
     }
   } catch (error) {
-    console.error('Erreur récupération annonces pour sitemap:', error)
+    console.error('Erreur récupération annonces:', error.message)
   }
 
   const today = new Date().toISOString().split('T')[0]
@@ -67,10 +69,10 @@ ${adPages.map(page => `  <url>
   </url>`).join('\n')}
 </urlset>`
 
-  return new NextResponse(xml, {
-    headers: {
-      'Content-Type': 'application/xml',
-      'Cache-Control': 'public, max-age=3600, s-maxage=3600'
-    }
-  })
+  // Écrire le fichier
+  const publicDir = path.join(__dirname, '..', 'public')
+  fs.writeFileSync(path.join(publicDir, 'sitemap.xml'), xml)
+  console.log('Sitemap généré: public/sitemap.xml')
 }
+
+generateSitemap().catch(console.error)

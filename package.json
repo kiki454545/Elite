@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "generate-sitemap": "node scripts/generate-sitemap.js",
+    "build": "node scripts/generate-sitemap.js && next build",
     "start": "next start",
     "lint": "next lint",
     "deploy:check": "node scripts/pre-deploy-check.mjs"
