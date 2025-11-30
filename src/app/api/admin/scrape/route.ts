@@ -91,13 +91,25 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Extraire la ville
+    // Extraire la ville depuis "Ville de base:"
+    // Format HTML: <dt>Ville de base:</dt><dd><a href="/escorts/paris/">Paris</a></dd>
     let location = 'France'
-    const cities = ['Marseille', 'Paris', 'Lyon', 'Nice', 'Toulouse', 'Bordeaux', 'Lille', 'Nantes', 'Strasbourg', 'Montpellier', 'Rennes', 'Reims', 'Le Havre', 'Saint-Étienne', 'Toulon', 'Grenoble', 'Dijon', 'Angers', 'Nîmes', 'Villeurbanne', 'Clermont-Ferrand', 'Le Mans', 'Aix-en-Provence', 'Brest', 'Tours', 'Amiens', 'Limoges', 'Annecy', 'Perpignan', 'Boulogne-Billancourt', 'Metz', 'Besançon', 'Orléans', 'Rouen', 'Mulhouse', 'Caen', 'Nancy', 'Saint-Denis', 'Argenteuil', 'Montreuil']
-    for (const city of cities) {
-      if (html.includes(city)) {
-        location = city
-        break
+
+    // Chercher le pattern "Ville de base" suivi du lien avec la ville
+    const villeBaseMatch = html.match(/Ville de base[:\s]*<\/dt>\s*<dd>\s*<a[^>]*>([^<]+)<\/a>/i)
+    if (villeBaseMatch && villeBaseMatch[1]) {
+      // Capitaliser la première lettre de chaque mot
+      location = villeBaseMatch[1].trim()
+        .split(/[\s-]+/)
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(location.includes('-') ? '-' : ' ')
+
+      // Reconstruire avec les tirets si nécessaire (ex: Aix-en-Provence)
+      if (villeBaseMatch[1].includes('-')) {
+        location = villeBaseMatch[1].trim()
+          .split('-')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          .join('-')
       }
     }
 
