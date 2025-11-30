@@ -92,24 +92,35 @@ export async function POST(request: NextRequest) {
     }
 
     // Extraire la ville depuis "Ville de base:"
-    // Format HTML: <dt>Ville de base:</dt><dd><a href="/escorts/paris/">Paris</a></dd>
+    // Format 1: <dt>Ville de base:</dt><dd><a href="/escorts/paris/">Paris</a></dd>
+    // Format 2: <li>Ville de base:<a href="/escorts/cannes/">Cannes</a></li>
     let location = 'France'
 
-    // Chercher le pattern "Ville de base" suivi du lien avec la ville
-    const villeBaseMatch = html.match(/Ville de base[:\s]*<\/dt>\s*<dd>\s*<a[^>]*>([^<]+)<\/a>/i)
-    if (villeBaseMatch && villeBaseMatch[1]) {
-      // Capitaliser la première lettre de chaque mot
-      location = villeBaseMatch[1].trim()
-        .split(/[\s-]+/)
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-        .join(location.includes('-') ? '-' : ' ')
+    // Chercher le pattern "Ville de base" suivi du lien avec la ville (plusieurs formats possibles)
+    const villeBasePatterns = [
+      /Ville de base[:\s]*<\/dt>\s*<dd>\s*<a[^>]*>([^<]+)<\/a>/i,  // Format dt/dd
+      /Ville de base[:\s]*<a[^>]*>([^<]+)<\/a>/i,                   // Format direct (li)
+      /Ville de base[:\s]*\[([^\]]+)\]/i                            // Format markdown [Ville]
+    ]
 
-      // Reconstruire avec les tirets si nécessaire (ex: Aix-en-Provence)
-      if (villeBaseMatch[1].includes('-')) {
-        location = villeBaseMatch[1].trim()
-          .split('-')
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-          .join('-')
+    for (const pattern of villeBasePatterns) {
+      const villeBaseMatch = html.match(pattern)
+      if (villeBaseMatch && villeBaseMatch[1]) {
+        const rawCity = villeBaseMatch[1].trim()
+
+        // Capitaliser correctement (gérer les tirets comme Aix-en-Provence)
+        if (rawCity.includes('-')) {
+          location = rawCity
+            .split('-')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join('-')
+        } else {
+          location = rawCity
+            .split(/\s+/)
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ')
+        }
+        break
       }
     }
 
