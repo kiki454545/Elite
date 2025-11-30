@@ -15,7 +15,13 @@
       "Bash(git commit -m \"$(cat <<''EOF''\nfix: Sitemap en route API XML pure\n\n- Changement du sitemap.ts vers une route API /sitemap.xml\n- Retourne du XML pur sans bundle JS client\n- Corrige l''erreur Google \"Impossible de récupérer le sitemap\"\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(git push:*)",
       "Bash(git commit:*)",
-      "Bash(npm run generate-sitemap:*)"
+      "Bash(npm run generate-sitemap:*)",
+      "Bash(cat:*)",
+      "Bash(node scripts/scrape_and_import.mjs \"https://www.sexemodel.com/escort/Laira%20GFE-1534558/\")",
+      "Bash(taskkill:*)",
+      "Bash(node scripts/scrape_and_import.mjs:*)",
+      "Bash(npm run dev:*)",
+      "Bash(node scripts/check-stats.mjs:*)"
     ],
     "deny": [],
     "ask": []

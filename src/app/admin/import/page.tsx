@@ -70,6 +70,7 @@ export default function AdminImportPage() {
   const [importResult, setImportResult] = useState<ImportResult | null>(null)
   const [importError, setImportError] = useState('')
 
+
   // Vérifier si l'utilisateur est admin
   useEffect(() => {
     async function checkAdmin() {

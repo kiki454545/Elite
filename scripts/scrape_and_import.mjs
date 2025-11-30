@@ -370,15 +370,8 @@ async function main() {
     console.log(`   Incall: ${scrapedData.incall ? 'Oui' : 'Non'}`)
     console.log(`   Outcall: ${scrapedData.outcall ? 'Oui' : 'Non'}`)
 
-    // 2. Demander la description (car WebFetch la tronque)
-    const description = await askDescription()
-
-    if (!description) {
-      console.error('❌ Description requise!')
-      process.exit(1)
-    }
-
-    scrapedData.description = description
+    // 2. Description vide (l'utilisateur l'ajoutera manuellement)
+    scrapedData.description = ''
 
     // 3. Trouver le prochain numéro d'email
     const nextNumber = await getNextEmailNumber()
