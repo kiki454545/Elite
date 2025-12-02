@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Shield, Ticket, CheckCircle, Clock, XCircle, AlertCircle, User, Calendar, MessageSquare, Users, Search, Flag, Eye, History, Filter, ChevronLeft, ChevronRight, Coins, Ban } from 'lucide-react'
+import { Shield, Ticket, CheckCircle, Clock, XCircle, AlertCircle, User, Calendar, MessageSquare, Users, Search, Flag, Eye, History, Filter, ChevronLeft, ChevronRight, Coins, Ban, AlertTriangle } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Header } from '@/components/Header'
@@ -98,7 +98,7 @@ interface AdminHistoryEntry {
   id: string
   admin_id: string
   admin_username: string
-  action_type: 'ticket_closed' | 'verification_approved' | 'verification_rejected' | 'report_resolved' | 'profile_deleted' | 'profile_verified'
+  action_type: 'ticket_closed' | 'verification_approved' | 'verification_rejected' | 'report_resolved' | 'profile_deleted' | 'profile_verified' | 'coins_adjusted' | 'warning_sent' | 'profile_banned'
   target_type: 'ticket' | 'verification' | 'report' | 'profile'
   target_id: string
   target_username?: string
@@ -943,6 +943,7 @@ export default function AdminPage() {
 
       if (error) throw error
 
+      console.log('📜 Historique chargé:', data?.map(d => ({ action_type: d.action_type, details: d.details })))
       setHistory(data || [])
     } catch (error) {
       console.error('Erreur lors du chargement de l\'historique:', error)
@@ -2106,26 +2107,35 @@ export default function AdminPage() {
               <div className="space-y-2">
                 {filteredHistory.map((entry, index) => {
                   const getActionIcon = () => {
-                    switch (entry.action_type) {
+                    const actionType = entry.action_type?.toLowerCase()
+                    switch (actionType) {
                       case 'ticket_closed': return <Ticket className="w-5 h-5 text-blue-500" />
                       case 'verification_approved': return <CheckCircle className="w-5 h-5 text-green-500" />
                       case 'verification_rejected': return <XCircle className="w-5 h-5 text-red-500" />
                       case 'report_resolved': return <Flag className="w-5 h-5 text-orange-500" />
                       case 'profile_deleted': return <AlertCircle className="w-5 h-5 text-red-500" />
                       case 'profile_verified': return <CheckCircle className="w-5 h-5 text-blue-500" />
+                      case 'coins_adjusted': return <Coins className="w-5 h-5 text-yellow-500" />
+                      case 'warning_sent': return <AlertTriangle className="w-5 h-5 text-yellow-500" />
+                      case 'profile_banned': return <Ban className="w-5 h-5 text-red-500" />
                       default: return <History className="w-5 h-5 text-gray-500" />
                     }
                   }
 
                   const getActionText = () => {
-                    switch (entry.action_type) {
+                    // Vérifier aussi en minuscules au cas où
+                    const actionType = entry.action_type?.toLowerCase()
+                    switch (actionType) {
                       case 'ticket_closed': return 'a fermé un ticket'
                       case 'verification_approved': return 'a approuvé une vérification'
                       case 'verification_rejected': return 'a refusé une vérification'
                       case 'report_resolved': return 'a traité un signalement'
                       case 'profile_deleted': return 'a supprimé un profil'
                       case 'profile_verified': return 'a vérifié un profil'
-                      default: return 'a effectué une action'
+                      case 'coins_adjusted': return 'a modifié les Elite Coins'
+                      case 'warning_sent': return 'a envoyé un avertissement'
+                      case 'profile_banned': return 'a banni un utilisateur'
+                      default: return `a effectué une action (${entry.action_type || 'inconnu'})`
                     }
                   }
 
@@ -2199,6 +2209,37 @@ export default function AdminPage() {
                               {details.status && (
                                 <p className="text-xs text-gray-300">
                                   <span className="text-gray-500">Statut:</span> {details.status}
+                                </p>
+                              )}
+                              {/* Détails pour Elite Coins */}
+                              {details.operation && (
+                                <p className="text-xs text-gray-300 mb-1">
+                                  <span className="text-gray-500">Opération:</span>{' '}
+                                  <span className={details.operation === 'add' ? 'text-green-400' : 'text-red-400'}>
+                                    {details.operation === 'add' ? '+' : '-'}{details.amount} coins
+                                  </span>
+                                </p>
+                              )}
+                              {details.previousBalance !== undefined && (
+                                <p className="text-xs text-gray-300 mb-1">
+                                  <span className="text-gray-500">Solde:</span> {details.previousBalance} → {details.newBalance}
+                                </p>
+                              )}
+                              {/* Détails pour ban */}
+                              {details.duration && (
+                                <p className="text-xs text-gray-300 mb-1">
+                                  <span className="text-gray-500">Durée:</span> {details.duration}
+                                </p>
+                              )}
+                              {details.ipBanned && (
+                                <p className="text-xs text-red-400 mb-1">
+                                  🔒 IP également bannie
+                                </p>
+                              )}
+                              {/* Détails avertissement */}
+                              {details.details && (
+                                <p className="text-xs text-gray-300">
+                                  <span className="text-gray-500">Détails:</span> {details.details}
                                 </p>
                               )}
                             </div>

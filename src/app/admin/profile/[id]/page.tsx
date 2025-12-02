@@ -210,10 +210,43 @@ export default function AdminProfileDetailPage() {
     }
   }
 
+  async function addHistoryEntry(
+    actionType: string,
+    targetType: string,
+    targetId: string,
+    targetUsername?: string,
+    details?: any
+  ) {
+    try {
+      await supabase
+        .from('admin_history')
+        .insert({
+          admin_id: user?.id,
+          admin_username: user?.user_metadata?.username || user?.email || 'Admin',
+          action_type: actionType,
+          target_type: targetType,
+          target_id: targetId,
+          target_username: targetUsername,
+          details: details ? JSON.stringify(details) : null
+        })
+    } catch (error) {
+      console.error('Erreur lors de l\'ajout à l\'historique:', error)
+    }
+  }
+
   async function deleteProfile() {
     if (!profile) return
 
     try {
+      // Log avant suppression
+      await addHistoryEntry(
+        'profile_deleted',
+        'profile',
+        profile.id,
+        profile.username,
+        { email: profile.email, reason: 'Suppression manuelle par admin' }
+      )
+
       const { error } = await supabase
         .from('profiles')
         .delete()
@@ -369,6 +402,15 @@ Si vous pensez que cet avertissement a été émis par erreur, vous pouvez nous 
           last_message_at: new Date().toISOString()
         })
         .eq('id', conversationId)
+
+      // Log dans l'historique admin
+      await addHistoryEntry(
+        'warning_sent',
+        'profile',
+        profile.id,
+        profile.username,
+        { reason: warningReason.trim(), details: warningDetails.trim() || null }
+      )
 
       // Réinitialiser le formulaire
       setWarningReason('')
