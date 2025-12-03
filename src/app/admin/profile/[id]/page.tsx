@@ -269,7 +269,8 @@ export default function AdminProfileDetailPage() {
 
       if (error) throw error
 
-      await loadProfileData()
+      // Mettre à jour la liste des annonces localement
+      setAds(ads.filter(ad => ad.id !== adId))
     } catch (error) {
       console.error('Erreur lors de la suppression:', error)
     }

@@ -212,9 +212,9 @@ export function ProfileGrid() {
         {sortedAds.map((ad, index) => (
           <motion.div
             key={ad.id}
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
+            transition={{ delay: Math.min(index * 0.02, 0.3), duration: 0.2 }}
             className="group cursor-pointer"
             onClick={() => handleViewAd(ad.id)}
           >
