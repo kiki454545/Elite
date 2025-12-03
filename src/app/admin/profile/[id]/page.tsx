@@ -1055,8 +1055,11 @@ Si vous pensez que cet avertissement a été émis par erreur, vous pouvez nous 
       <ConfirmModal
         isOpen={deleteAdModal !== null}
         onClose={() => setDeleteAdModal(null)}
-        onConfirm={() => {
-          if (deleteAdModal) deleteAd(deleteAdModal)
+        onConfirm={async () => {
+          if (deleteAdModal) {
+            await deleteAd(deleteAdModal)
+            setDeleteAdModal(null)
+          }
         }}
         title="Supprimer l'annonce"
         message="Voulez-vous vraiment supprimer cette annonce ? Cette action est irréversible."
