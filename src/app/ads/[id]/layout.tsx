@@ -45,15 +45,19 @@ async function getAdData(id: string) {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getAdData(params.id)
 
+  // Extraire les 6 premiers caractères de l'ID pour l'unicité
+  const shortId = params.id.substring(0, 6)
+
   if (!data) {
     return {
-      title: 'Escort de luxe | SexElite',
+      title: `Escort de luxe #${shortId} | SexElite`,
       description: 'Découvrez cette escort de luxe sur SexElite.eu, la plateforme N°1 en Europe.',
     }
   }
 
   const { username, age, location, description, photo } = data
-  const title = `${username}${age ? `, ${age} ans` : ''} - Escort ${location} | SexElite`
+  // Ajouter l'ID court pour garantir l'unicité du titre
+  const title = `${username}${age ? `, ${age} ans` : ''} - Escort ${location} #${shortId} | SexElite`
   const desc = description || `Découvrez le profil de ${username} sur SexElite.eu`
 
   return {
