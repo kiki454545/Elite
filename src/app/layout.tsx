@@ -11,6 +11,7 @@ import { AgeVerificationModal } from '@/components/AgeVerificationModal'
 import { Footer } from '@/components/Footer'
 import CookieBanner from '@/components/CookieBanner'
 import { VisitorTracker } from '@/components/VisitorTracker'
+import { SeoAdsLinks } from '@/components/SeoAdsLinks'
 
 // Fonction pour générer les metadata dynamiques
 export async function generateMetadata(): Promise<Metadata> {
@@ -112,6 +113,7 @@ export default function RootLayout({
                         {children}
                       </div>
                       <Footer />
+                      <SeoAdsLinks />
                       <CookieBanner />
                     </AdsProvider>
                   </CityFilterProvider>
