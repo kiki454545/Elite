@@ -1,28 +1,36 @@
 import { Metadata } from 'next'
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-
 type Props = {
   params: { id: string }
   children: React.ReactNode
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  // Si les variables d'environnement ne sont pas disponibles, retourner un titre par défaut
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return {
+      title: 'Escort de luxe | SexElite',
+      description: 'Découvrez cette escort de luxe sur SexElite.eu, la plateforme N°1 en Europe.',
+    }
+  }
+
   const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
   // Récupérer l'annonce
-  const { data: ad } = await supabase
+  const { data: ad, error: adError } = await supabase
     .from('ads')
     .select('id, title, description, location, photos, user_id')
     .eq('id', params.id)
     .single()
 
-  if (!ad) {
+  if (adError || !ad) {
     return {
-      title: 'Annonce non trouvée - SexElite',
-      description: 'Cette annonce n\'existe plus ou a été supprimée.',
+      title: 'Escort de luxe | SexElite',
+      description: 'Découvrez cette escort de luxe sur SexElite.eu, la plateforme N°1 en Europe.',
     }
   }
 
