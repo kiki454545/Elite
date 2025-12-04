@@ -46,6 +46,11 @@ export function Footer() {
                 </a>
               </li>
               <li>
+                <a href="/top-50" className="text-gray-400 hover:text-pink-400 transition-colors">
+                  Top 50
+                </a>
+              </li>
+              <li>
                 <a href="/premium" className="text-gray-400 hover:text-pink-400 transition-colors">
                   {t('nav.premium')}
                 </a>
