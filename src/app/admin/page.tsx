@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Shield, Ticket, CheckCircle, Clock, XCircle, AlertCircle, User, Calendar, MessageSquare, Users, Search, Flag, Eye, History, Filter, ChevronLeft, ChevronRight, Coins, Ban, AlertTriangle } from 'lucide-react'
+import { Shield, Ticket, CheckCircle, Clock, XCircle, AlertCircle, User, Calendar, MessageSquare, Users, Search, Flag, Eye, History, Filter, ChevronLeft, ChevronRight, Coins, Ban, AlertTriangle, RefreshCw } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Header } from '@/components/Header'
@@ -1369,6 +1369,15 @@ export default function AdminPage() {
             <div className="flex items-center justify-center gap-2">
               <Eye className="w-4 h-4" />
               <span className="hidden md:inline">Statistiques</span>
+            </div>
+          </button>
+          <button
+            onClick={() => router.push('/admin/updates')}
+            className="py-3 px-4 rounded-lg font-medium transition-all text-gray-400 hover:text-white hover:bg-gray-800"
+          >
+            <div className="flex items-center justify-center gap-2">
+              <RefreshCw className="w-4 h-4" />
+              <span className="hidden md:inline">Updates</span>
             </div>
           </button>
         </div>

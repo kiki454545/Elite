@@ -35,8 +35,8 @@ export function LocationSearch({ onLocationChange, className = '' }: LocationSea
   const dropdownRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // Charger les villes du pays sélectionné
-  const citiesForCountry = CITIES_BY_COUNTRY[selectedCountry.code] || []
+  // Charger les villes du pays sélectionné (dédupliquées)
+  const citiesForCountry = [...new Set(CITIES_BY_COUNTRY[selectedCountry.code] || [])]
 
   // Fermer le dropdown si on clique en dehors
   useEffect(() => {

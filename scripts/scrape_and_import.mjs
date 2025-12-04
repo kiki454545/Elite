@@ -304,7 +304,7 @@ async function updateProfile(userId, email, data) {
   console.log(`   ✅ Profil mis à jour`)
 }
 
-async function createAd(userId, data) {
+async function createAd(userId, data, sourceUrl) {
   console.log(`\n📝 Création de l'annonce...`)
 
   const adRecord = {
@@ -331,7 +331,8 @@ async function createAd(userId, data) {
     views: 0,
     weekly_views: 0,
     favorites_count: 0,
-    status: 'approved'
+    status: 'approved',
+    source_url: sourceUrl || null
   }
 
   const { data: ad, error } = await supabase
@@ -385,8 +386,8 @@ async function main() {
     // 5. Mettre à jour le profil
     await updateProfile(user.id, email, scrapedData)
 
-    // 6. Créer l'annonce
-    const ad = await createAd(user.id, scrapedData)
+    // 6. Créer l'annonce avec le lien source
+    const ad = await createAd(user.id, scrapedData, url)
 
     console.log('\n' + '='.repeat(50))
     console.log('✅ IMPORT TERMINÉ!')
@@ -396,6 +397,7 @@ async function main() {
     console.log(`   👤 User ID: ${user.id}`)
     console.log(`   📝 Ad ID: ${ad.id}`)
     console.log(`   🔗 URL: https://www.sexelite.eu/ads/${ad.id}`)
+    console.log(`   📎 Source: ${url}`)
     console.log('\n⚠️ N\'oublie pas d\'ajouter les photos manuellement!')
 
   } catch (error) {
