@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import { Heart, MapPin, Eye, ChevronLeft, ChevronRight, Loader2, X, Check, MessageCircle, Crown } from 'lucide-react'
 import { RankType } from '@/types/profile'
 import { Watermark } from './Watermark'
@@ -322,13 +323,17 @@ export function PremiumGrid() {
                   {[...Array(getPhotoCount(ad))].map((_, photoIndex) => (
                     <div
                       key={photoIndex}
-                      className="min-w-full h-full"
+                      className="min-w-full h-full relative"
                     >
-                      <img
+                      <Image
                         src={getPhotoUrl(ad, photoIndex)}
                         alt={`${ad.title} - Photo ${photoIndex + 1}`}
-                        className="w-full h-full object-cover pointer-events-none select-none"
+                        fill
+                        sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                        className="object-cover pointer-events-none select-none"
                         draggable={false}
+                        priority={index < 4 && photoIndex === 0}
+                        loading={index < 4 && photoIndex === 0 ? undefined : 'lazy'}
                       />
                     </div>
                   ))}

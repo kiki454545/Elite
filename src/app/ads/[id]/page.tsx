@@ -544,7 +544,7 @@ export default function AdDetailPage() {
             <div className="flex-1">
               <div className="flex items-center gap-2.5 mb-2 flex-wrap">
                 <h1 className="text-2xl font-bold text-white">
-                  {ad.username}, {ad.age}
+                  {ad.username}, {ad.age} - {ad.location}
                 </h1>
                 {ad.verified && (
                   <div className="flex items-center justify-center bg-gradient-to-br from-blue-500 to-cyan-500 p-1 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.6)] transition-transform hover:scale-110">

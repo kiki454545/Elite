@@ -28,10 +28,10 @@ export default function HomePage() {
         <div className="max-w-screen-xl mx-auto px-4 pt-24 pb-8">
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              🔥 {t('topWeek.title')}
+              🔥 {t('home.topWeekTitle')}
             </h1>
             <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-              {t('topWeek.description')}
+              {t('home.topWeekDescription')}
             </p>
           </div>
         </div>
