@@ -24,10 +24,6 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256],
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 jours de cache
   },
-  // Optimisations de performance
-  experimental: {
-    optimizeCss: true,
-  },
   // Compression
   compress: true,
 }
