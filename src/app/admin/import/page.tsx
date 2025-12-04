@@ -17,7 +17,9 @@ import {
   X,
   ArrowLeft,
   Copy,
-  ExternalLink
+  ExternalLink,
+  Pencil,
+  Check
 } from 'lucide-react'
 
 interface ScrapedData {
@@ -70,6 +72,8 @@ export default function AdminImportPage() {
   const [importResult, setImportResult] = useState<ImportResult | null>(null)
   const [importError, setImportError] = useState('')
 
+  const [editingPhone, setEditingPhone] = useState(false)
+  const [phoneValue, setPhoneValue] = useState('')
 
   // Vérifier si l'utilisateur est admin
   useEffect(() => {
@@ -124,6 +128,7 @@ export default function AdminImportPage() {
         setScrapeError(result.error)
       } else {
         setScrapedData(result.data)
+        setPhoneValue(result.data.phone || '')
       }
     } catch (error: any) {
       setScrapeError(error.message)
@@ -408,7 +413,36 @@ export default function AdminImportPage() {
                 </div>
                 <div className="bg-black/30 rounded-lg p-3">
                   <p className="text-gray-400 text-xs mb-1">Téléphone</p>
-                  <p className="font-semibold">{scrapedData.phone || 'Non trouvé'}</p>
+                  {editingPhone ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={phoneValue}
+                        onChange={(e) => setPhoneValue(e.target.value.replace(/[^0-9+]/g, ''))}
+                        className="flex-1 bg-black/50 border border-purple-500 rounded px-2 py-1 text-sm focus:outline-none"
+                        autoFocus
+                      />
+                      <button
+                        onClick={() => {
+                          setScrapedData({ ...scrapedData, phone: phoneValue })
+                          setEditingPhone(false)
+                        }}
+                        className="p-1 bg-green-500 hover:bg-green-600 rounded transition-colors"
+                      >
+                        <Check className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold">{scrapedData.phone || 'Non trouvé'}</p>
+                      <button
+                        onClick={() => setEditingPhone(true)}
+                        className="p-1 hover:bg-white/10 rounded transition-colors"
+                      >
+                        <Pencil className="w-3 h-3 text-gray-400" />
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <div className="bg-black/30 rounded-lg p-3">
                   <p className="text-gray-400 text-xs mb-1">Taille</p>
