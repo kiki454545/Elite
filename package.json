@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "generate-sitemap": "node scripts/generate-sitemap.js",
-    "build": "node scripts/generate-sitemap.js && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "deploy:check": "node scripts/pre-deploy-check.mjs"
