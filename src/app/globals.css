@@ -2,6 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Optimisations LCP - Préchargement des polices et rendu rapide */
+@layer base {
+  /* Optimiser le rendu des images pour LCP */
+  img {
+    content-visibility: auto;
+  }
+
+  /* Réserver l'espace pour les images (évite le CLS) */
+  img[loading="lazy"] {
+    background-color: #1f2937;
+  }
+}
+
 :root {
   --background: #0A0A0A;
   --foreground: #FFFFFF;
