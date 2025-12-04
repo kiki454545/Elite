@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const { data, description, photos } = await request.json()
+    const { data, description, photos, sourceUrl } = await request.json()
 
     if (!data || !data.username) {
       return NextResponse.json({ error: 'Données manquantes' }, { status: 400 })
@@ -136,7 +136,8 @@ export async function POST(request: NextRequest) {
       views: 0,
       weekly_views: 0,
       favorites_count: 0,
-      status: 'approved'
+      status: 'approved',
+      source_url: sourceUrl || null
     }
 
     const { data: ad, error: adError } = await supabaseAdmin

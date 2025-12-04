@@ -236,7 +236,8 @@ export default function AdminImportPage() {
         body: JSON.stringify({
           data: scrapedData,
           description,
-          photos
+          photos,
+          sourceUrl: url
         })
       })
 
