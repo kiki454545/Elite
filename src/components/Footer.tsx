@@ -36,6 +36,21 @@ export function Footer() {
             <h4 className="text-white font-bold text-sm mb-3">{t('legalFooter.usefulLinks')}</h4>
             <ul className="space-y-2 text-xs">
               <li>
+                <a href="/search" className="text-gray-400 hover:text-pink-400 transition-colors">
+                  {t('nav.search')}
+                </a>
+              </li>
+              <li>
+                <a href="/top-week" className="text-gray-400 hover:text-pink-400 transition-colors">
+                  {t('nav.topWeek')}
+                </a>
+              </li>
+              <li>
+                <a href="/premium" className="text-gray-400 hover:text-pink-400 transition-colors">
+                  {t('nav.premium')}
+                </a>
+              </li>
+              <li>
                 <a href="/terms" className="text-gray-400 hover:text-pink-400 transition-colors">
                   {t('legalFooter.termsOfService')}
                 </a>
@@ -43,11 +58,6 @@ export function Footer() {
               <li>
                 <a href="/privacy" className="text-gray-400 hover:text-pink-400 transition-colors">
                   {t('legalFooter.privacyPolicy')}
-                </a>
-              </li>
-              <li>
-                <a href="/contact" className="text-gray-400 hover:text-pink-400 transition-colors">
-                  {t('legalFooter.contact')}
                 </a>
               </li>
             </ul>
