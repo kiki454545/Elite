@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import { motion } from 'framer-motion'
+import { useState, useMemo, memo, useCallback } from 'react'
 import Image from 'next/image'
 import { Heart, MapPin, Eye, ChevronLeft, ChevronRight, Loader2, X, Check, MessageCircle } from 'lucide-react'
 import { RankType, RANK_CONFIG } from '@/types/profile'
@@ -211,29 +210,18 @@ export function ProfileGrid() {
     <div className="max-w-screen-xl mx-auto px-4 py-6">
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {sortedAds.map((ad, index) => (
-          <motion.div
+          <div
             key={ad.id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: Math.min(index * 0.02, 0.3), duration: 0.2 }}
-            className="group cursor-pointer"
+            className="group cursor-pointer animate-fadeIn"
+            style={{ animationDelay: `${Math.min(index * 20, 300)}ms` }}
             onClick={() => handleViewAd(ad.id)}
           >
             <div className="relative aspect-[3/4] bg-gray-800 rounded-2xl overflow-hidden">
-              {/* Carousel avec effet de slide horizontal */}
-              <motion.div
-                className="absolute inset-0"
-              >
-                <motion.div
-                  className="flex h-full"
-                  animate={{
-                    x: `-${getCurrentPhotoIndex(ad.id) * 100}%`
-                  }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 30
-                  }}
+              {/* Carousel avec effet de slide horizontal - CSS transition */}
+              <div className="absolute inset-0">
+                <div
+                  className="flex h-full transition-transform duration-300 ease-out"
+                  style={{ transform: `translateX(-${getCurrentPhotoIndex(ad.id) * 100}%)` }}
                 >
                   {[...Array(getPhotoCount(ad))].map((_, photoIndex) => (
                     <div
@@ -252,8 +240,8 @@ export function ProfileGrid() {
                       />
                     </div>
                   ))}
-                </motion.div>
-              </motion.div>
+                </div>
+              </div>
               <div className="absolute inset-0 bg-gradient-to-br from-pink-500/10 via-purple-500/10 to-blue-500/10 pointer-events-none" />
 
               {/* Filigrane de protection */}
@@ -264,20 +252,18 @@ export function ProfileGrid() {
 
               {/* Photo navigation arrows - visible au hover sur desktop uniquement */}
               <div className="hidden md:flex absolute inset-0 items-center justify-between px-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
+                <button
                   onClick={(e) => handlePrevPhoto(e, ad.id, getPhotoCount(ad))}
-                  className="pointer-events-auto bg-black/60 backdrop-blur-sm p-2.5 rounded-full hover:bg-black/80 transition-colors"
+                  className="pointer-events-auto bg-black/60 backdrop-blur-sm p-2.5 rounded-full hover:bg-black/80 transition-all active:scale-90"
                 >
                   <ChevronLeft className="w-5 h-5 text-white" />
-                </motion.button>
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
+                </button>
+                <button
                   onClick={(e) => handleNextPhoto(e, ad.id, getPhotoCount(ad))}
-                  className="pointer-events-auto bg-black/60 backdrop-blur-sm p-2.5 rounded-full hover:bg-black/80 transition-colors"
+                  className="pointer-events-auto bg-black/60 backdrop-blur-sm p-2.5 rounded-full hover:bg-black/80 transition-all active:scale-90"
                 >
                   <ChevronRight className="w-5 h-5 text-white" />
-                </motion.button>
+                </button>
               </div>
 
               {/* Photo indicator dots */}
@@ -350,34 +336,28 @@ export function ProfileGrid() {
                         </svg>
                       </div>
                     )}
-                    <motion.button
-                      whileTap={{ scale: 0.9 }}
+                    <button
                       onClick={(e) => handleToggleFavorite(e, ad.id, ad.userId)}
-                      className={`backdrop-blur-sm p-1.5 rounded-full transition-colors ${
+                      className={`backdrop-blur-sm p-1.5 rounded-full transition-all active:scale-90 ${
                         isFavorite(ad.id)
                           ? 'bg-pink-500 text-white'
                           : 'bg-gray-800/80 text-pink-500 hover:bg-gray-700/80'
                       }`}
                     >
                       <Heart className={`w-3.5 h-3.5 ${isFavorite(ad.id) ? 'fill-current' : ''}`} />
-                    </motion.button>
+                    </button>
                   </div>
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
         ))}
       </div>
 
       {/* Toast Notification */}
       {toast && (
         <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none px-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="pointer-events-auto max-w-md w-full"
-          >
+          <div className="pointer-events-auto max-w-md w-full animate-scaleIn">
             <div className={`rounded-xl p-4 shadow-2xl backdrop-blur-sm ${
               toast.type === 'error'
                 ? 'bg-red-500/90 text-white'
@@ -392,7 +372,7 @@ export function ProfileGrid() {
                 <p className="text-sm font-medium">{toast.message}</p>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       )}
     </div>
