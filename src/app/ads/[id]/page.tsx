@@ -543,9 +543,9 @@ export default function AdDetailPage() {
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-2.5 mb-2 flex-wrap">
-                <h1 className="text-2xl font-bold text-white">
+                <span className="text-2xl font-bold text-white">
                   {ad.username}, {ad.age} - {ad.location}
-                </h1>
+                </span>
                 {ad.verified && (
                   <div className="flex items-center justify-center bg-gradient-to-br from-blue-500 to-cyan-500 p-1 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.6)] transition-transform hover:scale-110">
                     <svg className="w-4 h-4 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 20 20">

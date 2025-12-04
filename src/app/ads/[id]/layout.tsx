@@ -6,55 +6,62 @@ type Props = {
   children: React.ReactNode
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+// Fonction pour récupérer les données de l'annonce (utilisée par generateMetadata et le layout)
+async function getAdData(id: string) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  // Si les variables d'environnement ne sont pas disponibles, retourner un titre par défaut
   if (!supabaseUrl || !supabaseAnonKey) {
-    return {
-      title: 'Escort de luxe | SexElite',
-      description: 'Découvrez cette escort de luxe sur SexElite.eu, la plateforme N°1 en Europe.',
-    }
+    return null
   }
 
   const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-  // Récupérer l'annonce
   const { data: ad, error: adError } = await supabase
     .from('ads')
     .select('id, title, description, location, photos, user_id')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (adError || !ad) {
-    return {
-      title: 'Escort de luxe | SexElite',
-      description: 'Découvrez cette escort de luxe sur SexElite.eu, la plateforme N°1 en Europe.',
-    }
+    return null
   }
 
-  // Récupérer le profil séparément
   const { data: profile } = await supabase
     .from('profiles')
     .select('username, age')
     .eq('id', ad.user_id)
     .single()
 
-  const username = profile?.username || 'Escort'
-  const age = profile?.age || ''
-  const location = ad.location || 'Europe'
-  const description = ad.description?.substring(0, 160) || `Découvrez le profil de ${username} sur SexElite.eu`
-  const photo = ad.photos?.[0] || 'https://www.sexelite.eu/apple-touch-icon.png'
+  return {
+    username: profile?.username || 'Escort',
+    age: profile?.age || '',
+    location: ad.location || 'Europe',
+    description: ad.description?.substring(0, 160) || '',
+    photo: ad.photos?.[0] || 'https://www.sexelite.eu/apple-touch-icon.png',
+  }
+}
 
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const data = await getAdData(params.id)
+
+  if (!data) {
+    return {
+      title: 'Escort de luxe | SexElite',
+      description: 'Découvrez cette escort de luxe sur SexElite.eu, la plateforme N°1 en Europe.',
+    }
+  }
+
+  const { username, age, location, description, photo } = data
   const title = `${username}${age ? `, ${age} ans` : ''} - Escort ${location} | SexElite`
+  const desc = description || `Découvrez le profil de ${username} sur SexElite.eu`
 
   return {
     title,
-    description,
+    description: desc,
     openGraph: {
       title,
-      description,
+      description: desc,
       type: 'profile',
       url: `https://www.sexelite.eu/ads/${params.id}`,
       images: [
@@ -69,12 +76,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     twitter: {
       card: 'summary_large_image',
       title,
-      description,
+      description: desc,
       images: [photo],
     },
   }
 }
 
-export default function AdLayout({ children }: Props) {
-  return children
+export default async function AdLayout({ params, children }: Props) {
+  const data = await getAdData(params.id)
+
+  // H1 SEO visible par les crawlers mais caché visuellement (le composant client affiche son propre H1 stylisé)
+  const h1Text = data
+    ? `${data.username}${data.age ? `, ${data.age} ans` : ''} - Escort ${data.location}`
+    : 'Escort de luxe'
+
+  return (
+    <>
+      {/* H1 SEO - visible par les crawlers, caché visuellement car le composant client a son propre H1 stylisé */}
+      <h1 className="sr-only">{h1Text}</h1>
+      {children}
+    </>
+  )
 }
