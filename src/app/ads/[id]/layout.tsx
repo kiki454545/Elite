@@ -12,16 +12,10 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
+  // Récupérer l'annonce
   const { data: ad } = await supabase
     .from('ads')
-    .select(`
-      id,
-      title,
-      description,
-      location,
-      photos,
-      profiles!inner(username, age)
-    `)
+    .select('id, title, description, location, photos, user_id')
     .eq('id', params.id)
     .single()
 
@@ -32,8 +26,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     }
   }
 
-  // profiles peut être un objet ou un tableau selon la relation
-  const profile = Array.isArray(ad.profiles) ? ad.profiles[0] : ad.profiles
+  // Récupérer le profil séparément
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('username, age')
+    .eq('id', ad.user_id)
+    .single()
+
   const username = profile?.username || 'Escort'
   const age = profile?.age || ''
   const location = ad.location || 'Europe'
