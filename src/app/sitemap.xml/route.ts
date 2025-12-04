@@ -19,7 +19,6 @@ export async function GET() {
     { loc: 'https://www.sexelite.eu/shop', changefreq: 'monthly', priority: '0.6' },
     { loc: 'https://www.sexelite.eu/terms', changefreq: 'monthly', priority: '0.4' },
     { loc: 'https://www.sexelite.eu/privacy', changefreq: 'monthly', priority: '0.4' },
-    { loc: 'https://www.sexelite.eu/contact', changefreq: 'monthly', priority: '0.4' },
   ]
 
   // Récupérer toutes les annonces approuvées
