@@ -9,14 +9,12 @@ export async function GET() {
 
   const today = new Date().toISOString().split('T')[0]
 
-  // Pages statiques
+  // Pages statiques (uniquement les pages à indexer)
   const staticPages = [
     { loc: 'https://www.sexelite.eu', changefreq: 'daily', priority: '1.0' },
     { loc: 'https://www.sexelite.eu/search', changefreq: 'hourly', priority: '0.9' },
     { loc: 'https://www.sexelite.eu/top-week', changefreq: 'daily', priority: '0.9' },
     { loc: 'https://www.sexelite.eu/premium', changefreq: 'weekly', priority: '0.8' },
-    { loc: 'https://www.sexelite.eu/auth', changefreq: 'monthly', priority: '0.7' },
-    { loc: 'https://www.sexelite.eu/shop', changefreq: 'monthly', priority: '0.6' },
     { loc: 'https://www.sexelite.eu/terms', changefreq: 'monthly', priority: '0.4' },
     { loc: 'https://www.sexelite.eu/privacy', changefreq: 'monthly', priority: '0.4' },
   ]
