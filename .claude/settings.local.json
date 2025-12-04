@@ -27,7 +27,8 @@
       "Bash(npm init:*)",
       "Bash(set SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVwZnNncHpjdmR2dHV5Z3dhaXpkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0Mjc1NzQ0NSwiZXhwIjoyMDU4MzMzNDQ1fQ.v3FThSPjLGdKwJUFLvFGSBhNb4atyb37qYRf-qgwFC8:*)",
       "Bash(node import-with-photos.mjs:*)",
-      "Bash(node scripts/find-duplicates.js:*)"
+      "Bash(node scripts/find-duplicates.js:*)",
+      "Bash(SexElite\"\n- Description dynamique basée sur le contenu de l''''annonce\n- Métadonnées OpenGraph et Twitter pour le partage social\n- Corrige le problème des 499 titres en doublon détecté par SE Ranking\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
