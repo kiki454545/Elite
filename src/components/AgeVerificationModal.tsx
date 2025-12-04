@@ -4,11 +4,32 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Shield, AlertTriangle, Check } from 'lucide-react'
 
+// Liste des user-agents de bots/crawlers à ne pas bloquer
+const BOT_USER_AGENTS = [
+  'googlebot', 'bingbot', 'yandex', 'baiduspider', 'duckduckbot',
+  'slurp', 'facebookexternalhit', 'linkedinbot', 'twitterbot',
+  'applebot', 'msnbot', 'teoma', 'ia_archiver', 'semrush',
+  'ahrefsbot', 'mj12bot', 'dotbot', 'rogerbot', 'seznambot',
+  'pinterest', 'embedly', 'quora', 'outbrain', 'vkshare',
+  'w3c_validator', 'lighthouse', 'chrome-lighthouse', 'pagespeed'
+]
+
+function isBot(): boolean {
+  if (typeof window === 'undefined') return false
+  const userAgent = window.navigator.userAgent.toLowerCase()
+  return BOT_USER_AGENTS.some(bot => userAgent.includes(bot))
+}
+
 export function AgeVerificationModal() {
   const [isVisible, setIsVisible] = useState(false)
   const [isConfirming, setIsConfirming] = useState(false)
 
   useEffect(() => {
+    // Ne pas afficher le modal pour les bots (SEO)
+    if (isBot()) {
+      return
+    }
+
     // Vérifier si l'utilisateur a déjà confirmé son âge
     const ageVerified = localStorage.getItem('ageVerified')
     if (!ageVerified) {
