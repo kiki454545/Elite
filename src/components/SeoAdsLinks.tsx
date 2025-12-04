@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { unstable_cache } from 'next/cache'
+import { CITY_SEO_DATA } from '@/lib/citySeoData'
 
 // Composant Server pour générer des liens internes vers les annonces (SEO)
 // Ces liens sont visibles par les crawlers mais cachés visuellement
@@ -54,19 +55,38 @@ export async function SeoAdsLinks() {
     return null
   }
 
+  // Récupérer toutes les villes pour les liens SEO
+  const cities = Object.entries(CITY_SEO_DATA)
+
   return (
-    // Liens SEO - visibles par les crawlers, cachés visuellement
-    <nav className="sr-only" aria-label="Toutes les annonces">
-      <h2>Annonces d&apos;escorts disponibles</h2>
-      <ul>
-        {ads.map(ad => (
-          <li key={ad.id}>
-            <a href={`/ads/${ad.id}`}>
-              {ad.title} - Escort {ad.location}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </nav>
+    <>
+      {/* Liens SEO vers les pages de villes */}
+      <nav className="sr-only" aria-label="Escorts par ville">
+        <h2>Escorts par ville en France, Belgique et Suisse</h2>
+        <ul>
+          {cities.map(([slug, city]) => (
+            <li key={slug}>
+              <a href={`/escort/${slug}`}>
+                Escort {city.name} - Escort girl {city.name} - Accompagnatrices {city.name}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      {/* Liens SEO vers les annonces individuelles */}
+      <nav className="sr-only" aria-label="Toutes les annonces">
+        <h2>Annonces d&apos;escorts disponibles</h2>
+        <ul>
+          {ads.map(ad => (
+            <li key={ad.id}>
+              <a href={`/ads/${ad.id}`}>
+                {ad.title} - Escort {ad.location}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </>
   )
 }

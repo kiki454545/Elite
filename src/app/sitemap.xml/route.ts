@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { CITY_SEO_DATA } from '@/lib/citySeoData'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -14,10 +15,18 @@ export async function GET() {
     { loc: 'https://www.sexelite.eu', changefreq: 'daily', priority: '1.0' },
     { loc: 'https://www.sexelite.eu/search', changefreq: 'hourly', priority: '0.9' },
     { loc: 'https://www.sexelite.eu/top-week', changefreq: 'daily', priority: '0.9' },
+    { loc: 'https://www.sexelite.eu/top-50', changefreq: 'daily', priority: '0.9' },
     { loc: 'https://www.sexelite.eu/premium', changefreq: 'weekly', priority: '0.8' },
     { loc: 'https://www.sexelite.eu/terms', changefreq: 'monthly', priority: '0.4' },
     { loc: 'https://www.sexelite.eu/privacy', changefreq: 'monthly', priority: '0.4' },
   ]
+
+  // Pages de villes (SEO)
+  const cityPages = Object.keys(CITY_SEO_DATA).map(slug => ({
+    loc: `https://www.sexelite.eu/escort/${slug}`,
+    changefreq: 'daily',
+    priority: '0.8'
+  }))
 
   // Récupérer toutes les annonces approuvées
   const { data: ads } = await supabase
@@ -32,6 +41,16 @@ export async function GET() {
 
   // Ajouter les pages statiques
   for (const page of staticPages) {
+    xml += '  <url>\n'
+    xml += `    <loc>${page.loc}</loc>\n`
+    xml += `    <lastmod>${today}</lastmod>\n`
+    xml += `    <changefreq>${page.changefreq}</changefreq>\n`
+    xml += `    <priority>${page.priority}</priority>\n`
+    xml += '  </url>\n'
+  }
+
+  // Ajouter les pages de villes
+  for (const page of cityPages) {
     xml += '  <url>\n'
     xml += `    <loc>${page.loc}</loc>\n`
     xml += `    <lastmod>${today}</lastmod>\n`
