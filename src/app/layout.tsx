@@ -20,6 +20,27 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: 'SexElite - Plateforme N°1 d\'Escorts et Libertines en Europe',
     description,
+    keywords: [
+      'escort', 'escorts', 'escort girl', 'escort France', 'escort Paris', 'escort Lyon',
+      'escort Marseille', 'escort Belgique', 'escort Bruxelles', 'escort Suisse', 'escort Genève',
+      'libertine', 'libertines', 'annonces escort', 'escort de luxe', 'escort VIP',
+      'rencontre escort', 'escort Europe', 'escort indépendante', 'escort trans',
+      'massage sensuel', 'accompagnatrice', 'escort premium', 'profils vérifiés'
+    ],
+    authors: [{ name: 'SexElite' }],
+    creator: 'SexElite',
+    publisher: 'SexElite',
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+      },
+    },
+    alternates: {
+      canonical: 'https://www.sexelite.eu',
+    },
     icons: {
       icon: [
         { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
@@ -35,6 +56,8 @@ export async function generateMetadata(): Promise<Metadata> {
       description,
       type: 'website',
       url: 'https://www.sexelite.eu',
+      siteName: 'SexElite',
+      locale: 'fr_FR',
       images: [
         {
           url: 'https://www.sexelite.eu/apple-touch-icon.png',
