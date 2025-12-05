@@ -1,12 +1,20 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
-import { ArrowLeft, MapPin, Calendar, ExternalLink, RefreshCw } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { ArrowLeft, MapPin, Calendar, ExternalLink, RefreshCw, Pencil, X, Check } from 'lucide-react'
 import { Header } from '@/components/Header'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
+import { CITIES_BY_COUNTRY } from '@/data/cities'
+
+// Toutes les villes disponibles (FR, BE, CH)
+const ALL_CITIES = [
+  ...CITIES_BY_COUNTRY.FR,
+  ...CITIES_BY_COUNTRY.BE,
+  ...CITIES_BY_COUNTRY.CH
+]
 
 interface CityUpdate {
   id: string
@@ -24,6 +32,19 @@ export default function AdminUpdatesPage() {
   const [isAdmin, setIsAdmin] = useState(false)
   const [updates, setUpdates] = useState<CityUpdate[]>([])
   const [loadingData, setLoadingData] = useState(true)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editCity, setEditCity] = useState('')
+  const [citySearch, setCitySearch] = useState('')
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const [savingCity, setSavingCity] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  // Filtrer les villes pour l'autocomplete
+  const filteredCities = citySearch.length >= 2
+    ? ALL_CITIES.filter(city =>
+        city.toLowerCase().includes(citySearch.toLowerCase())
+      ).slice(0, 15)
+    : []
 
   useEffect(() => {
     async function checkAdmin() {
@@ -79,6 +100,65 @@ export default function AdminUpdatesPage() {
       hour: '2-digit',
       minute: '2-digit'
     })
+  }
+
+  function startEditing(update: CityUpdate) {
+    setEditingId(update.id)
+    setEditCity(update.new_city)
+    setCitySearch(update.new_city)
+    setShowSuggestions(false)
+    setTimeout(() => inputRef.current?.focus(), 100)
+  }
+
+  function cancelEditing() {
+    setEditingId(null)
+    setEditCity('')
+    setCitySearch('')
+    setShowSuggestions(false)
+  }
+
+  function selectCity(city: string) {
+    setEditCity(city)
+    setCitySearch(city)
+    setShowSuggestions(false)
+  }
+
+  async function saveCity(update: CityUpdate) {
+    if (!editCity.trim() || editCity === update.new_city) {
+      cancelEditing()
+      return
+    }
+
+    setSavingCity(true)
+    try {
+      // Mettre à jour l'annonce
+      const { error: adError } = await supabase
+        .from('ads')
+        .update({ location: editCity.trim() })
+        .eq('id', update.ad_id)
+
+      if (adError) throw adError
+
+      // Mettre à jour le log
+      const { error: logError } = await supabase
+        .from('city_updates_log')
+        .update({ new_city: editCity.trim() })
+        .eq('id', update.id)
+
+      if (logError) throw logError
+
+      // Mettre à jour l'état local
+      setUpdates(prev => prev.map(u =>
+        u.id === update.id ? { ...u, new_city: editCity.trim() } : u
+      ))
+
+      cancelEditing()
+    } catch (error) {
+      console.error('Erreur sauvegarde ville:', error)
+      alert('Erreur lors de la sauvegarde')
+    } finally {
+      setSavingCity(false)
+    }
   }
 
   if (loading || !isAdmin) {
@@ -184,7 +264,73 @@ export default function AdminUpdatesPage() {
                       <div className="flex items-center gap-2 text-sm">
                         <span className="text-red-400 line-through">{update.old_city}</span>
                         <span className="text-gray-500">→</span>
-                        <span className="text-green-400 font-medium">{update.new_city}</span>
+                        {editingId === update.id ? (
+                          <div className="relative flex items-center gap-2">
+                            <div className="relative">
+                              <input
+                                ref={inputRef}
+                                type="text"
+                                value={citySearch}
+                                onChange={(e) => {
+                                  setCitySearch(e.target.value)
+                                  setEditCity(e.target.value)
+                                  setShowSuggestions(true)
+                                }}
+                                onFocus={() => setShowSuggestions(true)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') saveCity(update)
+                                  if (e.key === 'Escape') cancelEditing()
+                                }}
+                                className="w-48 px-2 py-1 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:outline-none focus:border-pink-500"
+                                placeholder="Rechercher une ville..."
+                              />
+                              <AnimatePresence>
+                                {showSuggestions && filteredCities.length > 0 && (
+                                  <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    className="absolute z-50 top-full left-0 mt-1 w-full bg-gray-800 border border-gray-700 rounded-lg shadow-xl max-h-48 overflow-y-auto"
+                                  >
+                                    {filteredCities.map((city) => (
+                                      <button
+                                        key={city}
+                                        onClick={() => selectCity(city)}
+                                        className="w-full px-3 py-2 text-left text-sm text-white hover:bg-gray-700 transition-colors"
+                                      >
+                                        {city}
+                                      </button>
+                                    ))}
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                            <button
+                              onClick={() => saveCity(update)}
+                              disabled={savingCity}
+                              className="p-1 bg-green-600 hover:bg-green-500 rounded transition-colors disabled:opacity-50"
+                            >
+                              <Check className="w-4 h-4 text-white" />
+                            </button>
+                            <button
+                              onClick={cancelEditing}
+                              className="p-1 bg-gray-600 hover:bg-gray-500 rounded transition-colors"
+                            >
+                              <X className="w-4 h-4 text-white" />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <span className="text-green-400 font-medium">{update.new_city}</span>
+                            <button
+                              onClick={() => startEditing(update)}
+                              className="p-1 text-gray-400 hover:text-pink-400 transition-colors"
+                              title="Modifier la ville"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2 text-gray-400 text-sm">

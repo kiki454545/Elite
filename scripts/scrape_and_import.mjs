@@ -30,6 +30,21 @@ if (!url) {
   process.exit(1)
 }
 
+// Fonction pour demander une entrée simple à l'utilisateur
+function askUser(question) {
+  return new Promise((resolve) => {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+    })
+
+    rl.question(question, (answer) => {
+      rl.close()
+      resolve(answer.trim())
+    })
+  })
+}
+
 // Fonction pour demander la description à l'utilisateur
 function askDescription() {
   return new Promise((resolve) => {
@@ -109,14 +124,21 @@ async function scrapeWithFetch(url) {
       }
     }
 
-    // Extraire la ville
-    let location = 'France'
-    const cities = ['Marseille', 'Paris', 'Lyon', 'Nice', 'Toulouse', 'Bordeaux', 'Lille', 'Nantes', 'Strasbourg', 'Montpellier', 'Rennes', 'Reims', 'Le Havre', 'Saint-Étienne', 'Toulon', 'Grenoble', 'Dijon', 'Angers', 'Nîmes', 'Villeurbanne', 'Clermont-Ferrand', 'Le Mans', 'Aix-en-Provence', 'Brest', 'Tours', 'Amiens', 'Limoges', 'Annecy', 'Perpignan', 'Boulogne-Billancourt', 'Metz', 'Besançon', 'Orléans', 'Rouen', 'Mulhouse', 'Caen', 'Nancy', 'Saint-Denis', 'Argenteuil', 'Montreuil']
-    for (const city of cities) {
-      if (html.includes(city)) {
-        location = city
-        break
-      }
+    // Extraire la ville UNIQUEMENT depuis "Ville de base:" sur sexemodel
+    // Structure: <dt>Ville de base:</dt><dd><a href="/escorts/ville/">Ville</a></dd>
+    let location = null
+
+    // Pattern EXACT pour sexemodel: "Ville de base:" suivi du lien avec la ville
+    const villeDeBaseMatch = html.match(/<dt>Ville de base:?<\/dt>\s*<dd>\s*<a[^>]*>([^<]+)<\/a>/i)
+    if (villeDeBaseMatch) {
+      location = villeDeBaseMatch[1].trim()
+      // Capitaliser la première lettre
+      location = location.charAt(0).toUpperCase() + location.slice(1).toLowerCase()
+      console.log(`   🏙️ Ville de base trouvée: ${location}`)
+    } else {
+      // Si pas trouvé, on ne met PAS de ville (erreur ou page 404)
+      console.log(`   ❌ "Ville de base:" non trouvée - la ville ne sera pas modifiée`)
+      return { username, needsManualInput: true, error: 'Ville de base non trouvée' }
     }
 
     // Extraire le téléphone
