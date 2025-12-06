@@ -69,6 +69,46 @@ function filterBotIps(data: { ip_address: string }[] | null): { ip_address: stri
   return data.filter(v => !isBotIp(v.ip_address))
 }
 
+// Fonction pour récupérer toutes les données avec pagination (Supabase limite à 1000 par défaut)
+async function fetchAllRows(
+  supabase: any,
+  table: string,
+  selectColumns: string,
+  filters?: { column: string; op: 'gte' | 'lt'; value: string }[]
+) {
+  const batchSize = 1000
+  let allData: any[] = []
+  let from = 0
+  let hasMore = true
+
+  while (hasMore) {
+    let query = supabase.from(table).select(selectColumns).range(from, from + batchSize - 1)
+
+    if (filters) {
+      for (const filter of filters) {
+        if (filter.op === 'gte') {
+          query = query.gte(filter.column, filter.value)
+        } else if (filter.op === 'lt') {
+          query = query.lt(filter.column, filter.value)
+        }
+      }
+    }
+
+    const { data, error } = await query
+    if (error) throw error
+
+    if (data && data.length > 0) {
+      allData = [...allData, ...data]
+      from += batchSize
+      hasMore = data.length === batchSize
+    } else {
+      hasMore = false
+    }
+  }
+
+  return allData
+}
+
 export async function GET(request: NextRequest) {
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -117,57 +157,39 @@ export async function GET(request: NextRequest) {
     tomorrow.setDate(tomorrow.getDate() + 1)
     const tomorrowStr = tomorrow.toISOString()
 
-    // Récupérer toutes les stats en parallèle
+    // Récupérer toutes les stats avec pagination
     const [
-      totalUniqueResult,
-      totalVisitsResult,
-      todayUniqueResult,
-      todayTotalResult,
-      yesterdayUniqueResult,
-      yesterdayTotalResult,
-      last7DaysResult
+      totalUniqueData,
+      todayUniqueData,
+      yesterdayUniqueData,
+      last7DaysData
     ] = await Promise.all([
       // Total visiteurs uniques (toutes périodes)
-      supabase.from('visitor_stats').select('ip_address'),
-
-      // Total de visites
-      supabase.from('visitor_stats').select('id', { count: 'exact', head: true }),
+      fetchAllRows(supabase, 'visitor_stats', 'ip_address'),
 
       // Visiteurs uniques aujourd'hui
-      supabase.from('visitor_stats')
-        .select('ip_address')
-        .gte('visited_at', todayStr)
-        .lt('visited_at', tomorrowStr),
-
-      // Total visites aujourd'hui
-      supabase.from('visitor_stats')
-        .select('id', { count: 'exact', head: true })
-        .gte('visited_at', todayStr)
-        .lt('visited_at', tomorrowStr),
+      fetchAllRows(supabase, 'visitor_stats', 'ip_address', [
+        { column: 'visited_at', op: 'gte', value: todayStr },
+        { column: 'visited_at', op: 'lt', value: tomorrowStr }
+      ]),
 
       // Visiteurs uniques hier
-      supabase.from('visitor_stats')
-        .select('ip_address')
-        .gte('visited_at', yesterdayStr)
-        .lt('visited_at', todayStr),
-
-      // Total visites hier
-      supabase.from('visitor_stats')
-        .select('id', { count: 'exact', head: true })
-        .gte('visited_at', yesterdayStr)
-        .lt('visited_at', todayStr),
+      fetchAllRows(supabase, 'visitor_stats', 'ip_address', [
+        { column: 'visited_at', op: 'gte', value: yesterdayStr },
+        { column: 'visited_at', op: 'lt', value: todayStr }
+      ]),
 
       // Données des 7 derniers jours pour le graphique
-      supabase.from('visitor_stats')
-        .select('ip_address, visited_at')
-        .gte('visited_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+      fetchAllRows(supabase, 'visitor_stats', 'ip_address, visited_at', [
+        { column: 'visited_at', op: 'gte', value: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() }
+      ])
     ])
 
     // Filtrer les bots et calculer les visiteurs uniques (dédupliquer par IP)
-    const filteredTotal = filterBotIps(totalUniqueResult.data)
-    const filteredToday = filterBotIps(todayUniqueResult.data)
-    const filteredYesterday = filterBotIps(yesterdayUniqueResult.data)
-    const filteredLast7Days = filterBotIps(last7DaysResult.data?.map(v => ({ ip_address: v.ip_address, visited_at: v.visited_at })) || [])
+    const filteredTotal = filterBotIps(totalUniqueData)
+    const filteredToday = filterBotIps(todayUniqueData)
+    const filteredYesterday = filterBotIps(yesterdayUniqueData)
+    const filteredLast7Days = filterBotIps(last7DaysData)
 
     const totalUniqueIps = new Set(filteredTotal.map(v => v.ip_address))
     const todayUniqueIps = new Set(filteredToday.map(v => v.ip_address))
@@ -181,7 +203,7 @@ export async function GET(request: NextRequest) {
       date.setHours(0, 0, 0, 0)
       const dateStr = date.toISOString().split('T')[0]
 
-      const dayVisits = (last7DaysResult.data || []).filter(v => {
+      const dayVisits = last7DaysData.filter((v: any) => {
         if (isBotIp(v.ip_address)) return false
         const visitDate = new Date(v.visited_at).toISOString().split('T')[0]
         return visitDate === dateStr
