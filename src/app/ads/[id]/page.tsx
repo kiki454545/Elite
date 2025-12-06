@@ -810,6 +810,7 @@ export default function AdDetailPage() {
 
         {/* Availability & Contact - Combined */}
         <motion.div
+          id="availability-contact"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
@@ -1070,30 +1071,16 @@ export default function AdDetailPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7 }}
             whileTap={{ scale: 0.98 }}
-            onClick={handleContact}
-            disabled={isCreatingConversation}
-            className={`w-full ${
-              ad.acceptsMessages === false
-                ? 'bg-gray-700 cursor-not-allowed'
-                : 'bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700'
-            } text-white py-4 rounded-2xl font-bold transition-all flex items-center justify-center gap-2 shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed`}
+            onClick={() => {
+              const element = document.getElementById('availability-contact')
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+              }
+            }}
+            className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white py-4 rounded-2xl font-bold transition-all flex items-center justify-center gap-2 shadow-2xl"
           >
-            {isCreatingConversation ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                {t('adDetailPage.creatingConversation')}
-              </>
-            ) : ad.acceptsMessages === false ? (
-              <>
-                <X className="w-5 h-5" />
-                {t('adDetailPage.privateMessagesDisabled')}
-              </>
-            ) : (
-              <>
-                <MessageCircle className="w-5 h-5" />
-                {t('buttons.contact')}
-              </>
-            )}
+            <MessageCircle className="w-5 h-5" />
+            {t('buttons.contact')}
           </motion.button>
         </div>
       </div>
