@@ -5,7 +5,8 @@
       "Bash(git add:*)",
       "Bash(git commit -m \"$(cat <<''EOF''\nfeat: Améliorer la page Updates admin avec édition de ville\n\n- Ajouter bouton stylo pour modifier la ville directement\n- Autocomplete avec toutes les villes FR/BE/CH disponibles\n- Correction du pattern d''extraction pour scrape_and_import.mjs\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(git push)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nfix: Corriger limite 1000 sur les statistiques visiteurs\n\n- Ajouter pagination pour récupérer toutes les données visitor_stats\n- Supabase limitait à 1000 résultats par défaut\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+      "Bash(git commit -m \"$(cat <<''EOF''\nfix: Corriger limite 1000 sur les statistiques visiteurs\n\n- Ajouter pagination pour récupérer toutes les données visitor_stats\n- Supabase limitait à 1000 résultats par défaut\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []

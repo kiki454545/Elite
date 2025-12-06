@@ -309,16 +309,34 @@ export default function AdminPage() {
   async function loadTickets() {
     try {
       setTicketsLoading(true)
-      const { data, error } = await supabase
-        .from('support_tickets')
-        .select('*')
-        .order('created_at', { ascending: true })
 
-      if (error) throw error
+      // Pagination pour éviter la limite de 1000
+      const batchSize = 1000
+      let allTickets: any[] = []
+      let from = 0
+      let hasMore = true
+
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from('support_tickets')
+          .select('*')
+          .order('created_at', { ascending: true })
+          .range(from, from + batchSize - 1)
+
+        if (error) throw error
+
+        if (data && data.length > 0) {
+          allTickets = [...allTickets, ...data]
+          from += batchSize
+          hasMore = data.length === batchSize
+        } else {
+          hasMore = false
+        }
+      }
 
       // Charger les infos utilisateur pour chaque ticket avec le rang
       const ticketsWithUsers = await Promise.all(
-        (data || []).map(async (ticket) => {
+        allTickets.map(async (ticket) => {
           const { data: userData } = await supabase
             .from('profiles')
             .select('username, rank')
@@ -364,16 +382,35 @@ export default function AdminPage() {
   async function loadVerificationRequests() {
     try {
       setVerificationLoading(true)
-      const { data, error } = await supabase
-        .from('verification_requests')
-        .select(`
-          *,
-          user:profiles!verification_requests_user_id_fkey(username)
-        `)
-        .order('created_at', { ascending: false })
 
-      if (error) throw error
-      setVerificationRequests(data || [])
+      // Pagination pour éviter la limite de 1000
+      const batchSize = 1000
+      let allRequests: any[] = []
+      let from = 0
+      let hasMore = true
+
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from('verification_requests')
+          .select(`
+            *,
+            user:profiles!verification_requests_user_id_fkey(username)
+          `)
+          .order('created_at', { ascending: false })
+          .range(from, from + batchSize - 1)
+
+        if (error) throw error
+
+        if (data && data.length > 0) {
+          allRequests = [...allRequests, ...data]
+          from += batchSize
+          hasMore = data.length === batchSize
+        } else {
+          hasMore = false
+        }
+      }
+
+      setVerificationRequests(allRequests)
     } catch (error) {
       console.error('Erreur lors du chargement des demandes de vérification:', error)
     } finally {
@@ -815,16 +852,34 @@ export default function AdminPage() {
   async function loadReports() {
     try {
       setReportsLoading(true)
-      const { data, error } = await supabase
-        .from('reports')
-        .select('*')
-        .order('created_at', { ascending: false })
 
-      if (error) throw error
+      // Pagination pour éviter la limite de 1000
+      const batchSize = 1000
+      let allReports: any[] = []
+      let from = 0
+      let hasMore = true
+
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from('reports')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .range(from, from + batchSize - 1)
+
+        if (error) throw error
+
+        if (data && data.length > 0) {
+          allReports = [...allReports, ...data]
+          from += batchSize
+          hasMore = data.length === batchSize
+        } else {
+          hasMore = false
+        }
+      }
 
       // Récupérer les infos des reporters et des profils/commentaires/messages signalés
       const reportsWithDetails = await Promise.all(
-        (data || []).map(async (report) => {
+        allReports.map(async (report) => {
           const { data: reporter } = await supabase
             .from('profiles')
             .select('username')
@@ -936,15 +991,33 @@ export default function AdminPage() {
   async function loadHistory() {
     try {
       setHistoryLoading(true)
-      const { data, error } = await supabase
-        .from('admin_history')
-        .select('*')
-        .order('created_at', { ascending: false })
 
-      if (error) throw error
+      // Pagination pour éviter la limite de 1000
+      const batchSize = 1000
+      let allHistory: any[] = []
+      let from = 0
+      let hasMore = true
 
-      console.log('📜 Historique chargé:', data?.map(d => ({ action_type: d.action_type, details: d.details })))
-      setHistory(data || [])
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from('admin_history')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .range(from, from + batchSize - 1)
+
+        if (error) throw error
+
+        if (data && data.length > 0) {
+          allHistory = [...allHistory, ...data]
+          from += batchSize
+          hasMore = data.length === batchSize
+        } else {
+          hasMore = false
+        }
+      }
+
+      console.log('📜 Historique chargé:', allHistory.map(d => ({ action_type: d.action_type, details: d.details })))
+      setHistory(allHistory)
     } catch (error) {
       console.error('Erreur lors du chargement de l\'historique:', error)
     } finally {
