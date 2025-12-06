@@ -97,24 +97,41 @@ export function PremiumGrid() {
       try {
         setLoading(true)
 
-        // Construire la requête en fonction du pays sélectionné
-        let query = supabase
-          .from('ads')
-          .select('*')
-          .eq('status', 'approved')
+        // Fonction pour charger toutes les annonces avec pagination (limite Supabase = 1000)
+        async function fetchAllAds() {
+          const batchSize = 1000
+          let allAds: any[] = []
+          let from = 0
+          let hasMore = true
 
-        // Si un pays spécifique est sélectionné (pas ALL)
-        if (selectedCountry.code !== 'ALL') {
-          query = query.eq('country', selectedCountry.code)
+          while (hasMore) {
+            let query = supabase
+              .from('ads')
+              .select('*')
+              .eq('status', 'approved')
+              .order('created_at', { ascending: false })
+              .range(from, from + batchSize - 1)
+
+            if (selectedCountry.code !== 'ALL') {
+              query = query.eq('country', selectedCountry.code)
+            }
+
+            const { data, error } = await query
+            if (error) throw error
+
+            if (data && data.length > 0) {
+              allAds = [...allAds, ...data]
+              from += batchSize
+              hasMore = data.length === batchSize
+            } else {
+              hasMore = false
+            }
+          }
+
+          return allAds
         }
 
-        const { data: ads, error: adsError} = await query.order('created_at', { ascending: false })
-
-        if (adsError) {
-          console.error('Erreur lors du chargement des annonces premium:', adsError)
-          setError(adsError.message)
-          return
-        }
+        const ads = await fetchAllAds()
 
         if (!ads || ads.length === 0) {
           setPremiumAds([])
