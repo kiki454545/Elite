@@ -1019,6 +1019,41 @@ export default function AdDetailPage() {
                   </svg>
                 </a>
               )}
+
+              {/* Bouton Envoyer un message sur le site */}
+              <button
+                onClick={handleContact}
+                disabled={isCreatingConversation || ad.acceptsMessages === false}
+                className={`w-full rounded-lg p-4 border transition-all flex items-center gap-3 group ${
+                  ad.acceptsMessages === false
+                    ? 'bg-gray-800/50 border-gray-700/50 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-pink-500/30 hover:border-pink-500/50'
+                }`}
+              >
+                <div className={`p-2 rounded-lg ${ad.acceptsMessages === false ? 'bg-gray-700/50' : 'bg-pink-500/20'}`}>
+                  {isCreatingConversation ? (
+                    <Loader2 className="w-5 h-5 text-pink-500 animate-spin" />
+                  ) : (
+                    <MessageCircle className={`w-5 h-5 ${ad.acceptsMessages === false ? 'text-gray-500' : 'text-pink-500'}`} />
+                  )}
+                </div>
+                <div className="flex-1 text-left">
+                  <p className={`font-semibold transition-colors ${ad.acceptsMessages === false ? 'text-gray-500' : 'text-white group-hover:text-pink-400'}`}>
+                    {language === 'fr' ? 'Envoyer un message' : 'Send a message'}
+                  </p>
+                  <p className="text-gray-400 text-xs">
+                    {ad.acceptsMessages === false
+                      ? (language === 'fr' ? 'Messages privés désactivés' : 'Private messages disabled')
+                      : (language === 'fr' ? 'Contacter via SexElite.eu' : 'Contact via SexElite.eu')
+                    }
+                  </p>
+                </div>
+                {ad.acceptsMessages !== false && (
+                  <svg className="w-5 h-5 text-gray-400 group-hover:text-pink-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                )}
+              </button>
             </div>
           </div>
         </motion.div>
