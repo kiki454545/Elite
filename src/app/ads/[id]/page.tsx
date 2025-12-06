@@ -916,10 +916,17 @@ export default function AdDetailPage() {
                           </span>
                         )}
                         {ad.contactInfo.acceptsSMS && (
-                          <span className="text-xs bg-gray-700 px-2 py-1 rounded flex items-center gap-1 text-gray-300">
+                          <button
+                            onClick={() => {
+                              const phone = ad.contactInfo?.phone?.replace(/[^0-9+]/g, '') || ''
+                              const message = encodeURIComponent(`Bonjour ${ad.username}, je vous contacte suite à votre annonce sur SexElite.eu`)
+                              window.location.href = `sms:${phone}?body=${message}`
+                            }}
+                            className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded flex items-center gap-1 hover:bg-blue-500/30 transition-colors cursor-pointer"
+                          >
                             <MessageCircle className="w-3 h-3" />
                             {t('adDetailPage.sms')}
-                          </span>
+                          </button>
                         )}
                         {ad.contactInfo.whatsapp && (
                           <button
