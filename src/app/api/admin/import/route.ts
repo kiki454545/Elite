@@ -177,7 +177,7 @@ export async function POST(request: NextRequest) {
       availability_hours: '00:00 - 23:59',
       incall: data.incall !== false,
       outcall: data.outcall || false,
-      views: 0,
+      views: Math.floor(Math.random() * (1500 - 100 + 1)) + 100,
       weekly_views: 0,
       favorites_count: 0,
       status: 'approved',
