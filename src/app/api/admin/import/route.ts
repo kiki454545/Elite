@@ -17,17 +17,31 @@ const EMAIL_PREFIX = 'escorte'
 const EMAIL_DOMAIN = '@gmail.com'
 
 async function getNextEmailNumber(supabaseAdmin: ReturnType<typeof getSupabaseAdmin>) {
-  const { data: users } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 })
-
   let maxNumber = 0
   const emailRegex = new RegExp(`^${EMAIL_PREFIX}(\\d+)${EMAIL_DOMAIN.replace('.', '\\.')}$`, 'i')
 
-  for (const user of users?.users || []) {
-    const match = user.email?.match(emailRegex)
-    if (match) {
-      const num = parseInt(match[1])
-      if (num > maxNumber) maxNumber = num
+  let page = 1
+  const perPage = 1000
+  let hasMore = true
+
+  while (hasMore) {
+    const { data: users } = await supabaseAdmin.auth.admin.listUsers({ page, perPage })
+
+    if (!users?.users || users.users.length === 0) {
+      hasMore = false
+      break
     }
+
+    for (const user of users.users) {
+      const match = user.email?.match(emailRegex)
+      if (match) {
+        const num = parseInt(match[1])
+        if (num > maxNumber) maxNumber = num
+      }
+    }
+
+    hasMore = users.users.length === perPage
+    page++
   }
 
   return maxNumber + 1
