@@ -20,6 +20,7 @@ async function getNextEmailNumber(supabaseAdmin: ReturnType<typeof getSupabaseAd
   let maxNumber = 0
   const emailRegex = new RegExp(`^${EMAIL_PREFIX}(\\d+)${EMAIL_DOMAIN.replace('.', '\\.')}$`, 'i')
 
+  // 1. Vérifier dans auth.users
   let page = 1
   const perPage = 1000
   let hasMore = true
@@ -42,6 +43,35 @@ async function getNextEmailNumber(supabaseAdmin: ReturnType<typeof getSupabaseAd
 
     hasMore = users.users.length === perPage
     page++
+  }
+
+  // 2. Vérifier aussi dans la table profiles (au cas où il y a des orphelins)
+  let from = 0
+  const batchSize = 1000
+  hasMore = true
+
+  while (hasMore) {
+    const { data: profiles } = await supabaseAdmin
+      .from('profiles')
+      .select('email')
+      .like('email', `${EMAIL_PREFIX}%${EMAIL_DOMAIN}`)
+      .range(from, from + batchSize - 1)
+
+    if (!profiles || profiles.length === 0) {
+      hasMore = false
+      break
+    }
+
+    for (const profile of profiles) {
+      const match = profile.email?.match(emailRegex)
+      if (match) {
+        const num = parseInt(match[1])
+        if (num > maxNumber) maxNumber = num
+      }
+    }
+
+    hasMore = profiles.length === batchSize
+    from += batchSize
   }
 
   return maxNumber + 1
