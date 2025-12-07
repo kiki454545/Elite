@@ -27,13 +27,6 @@ export function useAds(country?: string, city?: string) {
       setLoading(true)
       setError(null)
 
-      // 1. Récupérer les annonces
-      let adsQuery = supabase
-        .from('ads')
-        .select('*')
-        .eq('status', 'approved')
-        .order('created_at', { ascending: false })
-
       // Filtrer par pays (obligatoire)
       if (!country) {
         setAds([])
@@ -41,50 +34,75 @@ export function useAds(country?: string, city?: string) {
         return
       }
 
-      adsQuery = adsQuery.eq('country', country)
+      // 1. Récupérer les annonces avec pagination (limite Supabase 1000)
+      const batchSize = 1000
+      let allAdsData: any[] = []
+      let from = 0
+      let hasMore = true
 
-      // Filtrer par ville si spécifié
-      if (city) {
-        adsQuery = adsQuery.eq('location', city)
+      while (hasMore) {
+        let adsQuery = supabase
+          .from('ads')
+          .select('*')
+          .eq('status', 'approved')
+          .eq('country', country)
+          .order('created_at', { ascending: false })
+          .range(from, from + batchSize - 1)
+
+        // Filtrer par ville si spécifié
+        if (city) {
+          adsQuery = adsQuery.eq('location', city)
+        }
+
+        const { data: adsData, error: adsError } = await adsQuery
+
+        if (adsError) {
+          console.error('Erreur Supabase complète:', adsError)
+          throw new Error(`${adsError.message} (Code: ${adsError.code})`)
+        }
+
+        if (!adsData || adsData.length === 0) {
+          hasMore = false
+          break
+        }
+
+        allAdsData = [...allAdsData, ...adsData]
+        hasMore = adsData.length === batchSize
+        from += batchSize
       }
 
-      const { data: adsData, error: adsError } = await adsQuery
-
-      if (adsError) {
-        console.error('Erreur Supabase complète:', adsError)
-        throw new Error(`${adsError.message} (Code: ${adsError.code})`)
-      }
-
-      if (!adsData || adsData.length === 0) {
+      if (allAdsData.length === 0) {
         setAds([])
         return
       }
 
-      // 2. Récupérer les profils des utilisateurs
-      const userIds = adsData.map(ad => ad.user_id)
-      console.log('🔍 Recherche des profils pour user_ids:', userIds)
+      // 2. Récupérer les profils des utilisateurs avec pagination par lots
+      const userIds = [...new Set(allAdsData.map(ad => ad.user_id))] // Unique IDs
+      console.log('🔍 Recherche des profils pour', userIds.length, 'users')
 
-      const { data: profilesData, error: profilesError} = await supabase
-        .from('profiles')
-        .select('id, username, age, rank')
-        .in('id', userIds)
-
-      if (profilesError) {
-        console.error('❌ Erreur lors de la récupération des profils:', profilesError)
-      } else {
-        console.log('✅ Profils récupérés:', profilesData)
-      }
-
-      // 3. Créer un map des profils par id
       const profilesMap = new Map()
-      if (profilesData) {
-        profilesData.forEach(profile => {
-          profilesMap.set(profile.id, profile)
-        })
+      const profileBatchSize = 500 // Supabase limite les IN queries
+
+      for (let i = 0; i < userIds.length; i += profileBatchSize) {
+        const batchIds = userIds.slice(i, i + profileBatchSize)
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, username, age, rank')
+          .in('id', batchIds)
+
+        if (profilesError) {
+          console.error('❌ Erreur lors de la récupération des profils:', profilesError)
+        } else if (profilesData) {
+          profilesData.forEach(profile => {
+            profilesMap.set(profile.id, profile)
+          })
+        }
       }
 
-      // 4. Transformer les données
-      const transformedAds: Ad[] = adsData.map((ad: any) => {
+      console.log('✅ Profils récupérés:', profilesMap.size)
+
+      // 3. Transformer les données
+      const transformedAds: Ad[] = allAdsData.map((ad: any) => {
         const profile = profilesMap.get(ad.user_id)
         return {
           id: ad.id,
