@@ -75,6 +75,9 @@ export default function AdminImportPage() {
   const [editingPhone, setEditingPhone] = useState(false)
   const [phoneValue, setPhoneValue] = useState('')
 
+  const [phoneExists, setPhoneExists] = useState(false)
+  const [existingAdUrl, setExistingAdUrl] = useState<string | null>(null)
+
   // Vérifier si l'utilisateur est admin
   useEffect(() => {
     async function checkAdmin() {
@@ -129,6 +132,8 @@ export default function AdminImportPage() {
       } else {
         setScrapedData(result.data)
         setPhoneValue(result.data.phone || '')
+        setPhoneExists(result.phoneExists || false)
+        setExistingAdUrl(result.existingAdUrl || null)
       }
     } catch (error: any) {
       setScrapeError(error.message)
@@ -263,6 +268,8 @@ export default function AdminImportPage() {
     setImportResult(null)
     setScrapeError('')
     setImportError('')
+    setPhoneExists(false)
+    setExistingAdUrl(null)
   }
 
   const copyToClipboard = (text: string) => {
@@ -458,6 +465,28 @@ export default function AdminImportPage() {
                   <p className="font-semibold">{scrapedData.hasWhatsapp ? 'Oui' : 'Non'}</p>
                 </div>
               </div>
+
+              {/* Avertissement numéro existant */}
+              {phoneExists && existingAdUrl && (
+                <div className="bg-orange-500/20 border border-orange-500/50 rounded-lg p-4 mb-6 flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-orange-400 font-semibold">Numéro déjà existant !</p>
+                    <p className="text-gray-300 text-sm mt-1">
+                      Ce numéro de téléphone est déjà associé à une annonce sur SexElite.
+                    </p>
+                    <a
+                      href={existingAdUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-orange-400 hover:text-orange-300 text-sm mt-2 underline"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      Voir l'annonce existante
+                    </a>
+                  </div>
+                </div>
+              )}
 
               {/* Description */}
               <div className="mb-6">

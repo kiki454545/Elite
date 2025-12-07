@@ -182,6 +182,22 @@ export async function POST(request: NextRequest) {
     else if (/yeux\s*(gris)/i.test(html)) eyeColor = 'gris'
     else if (/yeux\s*(noisette)/i.test(html)) eyeColor = 'noisette'
 
+    // Vérifier si le numéro de téléphone existe déjà
+    let phoneExists = false
+    let existingAdUrl = null
+    if (phone) {
+      const { data: existingAd } = await supabaseAdmin
+        .from('ads')
+        .select('id, title')
+        .eq('phone_number', phone)
+        .single()
+
+      if (existingAd) {
+        phoneExists = true
+        existingAdUrl = `https://www.sexelite.eu/ads/${existingAd.id}`
+      }
+    }
+
     return NextResponse.json({
       success: true,
       data: {
@@ -205,7 +221,9 @@ export async function POST(request: NextRequest) {
         available247: available247 || true,
         incall: incall || true,
         outcall: outcall || false
-      }
+      },
+      phoneExists,
+      existingAdUrl
     })
 
   } catch (error: any) {
