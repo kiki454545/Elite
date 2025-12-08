@@ -18,6 +18,8 @@ export function useAds(country?: string, city?: string) {
   const profilesCache = useRef<Map<string, any>>(new Map())
   const currentCountry = useRef<string | undefined>()
   const currentCity = useRef<string | undefined>()
+  const premiumAdsLoaded = useRef(false)
+  const premiumAdsRef = useRef<Ad[]>([])
 
   // Reset quand le pays ou la ville change
   useEffect(() => {
@@ -26,6 +28,8 @@ export function useAds(country?: string, city?: string) {
       currentCity.current = city
       currentOffset.current = 0
       profilesCache.current.clear()
+      premiumAdsLoaded.current = false
+      premiumAdsRef.current = []
       setAds([])
       setHasMore(true)
       setTotalCount(0)
@@ -112,6 +116,59 @@ export function useAds(country?: string, city?: string) {
     })
   }
 
+  async function fetchPremiumAds(): Promise<Ad[]> {
+    // Récupérer tous les profils premium (elite, vip, plus)
+    const { data: premiumProfiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, username, age, rank')
+      .in('rank', ['elite', 'vip', 'plus'])
+
+    if (profilesError || !premiumProfiles || premiumProfiles.length === 0) {
+      console.log('Aucun profil premium trouvé')
+      return []
+    }
+
+    // Mettre en cache les profils premium
+    premiumProfiles.forEach(profile => {
+      profilesCache.current.set(profile.id, profile)
+    })
+
+    const premiumUserIds = premiumProfiles.map(p => p.id)
+
+    // Récupérer les annonces de ces utilisateurs premium
+    let premiumAdsQuery = supabase
+      .from('ads')
+      .select('*')
+      .eq('status', 'approved')
+      .eq('country', country)
+      .in('user_id', premiumUserIds)
+      .order('created_at', { ascending: false })
+
+    if (city) {
+      premiumAdsQuery = premiumAdsQuery.eq('location', city)
+    }
+
+    const { data: premiumAdsData, error: premiumAdsError } = await premiumAdsQuery
+
+    if (premiumAdsError || !premiumAdsData) {
+      console.error('Erreur récupération annonces premium:', premiumAdsError)
+      return []
+    }
+
+    // Transformer et trier par priorité de rank
+    const rankPriority: Record<string, number> = { elite: 4, vip: 3, plus: 2, standard: 1 }
+    const transformedPremiumAds = transformAds(premiumAdsData)
+
+    transformedPremiumAds.sort((a, b) => {
+      const priorityDiff = (rankPriority[b.rank] || 1) - (rankPriority[a.rank] || 1)
+      if (priorityDiff !== 0) return priorityDiff
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    })
+
+    console.log(`👑 ${transformedPremiumAds.length} annonces premium chargées`)
+    return transformedPremiumAds
+  }
+
   async function fetchAds(isInitial = false, retryCount = 0) {
     const maxRetries = 3
 
@@ -119,6 +176,8 @@ export function useAds(country?: string, city?: string) {
       if (isInitial) {
         setLoading(true)
         currentOffset.current = 0
+        premiumAdsLoaded.current = false
+        premiumAdsRef.current = []
       } else {
         setLoadingMore(true)
       }
@@ -151,9 +210,16 @@ export function useAds(country?: string, city?: string) {
           setTotalCount(count || 0)
           console.log(`📊 Total annonces: ${count}`)
         }
+
+        // Charger d'abord toutes les annonces premium
+        const premiumAds = await fetchPremiumAds()
+        premiumAdsRef.current = premiumAds
+        premiumAdsLoaded.current = true
       }
 
-      // Récupérer une page d'annonces
+      // Récupérer une page d'annonces standard (exclure les premium déjà chargés)
+      const premiumUserIds = premiumAdsRef.current.map(ad => ad.userId)
+
       let adsQuery = supabase
         .from('ads')
         .select('*')
@@ -161,6 +227,11 @@ export function useAds(country?: string, city?: string) {
         .eq('country', country)
         .order('created_at', { ascending: false })
         .range(currentOffset.current, currentOffset.current + PAGE_SIZE - 1)
+
+      // Exclure les annonces premium déjà chargées
+      if (premiumUserIds.length > 0) {
+        adsQuery = adsQuery.not('user_id', 'in', `(${premiumUserIds.join(',')})`)
+      }
 
       if (city) {
         adsQuery = adsQuery.eq('location', city)
@@ -173,35 +244,29 @@ export function useAds(country?: string, city?: string) {
         throw new Error(`${adsError.message} (Code: ${adsError.code})`)
       }
 
-      if (!adsData || adsData.length === 0) {
-        if (isInitial) {
-          setAds([])
-        }
-        setHasMore(false)
-        return
+      // Récupérer les profils pour ces annonces
+      if (adsData && adsData.length > 0) {
+        const userIds = [...new Set(adsData.map(ad => ad.user_id))]
+        await fetchProfiles(userIds)
       }
 
-      // Récupérer les profils pour ces annonces
-      const userIds = [...new Set(adsData.map(ad => ad.user_id))]
-      await fetchProfiles(userIds)
-
-      // Transformer les données
-      const transformedAds = transformAds(adsData)
+      // Transformer les données standard
+      const transformedAds = adsData ? transformAds(adsData) : []
 
       // Mettre à jour l'offset pour la prochaine page
-      currentOffset.current += adsData.length
+      currentOffset.current += (adsData?.length || 0)
 
       // Vérifier s'il y a plus de données
-      setHasMore(adsData.length === PAGE_SIZE)
+      setHasMore((adsData?.length || 0) === PAGE_SIZE)
 
-      // Ajouter ou remplacer les annonces
+      // Combiner: premium d'abord, puis standard
       if (isInitial) {
-        setAds(transformedAds)
+        setAds([...premiumAdsRef.current, ...transformedAds])
+        console.log(`✅ Chargé ${premiumAdsRef.current.length} premium + ${transformedAds.length} standard`)
       } else {
         setAds(prev => [...prev, ...transformedAds])
+        console.log(`✅ Chargé ${transformedAds.length} annonces supplémentaires`)
       }
-
-      console.log(`✅ Chargé ${adsData.length} annonces (total affiché: ${isInitial ? transformedAds.length : ads.length + transformedAds.length})`)
 
     } catch (err) {
       console.error('Erreur lors de la récupération des annonces:', err)

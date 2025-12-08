@@ -110,17 +110,11 @@ export function ProfileGrid() {
   }, [hasMore, loadingMore, loading, loadMore])
 
   // Filtrer par ville si une ville est sélectionnée
-  const filteredAds = useMemo(() => {
+  // Note: le tri par rank est déjà fait côté serveur (premium en premier)
+  const sortedAds = useMemo(() => {
     if (!selectedCity) return allAds
     return allAds.filter(ad => ad.location === selectedCity)
   }, [allAds, selectedCity])
-
-  // Trier par rank (Elite > VIP > Plus > Standard)
-  const sortedAds = useMemo(() => {
-    return [...filteredAds].sort((a, b) => {
-      return RANK_CONFIG[b.rank].priority - RANK_CONFIG[a.rank].priority
-    })
-  }, [filteredAds])
 
   const handleViewAd = (adId: string) => {
     router.push(`/ads/${adId}`)
