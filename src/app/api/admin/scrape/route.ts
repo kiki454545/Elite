@@ -114,17 +114,37 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Extraire le téléphone
+    // Extraire le téléphone - patterns plus complets
     let phone = ''
-    const phonePatterns = [/tel:(\d{10})/i, /0[67]\d{8}/g, /0[67]\s*\d{2}\s*\d{2}\s*\d{2}\s*\d{2}/g, /\+33[67]\d{8}/g]
+    const phonePatterns = [
+      /tel:(\d{10})/i,
+      /tel:\+33(\d{9})/i,
+      /href="tel:([^"]+)"/i,
+      /0[67][\s.-]*\d{2}[\s.-]*\d{2}[\s.-]*\d{2}[\s.-]*\d{2}/g,
+      /\+33[\s.-]*[67][\s.-]*\d{2}[\s.-]*\d{2}[\s.-]*\d{2}[\s.-]*\d{2}/g,
+      /0[67]\d{8}/g,
+      /\+33[67]\d{8}/g
+    ]
     for (const pattern of phonePatterns) {
       const match = html.match(pattern)
       if (match) {
-        phone = (Array.isArray(match) ? match[0] : match[1] || match[0])
+        let rawPhone = Array.isArray(match) ? match[0] : match[1] || match[0]
+        // Nettoyer le numéro
+        rawPhone = rawPhone
+          .replace(/href="tel:/i, '')
+          .replace(/"/g, '')
           .replace(/tel:/i, '')
-          .replace(/[\s.]/g, '')
+          .replace(/[\s.\-()]/g, '')
           .replace(/^\+33/, '0')
-        if (phone.length === 10) break
+
+        // S'assurer que c'est un numéro français valide
+        if (rawPhone.length === 9 && !rawPhone.startsWith('0')) {
+          rawPhone = '0' + rawPhone
+        }
+        if (rawPhone.length === 10 && /^0[67]/.test(rawPhone)) {
+          phone = rawPhone
+          break
+        }
       }
     }
 
@@ -186,6 +206,7 @@ export async function POST(request: NextRequest) {
     let phoneExists = false
     let existingAdUrl = null
     if (phone) {
+      // Chercher avec le format 0XXXXXXXXX
       const { data: existingAd } = await supabaseAdmin
         .from('ads')
         .select('id, title')
@@ -195,7 +216,22 @@ export async function POST(request: NextRequest) {
       if (existingAd) {
         phoneExists = true
         existingAdUrl = `https://www.sexelite.eu/ads/${existingAd.id}`
+      } else {
+        // Chercher aussi avec le format +33XXXXXXXXX
+        const phoneWithPrefix = '+33' + phone.substring(1)
+        const { data: existingAdWithPrefix } = await supabaseAdmin
+          .from('ads')
+          .select('id, title')
+          .eq('phone_number', phoneWithPrefix)
+          .single()
+
+        if (existingAdWithPrefix) {
+          phoneExists = true
+          existingAdUrl = `https://www.sexelite.eu/ads/${existingAdWithPrefix.id}`
+        }
       }
+
+      console.log('📞 Phone check:', phone, '-> exists:', phoneExists)
     }
 
     return NextResponse.json({
