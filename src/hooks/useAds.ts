@@ -22,7 +22,9 @@ export function useAds(country?: string, city?: string) {
     fetchAds()
   }, [country, city, user])
 
-  async function fetchAds() {
+  async function fetchAds(retryCount = 0) {
+    const maxRetries = 3
+
     try {
       setLoading(true)
       setError(null)
@@ -146,6 +148,14 @@ export function useAds(country?: string, city?: string) {
       setAds(transformedAds)
     } catch (err) {
       console.error('Erreur lors de la récupération des annonces:', err)
+
+      // Retry automatique en cas d'erreur réseau
+      if (retryCount < maxRetries) {
+        console.log(`🔄 Retry ${retryCount + 1}/${maxRetries} dans 1s...`)
+        setTimeout(() => fetchAds(retryCount + 1), 1000)
+        return
+      }
+
       setError(err instanceof Error ? err.message : 'Erreur inconnue')
     } finally {
       setLoading(false)
