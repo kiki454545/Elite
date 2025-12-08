@@ -2,20 +2,22 @@
 
 import { motion } from 'framer-motion'
 import { MapPin, X } from 'lucide-react'
-import { useAdsContext } from '@/contexts/AdsContext'
 import { useCountry } from '@/contexts/CountryContext'
 import { useCityFilter } from '@/contexts/CityFilterContext'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { useCountryStats } from '@/hooks/useCountryStats'
 import { useState, useEffect } from 'react'
 
 export function AdsStats() {
-  const { selectedCountry } = useCountry()
+  const { selectedCountry, isDetectingCountry } = useCountry()
   const { selectedCity, setSelectedCity } = useCityFilter()
   const { t } = useLanguage()
   const [isMobile, setIsMobile] = useState(false)
 
-  // Utiliser le contexte partagé des annonces
-  const { ads, loading } = useAdsContext()
+  // Utiliser le hook qui récupère les stats complètes du pays (count exact + toutes les villes)
+  const { totalAds, topCities: allTopCities, loading } = useCountryStats(
+    isDetectingCountry ? undefined : selectedCountry.code
+  )
 
   // Détecter si on est sur mobile
   useEffect(() => {
@@ -29,20 +31,8 @@ export function AdsStats() {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  const totalAds = ads.length
-
-  // Compter les annonces par ville
-  const cityCounts = ads.reduce((acc, ad) => {
-    acc[ad.location] = (acc[ad.location] || 0) + 1
-    return acc
-  }, {} as Record<string, number>)
-
-  // Trier les villes par nombre d'annonces (décroissant)
-  // 4 villes sur mobile, 10 sur desktop
-  const topCities = Object.entries(cityCounts)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, isMobile ? 4 : 10)
-    .map(([city, count]) => ({ city, count }))
+  // Limiter le nombre de villes affichées selon le device
+  const topCities = isMobile ? allTopCities.slice(0, 4) : allTopCities
 
   const handleCityClick = (city: string) => {
     if (selectedCity === city) {
