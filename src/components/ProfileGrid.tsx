@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, memo, useCallback } from 'react'
+import { useState, useMemo, memo, useCallback, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { Heart, MapPin, Eye, ChevronLeft, ChevronRight, Loader2, X, Check, MessageCircle } from 'lucide-react'
 import { RankType, RANK_CONFIG } from '@/types/profile'
@@ -85,8 +85,29 @@ export function ProfileGrid() {
     setTimeout(() => setToast(null), 3000)
   }
 
-  // Utiliser le contexte partagé des annonces
-  const { ads: allAds, loading, error } = useAdsContext()
+  // Utiliser le contexte partagé des annonces avec infinite scroll
+  const { ads: allAds, loading, loadingMore, error, hasMore, totalCount, loadMore } = useAdsContext()
+
+  // Référence pour l'observer d'infinite scroll
+  const loadMoreRef = useRef<HTMLDivElement>(null)
+
+  // Observer pour déclencher le chargement quand on approche du bas
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore && !loading) {
+          loadMore()
+        }
+      },
+      { threshold: 0.1, rootMargin: '100px' }
+    )
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current)
+    }
+
+    return () => observer.disconnect()
+  }, [hasMore, loadingMore, loading, loadMore])
 
   // Filtrer par ville si une ville est sélectionnée
   const filteredAds = useMemo(() => {
@@ -353,6 +374,28 @@ export function ProfileGrid() {
           </div>
         ))}
       </div>
+
+      {/* Infinite scroll trigger */}
+      <div ref={loadMoreRef} className="h-10 mt-4" />
+
+      {/* Loading more indicator */}
+      {loadingMore && (
+        <div className="flex items-center justify-center py-8">
+          <div className="flex flex-col items-center gap-2">
+            <Loader2 className="w-6 h-6 text-pink-500 animate-spin" />
+            <p className="text-gray-400 text-sm">{t('home.loadingMore')}</p>
+          </div>
+        </div>
+      )}
+
+      {/* End of list message */}
+      {!hasMore && sortedAds.length > 0 && (
+        <div className="text-center py-8">
+          <p className="text-gray-500 text-sm">
+            {sortedAds.length} {sortedAds.length > 1 ? t('home.profilesDisplayed') : t('home.profileDisplayed')}
+          </p>
+        </div>
+      )}
 
       {/* Toast Notification */}
       {toast && (

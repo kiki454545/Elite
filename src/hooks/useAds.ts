@@ -1,13 +1,36 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Ad } from '@/types/ad'
 import { useAuth } from '@/contexts/AuthContext'
+
+const PAGE_SIZE = 50
 
 export function useAds(country?: string, city?: string) {
   const { user } = useAuth()
   const [ads, setAds] = useState<Ad[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [hasMore, setHasMore] = useState(true)
+  const [totalCount, setTotalCount] = useState(0)
+
+  const currentOffset = useRef(0)
+  const profilesCache = useRef<Map<string, any>>(new Map())
+  const currentCountry = useRef<string | undefined>()
+  const currentCity = useRef<string | undefined>()
+
+  // Reset quand le pays ou la ville change
+  useEffect(() => {
+    if (country !== currentCountry.current || city !== currentCity.current) {
+      currentCountry.current = country
+      currentCity.current = city
+      currentOffset.current = 0
+      profilesCache.current.clear()
+      setAds([])
+      setHasMore(true)
+      setTotalCount(0)
+    }
+  }, [country, city])
 
   useEffect(() => {
     console.log('🔄 useAds: Rechargement des annonces pour pays:', country, 'ville:', city)
@@ -19,14 +42,86 @@ export function useAds(country?: string, city?: string) {
       return
     }
 
-    fetchAds()
+    // Charger la première page
+    fetchAds(true)
   }, [country, city, user])
 
-  async function fetchAds(retryCount = 0) {
+  async function fetchProfiles(userIds: string[]) {
+    // Filtrer les IDs déjà en cache
+    const uncachedIds = userIds.filter(id => !profilesCache.current.has(id))
+
+    if (uncachedIds.length === 0) return
+
+    const profileBatchSize = 500
+    for (let i = 0; i < uncachedIds.length; i += profileBatchSize) {
+      const batchIds = uncachedIds.slice(i, i + profileBatchSize)
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, username, age, rank')
+        .in('id', batchIds)
+
+      if (profilesError) {
+        console.error('❌ Erreur lors de la récupération des profils:', profilesError)
+      } else if (profilesData) {
+        profilesData.forEach(profile => {
+          profilesCache.current.set(profile.id, profile)
+        })
+      }
+    }
+  }
+
+  function transformAds(adsData: any[]): Ad[] {
+    return adsData.map((ad: any) => {
+      const profile = profilesCache.current.get(ad.user_id)
+      return {
+        id: ad.id,
+        userId: ad.user_id,
+        username: profile?.username || 'Anonyme',
+        title: ad.title,
+        description: ad.description || '',
+        age: profile?.age || 0,
+        location: ad.location,
+        arrondissement: ad.arrondissement,
+        country: ad.country,
+        category: ad.categories?.[0] || 'escort',
+        photos: ad.photos || [],
+        video: ad.video_url,
+        price: ad.price,
+        services: ad.services || [],
+        meetingPlaces: [
+          ad.meeting_at_home && 'Incall',
+          ad.meeting_at_hotel && 'Hôtel',
+          ad.meeting_in_car && 'Plan voiture',
+          ad.meeting_at_escort && 'Outcall'
+        ].filter(Boolean) as string[],
+        availability: '',
+        verified: ad.verified || false,
+        rank: profile?.rank || 'standard',
+        online: profile?.online || false,
+        views: ad.views || 0,
+        favorites: ad.favorites_count || 0,
+        createdAt: new Date(ad.created_at),
+        updatedAt: ad.updated_at ? new Date(ad.updated_at) : new Date(ad.created_at),
+        contactInfo: ad.contact_info,
+        languages: ad.languages || [],
+        acceptsCouples: ad.accepts_couples,
+        outcall: ad.outcall,
+        incall: ad.incall,
+        physicalAttributes: ad.physical_attributes
+      }
+    })
+  }
+
+  async function fetchAds(isInitial = false, retryCount = 0) {
     const maxRetries = 3
 
     try {
-      setLoading(true)
+      if (isInitial) {
+        setLoading(true)
+        currentOffset.current = 0
+      } else {
+        setLoadingMore(true)
+      }
       setError(null)
 
       // Filtrer par pays (obligatoire)
@@ -36,133 +131,111 @@ export function useAds(country?: string, city?: string) {
         return
       }
 
-      // 1. Récupérer les annonces avec pagination (limite Supabase 1000)
-      const batchSize = 1000
-      let allAdsData: any[] = []
-      let from = 0
-      let hasMore = true
-
-      while (hasMore) {
-        let adsQuery = supabase
+      // Récupérer le count total (une seule fois au chargement initial)
+      if (isInitial) {
+        let countQuery = supabase
           .from('ads')
-          .select('*')
+          .select('*', { count: 'exact', head: true })
           .eq('status', 'approved')
           .eq('country', country)
-          .order('created_at', { ascending: false })
-          .range(from, from + batchSize - 1)
 
-        // Filtrer par ville si spécifié
         if (city) {
-          adsQuery = adsQuery.eq('location', city)
+          countQuery = countQuery.eq('location', city)
         }
 
-        const { data: adsData, error: adsError } = await adsQuery
+        const { count, error: countError } = await countQuery
 
-        if (adsError) {
-          console.error('Erreur Supabase complète:', adsError)
-          throw new Error(`${adsError.message} (Code: ${adsError.code})`)
+        if (countError) {
+          console.error('Erreur count:', countError)
+        } else {
+          setTotalCount(count || 0)
+          console.log(`📊 Total annonces: ${count}`)
         }
-
-        if (!adsData || adsData.length === 0) {
-          hasMore = false
-          break
-        }
-
-        allAdsData = [...allAdsData, ...adsData]
-        hasMore = adsData.length === batchSize
-        from += batchSize
       }
 
-      if (allAdsData.length === 0) {
-        setAds([])
+      // Récupérer une page d'annonces
+      let adsQuery = supabase
+        .from('ads')
+        .select('*')
+        .eq('status', 'approved')
+        .eq('country', country)
+        .order('created_at', { ascending: false })
+        .range(currentOffset.current, currentOffset.current + PAGE_SIZE - 1)
+
+      if (city) {
+        adsQuery = adsQuery.eq('location', city)
+      }
+
+      const { data: adsData, error: adsError } = await adsQuery
+
+      if (adsError) {
+        console.error('Erreur Supabase complète:', adsError)
+        throw new Error(`${adsError.message} (Code: ${adsError.code})`)
+      }
+
+      if (!adsData || adsData.length === 0) {
+        if (isInitial) {
+          setAds([])
+        }
+        setHasMore(false)
         return
       }
 
-      // 2. Récupérer les profils des utilisateurs avec pagination par lots
-      const userIds = [...new Set(allAdsData.map(ad => ad.user_id))] // Unique IDs
-      console.log('🔍 Recherche des profils pour', userIds.length, 'users')
+      // Récupérer les profils pour ces annonces
+      const userIds = [...new Set(adsData.map(ad => ad.user_id))]
+      await fetchProfiles(userIds)
 
-      const profilesMap = new Map()
-      const profileBatchSize = 500 // Supabase limite les IN queries
+      // Transformer les données
+      const transformedAds = transformAds(adsData)
 
-      for (let i = 0; i < userIds.length; i += profileBatchSize) {
-        const batchIds = userIds.slice(i, i + profileBatchSize)
-        const { data: profilesData, error: profilesError } = await supabase
-          .from('profiles')
-          .select('id, username, age, rank')
-          .in('id', batchIds)
+      // Mettre à jour l'offset pour la prochaine page
+      currentOffset.current += adsData.length
 
-        if (profilesError) {
-          console.error('❌ Erreur lors de la récupération des profils:', profilesError)
-        } else if (profilesData) {
-          profilesData.forEach(profile => {
-            profilesMap.set(profile.id, profile)
-          })
-        }
+      // Vérifier s'il y a plus de données
+      setHasMore(adsData.length === PAGE_SIZE)
+
+      // Ajouter ou remplacer les annonces
+      if (isInitial) {
+        setAds(transformedAds)
+      } else {
+        setAds(prev => [...prev, ...transformedAds])
       }
 
-      console.log('✅ Profils récupérés:', profilesMap.size)
+      console.log(`✅ Chargé ${adsData.length} annonces (total affiché: ${isInitial ? transformedAds.length : ads.length + transformedAds.length})`)
 
-      // 3. Transformer les données
-      const transformedAds: Ad[] = allAdsData.map((ad: any) => {
-        const profile = profilesMap.get(ad.user_id)
-        return {
-          id: ad.id,
-          userId: ad.user_id,
-          username: profile?.username || 'Anonyme',
-          title: ad.title,
-          description: ad.description || '',
-          age: profile?.age || 0,
-          location: ad.location,
-          arrondissement: ad.arrondissement,
-          country: ad.country,
-          category: ad.categories?.[0] || 'escort',
-          photos: ad.photos || [],
-          video: ad.video_url,
-          price: ad.price,
-          services: ad.services || [],
-          meetingPlaces: [
-            ad.meeting_at_home && 'Incall',
-            ad.meeting_at_hotel && 'Hôtel',
-            ad.meeting_in_car && 'Plan voiture',
-            ad.meeting_at_escort && 'Outcall'
-          ].filter(Boolean) as string[],
-          availability: '',
-          verified: ad.verified || false,
-          rank: profile?.rank || 'standard',
-          online: profile?.online || false,
-          views: ad.views || 0,
-          favorites: ad.favorites_count || 0,
-          createdAt: new Date(ad.created_at),
-          updatedAt: ad.updated_at ? new Date(ad.updated_at) : new Date(ad.created_at),
-          // Nouvelles propriétés
-          contactInfo: ad.contact_info,
-          languages: ad.languages || [],
-          acceptsCouples: ad.accepts_couples,
-          outcall: ad.outcall,
-          incall: ad.incall,
-          physicalAttributes: ad.physical_attributes
-        }
-      })
-
-      setAds(transformedAds)
     } catch (err) {
       console.error('Erreur lors de la récupération des annonces:', err)
 
       // Retry automatique en cas d'erreur réseau
       if (retryCount < maxRetries) {
         console.log(`🔄 Retry ${retryCount + 1}/${maxRetries} dans 1s...`)
-        setTimeout(() => fetchAds(retryCount + 1), 1000)
+        setTimeout(() => fetchAds(isInitial, retryCount + 1), 1000)
         return
       }
 
       setError(err instanceof Error ? err.message : 'Erreur inconnue')
     } finally {
       setLoading(false)
+      setLoadingMore(false)
     }
   }
 
-  return { ads, loading, error, refetch: fetchAds }
+  const loadMore = useCallback(() => {
+    if (!loadingMore && hasMore && !loading) {
+      fetchAds(false)
+    }
+  }, [loadingMore, hasMore, loading, country, city])
+
+  return {
+    ads,
+    loading,
+    loadingMore,
+    error,
+    hasMore,
+    totalCount,
+    loadMore,
+    refetch: () => fetchAds(true)
+  }
 }
 
 export function useAdById(id: string) {

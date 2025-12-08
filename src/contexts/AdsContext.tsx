@@ -8,8 +8,12 @@ import { Ad } from '@/types/ad'
 interface AdsContextType {
   ads: Ad[]
   loading: boolean
+  loadingMore: boolean
   error: string | null
-  refetch: () => Promise<void>
+  hasMore: boolean
+  totalCount: number
+  loadMore: () => void
+  refetch: () => void
 }
 
 const AdsContext = createContext<AdsContextType | undefined>(undefined)
@@ -17,15 +21,14 @@ const AdsContext = createContext<AdsContextType | undefined>(undefined)
 export function AdsProvider({ children }: { children: ReactNode }) {
   const { selectedCountry, isDetectingCountry } = useCountry()
 
-  // Charger TOUTES les annonces du pays (sans filtre de ville)
-  // Les composants individuels peuvent filtrer par ville localement
-  const { ads, loading, error, refetch } = useAds(
+  // Charger les annonces du pays avec infinite scroll
+  const { ads, loading, loadingMore, error, hasMore, totalCount, loadMore, refetch } = useAds(
     isDetectingCountry ? undefined : selectedCountry.code,
     undefined // Pas de filtre de ville - on charge tout
   )
 
   return (
-    <AdsContext.Provider value={{ ads, loading, error, refetch }}>
+    <AdsContext.Provider value={{ ads, loading, loadingMore, error, hasMore, totalCount, loadMore, refetch }}>
       {children}
     </AdsContext.Provider>
   )
