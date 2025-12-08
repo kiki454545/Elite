@@ -138,24 +138,27 @@ export function PremiumGrid() {
           return
         }
 
-        // Récupérer les profils des utilisateurs
-        const userIds = ads.map((item: any) => item.user_id)
-        const { data: profiles, error: profilesError } = await supabase
-          .from('profiles')
-          .select('id, username, rank')
-          .in('id', userIds)
-          // Filtrer uniquement les rangs premium (pas standard)
-          .neq('rank', 'standard')
-
-        if (profilesError) {
-          console.error('Erreur lors du chargement des profils:', profilesError)
-        }
-
-        // Créer un Map des profils premium
+        // Récupérer les profils premium avec pagination
+        const userIds = [...new Set(ads.map((item: any) => item.user_id))]
         const premiumProfilesMap = new Map()
-        profiles?.forEach(profile => {
-          premiumProfilesMap.set(profile.id, profile)
-        })
+        const profileBatchSize = 500
+
+        for (let i = 0; i < userIds.length; i += profileBatchSize) {
+          const batchIds = userIds.slice(i, i + profileBatchSize)
+          const { data: profiles, error: profilesError } = await supabase
+            .from('profiles')
+            .select('id, username, rank, age')
+            .in('id', batchIds)
+            .neq('rank', 'standard')
+
+          if (profilesError) {
+            console.error('Erreur lors du chargement des profils:', profilesError)
+          } else if (profiles) {
+            profiles.forEach(profile => {
+              premiumProfilesMap.set(profile.id, profile)
+            })
+          }
+        }
 
         // Filtrer les annonces pour ne garder que celles avec un profil premium
         const premiumAdsData: Ad[] = ads

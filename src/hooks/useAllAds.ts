@@ -20,28 +20,48 @@ export function useAllAds() {
 
   async function fetchAllAdsStats() {
     try {
-      // Récupérer TOUTES les annonces approuvées (sans filtre de pays)
-      const { data: adsData, error } = await supabase
+      // Récupérer le count exact (sans limite 1000)
+      const { count: totalAds, error: countError } = await supabase
         .from('ads')
-        .select('location')
+        .select('*', { count: 'exact', head: true })
         .eq('status', 'approved')
 
-      if (error) {
-        console.error('Erreur lors de la récupération des stats:', error)
+      if (countError) {
+        console.error('Erreur lors de la récupération du count:', countError)
         return
       }
 
-      if (!adsData) {
-        setStats({ totalAds: 0, topCities: [], loading: false })
-        return
-      }
+      // Récupérer les locations avec pagination pour calculer les top villes
+      const batchSize = 1000
+      let allLocations: string[] = []
+      let from = 0
+      let hasMore = true
 
-      // Compter le nombre total d'annonces
-      const totalAds = adsData.length
+      while (hasMore) {
+        const { data: adsData, error } = await supabase
+          .from('ads')
+          .select('location')
+          .eq('status', 'approved')
+          .range(from, from + batchSize - 1)
+
+        if (error) {
+          console.error('Erreur lors de la récupération des locations:', error)
+          break
+        }
+
+        if (!adsData || adsData.length === 0) {
+          hasMore = false
+          break
+        }
+
+        allLocations = [...allLocations, ...adsData.map(ad => ad.location)]
+        hasMore = adsData.length === batchSize
+        from += batchSize
+      }
 
       // Compter les annonces par ville
-      const cityCounts = adsData.reduce((acc, ad) => {
-        acc[ad.location] = (acc[ad.location] || 0) + 1
+      const cityCounts = allLocations.reduce((acc, location) => {
+        acc[location] = (acc[location] || 0) + 1
         return acc
       }, {} as Record<string, number>)
 
@@ -51,7 +71,7 @@ export function useAllAds() {
         .slice(0, 4)
         .map(([city, count]) => ({ city, count }))
 
-      setStats({ totalAds, topCities, loading: false })
+      setStats({ totalAds: totalAds || 0, topCities, loading: false })
     } catch (err) {
       console.error('Erreur lors de la récupération des stats:', err)
       setStats({ totalAds: 0, topCities: [], loading: false })
