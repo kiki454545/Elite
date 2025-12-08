@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
+    // Désactiver l'optimisation Vercel (limite gratuite atteinte)
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
@@ -18,11 +20,6 @@ const nextConfig = {
         pathname: '/**',
       },
     ],
-    // Optimisations LCP
-    formats: ['image/avif', 'image/webp'],
-    deviceSizes: [640, 750, 828, 1080, 1200],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256],
-    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 jours de cache
   },
   // Compression
   compress: true,
