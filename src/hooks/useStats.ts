@@ -38,22 +38,43 @@ export function useStats() {
 
       if (usersError) throw usersError
 
-      // Récupérer les statistiques des annonces (uniquement les colonnes qui existent)
-      const { data: adsData, error: adsError } = await supabase
+      // Récupérer le nombre total d'annonces (count exact)
+      const { count: adsCount, error: adsCountError } = await supabase
         .from('ads')
-        .select('user_id, views, favorites_count')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'approved')
 
-      if (adsError) throw adsError
+      if (adsCountError) throw adsCountError
 
-      // Récupérer les profils
-      const { data: profilesData } = await supabase
-        .from('profiles')
-        .select('id')
+      // Récupérer les vues et favoris avec pagination (limite Supabase 1000)
+      let totalViews = 0
+      let totalFavorites = 0
+      const batchSize = 1000
+      let from = 0
+      let hasMore = true
 
-      // Calculer les statistiques
-      const totalAds = adsData?.length || 0
-      const totalViews = adsData?.reduce((sum, ad) => sum + (ad.views || 0), 0) || 0
-      const totalFavorites = adsData?.reduce((sum, ad) => sum + (ad.favorites_count || 0), 0) || 0
+      while (hasMore) {
+        const { data: adsData, error: adsError } = await supabase
+          .from('ads')
+          .select('views, favorites_count')
+          .eq('status', 'approved')
+          .range(from, from + batchSize - 1)
+
+        if (adsError) throw adsError
+
+        if (!adsData || adsData.length === 0) {
+          hasMore = false
+          break
+        }
+
+        totalViews += adsData.reduce((sum, ad) => sum + (ad.views || 0), 0)
+        totalFavorites += adsData.reduce((sum, ad) => sum + (ad.favorites_count || 0), 0)
+
+        hasMore = adsData.length === batchSize
+        from += batchSize
+      }
+
+      const totalAds = adsCount || 0
 
       // Pour l'instant, on met ces stats à 0 car les colonnes n'existent pas encore
       let onlineAds = 0
