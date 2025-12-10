@@ -26,11 +26,18 @@ interface CityUpdate {
   created_at: string
 }
 
+interface UpdateStats {
+  total: number
+  today: number
+  thisWeek: number
+}
+
 export default function AdminUpdatesPage() {
   const router = useRouter()
   const { user, loading } = useAuth()
   const [isAdmin, setIsAdmin] = useState(false)
   const [updates, setUpdates] = useState<CityUpdate[]>([])
+  const [stats, setStats] = useState<UpdateStats>({ total: 0, today: 0, thisWeek: 0 })
   const [loadingData, setLoadingData] = useState(true)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editCity, setEditCity] = useState('')
@@ -76,14 +83,59 @@ export default function AdminUpdatesPage() {
   async function loadUpdates() {
     setLoadingData(true)
     try {
-      const { data, error } = await supabase
+      // Récupérer le count total
+      const { count: totalCount } = await supabase
         .from('city_updates_log')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(100)
+        .select('*', { count: 'exact', head: true })
 
-      if (error) throw error
-      setUpdates(data || [])
+      // Récupérer le count d'aujourd'hui
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      const { count: todayCount } = await supabase
+        .from('city_updates_log')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', today.toISOString())
+
+      // Récupérer le count de cette semaine
+      const weekAgo = new Date()
+      weekAgo.setDate(weekAgo.getDate() - 7)
+      const { count: weekCount } = await supabase
+        .from('city_updates_log')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', weekAgo.toISOString())
+
+      setStats({
+        total: totalCount || 0,
+        today: todayCount || 0,
+        thisWeek: weekCount || 0
+      })
+
+      // Récupérer toutes les updates avec pagination
+      const batchSize = 1000
+      let allUpdates: CityUpdate[] = []
+      let from = 0
+      let hasMore = true
+
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from('city_updates_log')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .range(from, from + batchSize - 1)
+
+        if (error) throw error
+
+        if (!data || data.length === 0) {
+          hasMore = false
+          break
+        }
+
+        allUpdates = [...allUpdates, ...data]
+        hasMore = data.length === batchSize
+        from += batchSize
+      }
+
+      setUpdates(allUpdates)
     } catch (error) {
       console.error('Erreur chargement updates:', error)
     } finally {
@@ -201,26 +253,15 @@ export default function AdminUpdatesPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
             <p className="text-gray-400 text-sm">Total mises à jour</p>
-            <p className="text-2xl font-bold text-white">{updates.length}</p>
+            <p className="text-2xl font-bold text-white">{stats.total}</p>
           </div>
           <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
             <p className="text-gray-400 text-sm">Aujourd'hui</p>
-            <p className="text-2xl font-bold text-green-500">
-              {updates.filter(u => {
-                const today = new Date().toDateString()
-                return new Date(u.created_at).toDateString() === today
-              }).length}
-            </p>
+            <p className="text-2xl font-bold text-green-500">{stats.today}</p>
           </div>
           <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
             <p className="text-gray-400 text-sm">Cette semaine</p>
-            <p className="text-2xl font-bold text-blue-500">
-              {updates.filter(u => {
-                const weekAgo = new Date()
-                weekAgo.setDate(weekAgo.getDate() - 7)
-                return new Date(u.created_at) > weekAgo
-              }).length}
-            </p>
+            <p className="text-2xl font-bold text-blue-500">{stats.thisWeek}</p>
           </div>
         </div>
 
