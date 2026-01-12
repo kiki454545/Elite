@@ -216,7 +216,23 @@ export default function AdminPage() {
     }[]
   } | null>(null)
   const [visitorsLoading, setVisitorsLoading] = useState(false)
-  const [selectedVisitor, setSelectedVisitor] = useState<typeof visitorsDetail extends { visitors: (infer T)[] } | null ? T : never | null>(null)
+  const [selectedVisitor, setSelectedVisitor] = useState<{
+    ip: string
+    ipAnonymized: string
+    firstVisit: string
+    lastVisit: string
+    pages: { path: string; time: string }[]
+    device: string
+    browser: string
+    os: string
+    source: string
+    totalPageViews: number
+    hasAccount: boolean
+    username: string | null
+    visitHistory: { date: string; visits: number; pages: string[] }[]
+    totalVisitsAllTime: number
+    firstEverVisit: string
+  } | null>(null)
 
   // Total EliteCoins
   const [totalCoins, setTotalCoins] = useState(0)
