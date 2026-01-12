@@ -95,10 +95,12 @@ export async function POST(request: NextRequest) {
     const ip = forwardedFor?.split(',')[0]?.trim() || realIp || 'unknown'
 
     const userAgent = request.headers.get('user-agent') || ''
-    const referer = request.headers.get('referer') || ''
 
     const body = await request.json().catch(() => ({}))
     const pagePath = body.path || '/'
+    // Utiliser le referrer envoyé par le client (plus fiable que le header HTTP)
+    const referer = body.referrer || request.headers.get('referer') || ''
+    const fullUrl = body.fullUrl || ''
 
     // Filtrer les bots - ne pas enregistrer leur visite
     if (isBotIp(ip) || isBotUserAgent(userAgent)) {
@@ -106,15 +108,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Enregistrer la visite (uniquement les vrais visiteurs)
+    // Note: full_url est optionnel, si la colonne n'existe pas dans la table, on l'ignore
+    const insertData: Record<string, any> = {
+      ip_address: ip,
+      user_agent: userAgent,
+      page_path: pagePath,
+      referrer: referer,
+      visited_at: new Date().toISOString()
+    }
+
     const { error } = await supabase
       .from('visitor_stats')
-      .insert({
-        ip_address: ip,
-        user_agent: userAgent,
-        page_path: pagePath,
-        referrer: referer,
-        visited_at: new Date().toISOString()
-      })
+      .insert(insertData)
 
     if (error) {
       console.error('Erreur tracking visite:', error)

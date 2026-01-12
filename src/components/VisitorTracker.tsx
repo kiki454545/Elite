@@ -21,7 +21,9 @@ export function VisitorTracker() {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            path: window.location.pathname
+            path: window.location.pathname,
+            referrer: document.referrer || '',
+            fullUrl: window.location.href
           })
         })
 

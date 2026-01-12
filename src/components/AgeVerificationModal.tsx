@@ -64,26 +64,26 @@ export function AgeVerificationModal() {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-            className="bg-gradient-to-br from-gray-900 to-gray-950 rounded-3xl border-2 border-pink-500/30 shadow-2xl shadow-pink-500/20 max-w-lg w-full p-8"
+            className="bg-gradient-to-br from-gray-900 to-gray-950 rounded-2xl sm:rounded-3xl border-2 border-pink-500/30 shadow-2xl shadow-pink-500/20 max-w-lg w-full p-5 sm:p-8 max-h-[90vh] overflow-y-auto"
           >
             {/* Header */}
-            <div className="text-center mb-6">
-              <div className="flex items-center justify-center gap-3 mb-4">
-                <Shield className="w-10 h-10 text-pink-500" />
-                <h2 className="text-3xl font-bold text-white">Vérification d&apos;âge</h2>
-                <Shield className="w-10 h-10 text-pink-500" />
+            <div className="text-center mb-4 sm:mb-6">
+              <div className="flex items-center justify-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                <Shield className="w-7 h-7 sm:w-10 sm:h-10 text-pink-500" />
+                <h2 className="text-xl sm:text-3xl font-bold text-white">Vérification d&apos;âge</h2>
+                <Shield className="w-7 h-7 sm:w-10 sm:h-10 text-pink-500" />
               </div>
-              <div className="w-20 h-1 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full mx-auto"></div>
+              <div className="w-16 sm:w-20 h-1 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full mx-auto"></div>
             </div>
 
             {/* Content */}
-            <div className="space-y-6 mb-8">
+            <div className="space-y-4 sm:space-y-6 mb-5 sm:mb-8">
               {/* Warning */}
-              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 flex items-start gap-3">
-                <AlertTriangle className="w-6 h-6 text-yellow-500 flex-shrink-0 mt-0.5" />
+              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg sm:rounded-xl p-3 sm:p-4 flex items-start gap-2 sm:gap-3">
+                <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500 flex-shrink-0 mt-0.5" />
                 <div>
-                  <h3 className="text-yellow-500 font-bold mb-1">Contenu réservé aux adultes</h3>
-                  <p className="text-gray-300 text-sm">
+                  <h3 className="text-yellow-500 font-bold text-sm sm:text-base mb-0.5 sm:mb-1">Contenu réservé aux adultes</h3>
+                  <p className="text-gray-300 text-xs sm:text-sm">
                     Ce site contient du contenu pour adultes et est strictement réservé aux personnes majeures.
                   </p>
                 </div>
@@ -91,44 +91,40 @@ export function AgeVerificationModal() {
 
               {/* Main Question */}
               <div className="text-center">
-                <p className="text-2xl font-bold text-white mb-2">
+                <p className="text-xl sm:text-2xl font-bold text-white mb-1 sm:mb-2">
                   Avez-vous 18 ans ou plus ?
                 </p>
-                <p className="text-gray-400">
+                <p className="text-gray-400 text-sm sm:text-base">
                   Vous devez avoir au moins 18 ans pour accéder à ce contenu
                 </p>
               </div>
 
               {/* Legal Info */}
-              <div className="bg-gray-800/50 rounded-xl p-4 space-y-2 text-sm text-gray-400">
+              <div className="bg-gray-800/50 rounded-lg sm:rounded-xl p-3 sm:p-4 space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-400">
                 <p className="flex items-start gap-2">
-                  <Check className="w-4 h-4 text-pink-500 flex-shrink-0 mt-0.5" />
-                  <span>L&apos;accès à ce site est interdit aux mineurs de moins de 18 ans</span>
+                  <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-pink-500 flex-shrink-0 mt-0.5" />
+                  <span>L&apos;accès à ce site est interdit aux mineurs</span>
                 </p>
                 <p className="flex items-start gap-2">
-                  <Check className="w-4 h-4 text-pink-500 flex-shrink-0 mt-0.5" />
-                  <span>En continuant, vous confirmez être majeur selon les lois de votre pays</span>
+                  <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-pink-500 flex-shrink-0 mt-0.5" />
+                  <span>En continuant, vous confirmez être majeur</span>
                 </p>
                 <p className="flex items-start gap-2">
-                  <Check className="w-4 h-4 text-pink-500 flex-shrink-0 mt-0.5" />
-                  <span>Vous acceptez de voir du contenu réservé aux adultes</span>
-                </p>
-                <p className="flex items-start gap-2">
-                  <Check className="w-4 h-4 text-pink-500 flex-shrink-0 mt-0.5" />
-                  <span>Ce contenu peut heurter la sensibilité des plus jeunes</span>
+                  <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-pink-500 flex-shrink-0 mt-0.5" />
+                  <span>Vous acceptez de voir du contenu adulte</span>
                 </p>
               </div>
             </div>
 
             {/* Buttons */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleDecline}
-                className="bg-gray-800 hover:bg-gray-700 text-white py-4 rounded-xl font-bold transition-colors border border-gray-700"
+                className="bg-gray-800 hover:bg-gray-700 text-white py-3 sm:py-4 rounded-lg sm:rounded-xl font-bold text-xs sm:text-base transition-colors border border-gray-700"
               >
-                Non, j&apos;ai moins de 18 ans
+                Non, - de 18 ans
               </motion.button>
 
               <motion.button
@@ -136,7 +132,7 @@ export function AgeVerificationModal() {
                 whileTap={{ scale: 0.98 }}
                 onClick={handleConfirm}
                 disabled={isConfirming}
-                className={`bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white py-4 rounded-xl font-bold transition-all shadow-lg shadow-pink-500/30 ${
+                className={`bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white py-3 sm:py-4 rounded-lg sm:rounded-xl font-bold text-xs sm:text-base transition-all shadow-lg shadow-pink-500/30 ${
                   isConfirming ? 'opacity-75 cursor-not-allowed' : ''
                 }`}
               >
@@ -145,19 +141,18 @@ export function AgeVerificationModal() {
                     <motion.div
                       animate={{ rotate: 360 }}
                       transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                      className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                      className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full"
                     />
-                    Vérification...
                   </span>
                 ) : (
-                  'Oui, j\'ai 18 ans ou plus'
+                  'Oui, + de 18 ans'
                 )}
               </motion.button>
             </div>
 
             {/* Footer */}
-            <p className="text-center text-xs text-gray-500 mt-6">
-              En accédant à ce site, vous acceptez nos conditions d&apos;utilisation et notre politique de confidentialité
+            <p className="text-center text-[10px] sm:text-xs text-gray-500 mt-4 sm:mt-6">
+              En accédant à ce site, vous acceptez nos conditions d&apos;utilisation
             </p>
           </motion.div>
         </motion.div>

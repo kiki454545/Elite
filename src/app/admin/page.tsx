@@ -189,6 +189,35 @@ export default function AdminPage() {
   } | null>(null)
   const [statsLoading, setStatsLoading] = useState(true)
 
+  // Détail des visiteurs
+  const [showVisitorsModal, setShowVisitorsModal] = useState(false)
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [visitorsDetail, setVisitorsDetail] = useState<{
+    date: string
+    totalUniqueVisitors: number
+    totalPageViews: number
+    visitors: {
+      ip: string
+      ipAnonymized: string
+      firstVisit: string
+      lastVisit: string
+      pages: { path: string; time: string }[]
+      device: string
+      browser: string
+      os: string
+      source: string
+      totalPageViews: number
+      hasAccount: boolean
+      username: string | null
+      // Historique complet
+      visitHistory: { date: string; visits: number; pages: string[] }[]
+      totalVisitsAllTime: number
+      firstEverVisit: string
+    }[]
+  } | null>(null)
+  const [visitorsLoading, setVisitorsLoading] = useState(false)
+  const [selectedVisitor, setSelectedVisitor] = useState<typeof visitorsDetail extends { visitors: (infer T)[] } | null ? T : never | null>(null)
+
   // Total EliteCoins
   const [totalCoins, setTotalCoins] = useState(0)
   const [coinsLoading, setCoinsLoading] = useState(true)
@@ -1095,6 +1124,36 @@ export default function AdminPage() {
       console.error('Erreur chargement stats:', error)
     } finally {
       setStatsLoading(false)
+    }
+  }
+
+  // Charger les détails des visiteurs d'un jour
+  async function loadVisitorsDetail(date: string) {
+    try {
+      setVisitorsLoading(true)
+      setSelectedDate(date)
+      setShowVisitorsModal(true)
+      setSelectedVisitor(null)
+
+      const session = await supabase.auth.getSession()
+      const token = session.data.session?.access_token
+
+      if (!token) return
+
+      const response = await fetch(`/api/stats/visitors?date=${date}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setVisitorsDetail(data)
+      }
+    } catch (error) {
+      console.error('Erreur chargement visiteurs:', error)
+    } finally {
+      setVisitorsLoading(false)
     }
   }
 
@@ -2422,12 +2481,13 @@ export default function AdminPage() {
                     <p className="text-xs text-gray-500 mt-1">IP différentes depuis le début</p>
                   </motion.div>
 
-                  {/* Visiteurs uniques aujourd'hui */}
+                  {/* Visiteurs uniques aujourd'hui - CLIQUABLE */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
-                    className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-xl p-6 border border-green-500/30"
+                    onClick={() => loadVisitorsDetail(new Date().toISOString().split('T')[0])}
+                    className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-xl p-6 border border-green-500/30 cursor-pointer hover:border-green-400/50 transition-colors"
                   >
                     <div className="flex items-center gap-3 mb-2">
                       <div className="p-2 bg-green-500/20 rounded-lg">
@@ -2445,6 +2505,7 @@ export default function AdminPage() {
                         <span className="text-red-400 ml-2">{visitorStats.todayUniqueVisitors - visitorStats.yesterdayUniqueVisitors}</span>
                       )}
                     </p>
+                    <p className="text-xs text-green-400 mt-2">Cliquer pour voir les détails →</p>
                   </motion.div>
 
                   {/* Visites aujourd'hui (avec retours) */}
@@ -2511,11 +2572,16 @@ export default function AdminPage() {
                           <th className="text-left text-gray-400 py-2 px-2">Date</th>
                           <th className="text-right text-gray-400 py-2 px-2">Visiteurs uniques</th>
                           <th className="text-right text-gray-400 py-2 px-2">Total visites</th>
+                          <th className="text-right text-gray-400 py-2 px-2"></th>
                         </tr>
                       </thead>
                       <tbody>
                         {visitorStats.dailyStats.map((day, index) => (
-                          <tr key={day.date} className="border-b border-gray-800/50">
+                          <tr
+                            key={day.date}
+                            className="border-b border-gray-800/50 hover:bg-gray-800/50 cursor-pointer transition-colors"
+                            onClick={() => loadVisitorsDetail(day.date)}
+                          >
                             <td className="py-3 px-2 text-white">
                               {new Date(day.date).toLocaleDateString('fr-FR', {
                                 weekday: 'short',
@@ -2528,6 +2594,9 @@ export default function AdminPage() {
                             </td>
                             <td className="py-3 px-2 text-right">
                               <span className="text-purple-400 font-medium">{day.total.toLocaleString()}</span>
+                            </td>
+                            <td className="py-3 px-2 text-right">
+                              <span className="text-gray-500 text-xs">Cliquer pour détails →</span>
                             </td>
                           </tr>
                         ))}
@@ -3085,6 +3154,238 @@ export default function AdminPage() {
           )}
           <span className="font-medium">{toast.message}</span>
         </motion.div>
+      )}
+
+      {/* Modal détails des visiteurs */}
+      {showVisitorsModal && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => {
+              setShowVisitorsModal(false)
+              setSelectedVisitor(null)
+            }}
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50"
+          />
+
+          {/* Modal */}
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-gray-900 rounded-2xl border border-gray-800 p-6 max-w-5xl w-full max-h-[90vh] flex flex-col shadow-2xl"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-cyan-500/20 rounded-full flex items-center justify-center">
+                    <Users className="w-6 h-6 text-cyan-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white">
+                      Visiteurs du {selectedDate && new Date(selectedDate).toLocaleDateString('fr-FR', {
+                        weekday: 'long',
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                      })}
+                    </h3>
+                    {visitorsDetail && (
+                      <p className="text-sm text-gray-400">
+                        {visitorsDetail.totalUniqueVisitors} visiteurs uniques • {visitorsDetail.totalPageViews} pages vues
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowVisitorsModal(false)
+                    setSelectedVisitor(null)
+                  }}
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <XCircle className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 overflow-hidden flex gap-4">
+                {/* Liste des visiteurs */}
+                <div className={`${selectedVisitor ? 'w-1/2' : 'w-full'} overflow-y-auto pr-2`}>
+                  {visitorsLoading ? (
+                    <div className="text-center text-gray-400 py-12">Chargement...</div>
+                  ) : visitorsDetail?.visitors.length === 0 ? (
+                    <div className="text-center text-gray-400 py-12">Aucun visiteur ce jour</div>
+                  ) : (
+                    <div className="space-y-2">
+                      {visitorsDetail?.visitors.map((visitor, index) => (
+                        <div
+                          key={visitor.ip + index}
+                          onClick={() => setSelectedVisitor(visitor)}
+                          className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                            selectedVisitor?.ip === visitor.ip
+                              ? 'bg-cyan-500/20 border-cyan-500/50'
+                              : 'bg-gray-800/50 border-gray-700 hover:border-gray-600'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                visitor.device === 'Mobile' ? 'bg-green-500/20' : visitor.device === 'Tablet' ? 'bg-yellow-500/20' : 'bg-blue-500/20'
+                              }`}>
+                                {visitor.device === 'Mobile' ? '📱' : visitor.device === 'Tablet' ? '📱' : '💻'}
+                              </div>
+                              <div>
+                                <p className="text-white font-medium">{visitor.ipAnonymized}</p>
+                                <p className="text-xs text-gray-400">
+                                  {visitor.browser} • {visitor.os}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm text-cyan-400">{visitor.totalPageViews} page{visitor.totalPageViews > 1 ? 's' : ''}</p>
+                              <p className="text-xs text-gray-500">
+                                {new Date(visitor.firstVisit).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="mt-2 flex items-center gap-2 flex-wrap">
+                            <span className={`px-2 py-0.5 rounded text-xs ${
+                              visitor.source === 'Direct' ? 'bg-gray-700 text-gray-300' :
+                              visitor.source === 'Google' ? 'bg-blue-500/20 text-blue-400' :
+                              visitor.source.includes('facebook') || visitor.source === 'Facebook' ? 'bg-blue-600/20 text-blue-400' :
+                              visitor.source.includes('instagram') || visitor.source === 'Instagram' ? 'bg-pink-500/20 text-pink-400' :
+                              visitor.source.includes('tiktok') || visitor.source === 'TikTok' ? 'bg-gray-700 text-white' :
+                              'bg-purple-500/20 text-purple-400'
+                            }`}>
+                              {visitor.source}
+                            </span>
+                            {visitor.hasAccount && (
+                              <span className="px-2 py-0.5 rounded text-xs bg-green-500/20 text-green-400">
+                                Compte: {visitor.username}
+                              </span>
+                            )}
+                            {visitor.visitHistory && visitor.visitHistory.length > 1 && (
+                              <span className="px-2 py-0.5 rounded text-xs bg-purple-500/20 text-purple-400 flex items-center gap-1">
+                                <History className="w-3 h-3" />
+                                {visitor.totalVisitsAllTime} visites
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Détail du visiteur sélectionné */}
+                {selectedVisitor && (
+                  <div className="w-1/2 bg-gray-800/50 rounded-xl p-4 overflow-y-auto border border-gray-700">
+                    <h4 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                      <Eye className="w-5 h-5 text-cyan-400" />
+                      Parcours du visiteur
+                    </h4>
+
+                    {/* Badge visiteur récurrent */}
+                    {selectedVisitor.visitHistory && selectedVisitor.visitHistory.length > 1 && (
+                      <div className="mb-4 p-3 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <History className="w-5 h-5 text-purple-400" />
+                          <span className="text-purple-300 font-medium">Visiteur récurrent</span>
+                          <span className="px-2 py-0.5 bg-purple-500/30 rounded text-purple-200 text-sm">
+                            {selectedVisitor.totalVisitsAllTime} visites totales
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-400 mt-1">
+                          Première visite sur le site : {new Date(selectedVisitor.firstEverVisit).toLocaleDateString('fr-FR')}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Infos générales */}
+                    <div className="grid grid-cols-2 gap-3 mb-4">
+                      <div className="bg-gray-900/50 rounded-lg p-3">
+                        <p className="text-xs text-gray-400 mb-1">IP</p>
+                        <p className="text-white text-sm font-mono">{selectedVisitor.ip}</p>
+                      </div>
+                      <div className="bg-gray-900/50 rounded-lg p-3">
+                        <p className="text-xs text-gray-400 mb-1">Appareil</p>
+                        <p className="text-white text-sm">{selectedVisitor.device}</p>
+                      </div>
+                      <div className="bg-gray-900/50 rounded-lg p-3">
+                        <p className="text-xs text-gray-400 mb-1">Navigateur</p>
+                        <p className="text-white text-sm">{selectedVisitor.browser}</p>
+                      </div>
+                      <div className="bg-gray-900/50 rounded-lg p-3">
+                        <p className="text-xs text-gray-400 mb-1">Système</p>
+                        <p className="text-white text-sm">{selectedVisitor.os}</p>
+                      </div>
+                      <div className="bg-gray-900/50 rounded-lg p-3">
+                        <p className="text-xs text-gray-400 mb-1">Source</p>
+                        <p className="text-white text-sm">{selectedVisitor.source}</p>
+                      </div>
+                      <div className="bg-gray-900/50 rounded-lg p-3">
+                        <p className="text-xs text-gray-400 mb-1">Visite aujourd'hui</p>
+                        <p className="text-white text-sm">{new Date(selectedVisitor.firstVisit).toLocaleTimeString('fr-FR')}</p>
+                      </div>
+                    </div>
+
+                    {/* Pages visitées aujourd'hui */}
+                    <h5 className="text-sm font-medium text-gray-300 mb-2">Pages visitées ce jour ({selectedVisitor.pages.length})</h5>
+                    <div className="space-y-1 mb-4">
+                      {selectedVisitor.pages.map((page, idx) => (
+                        <div key={idx} className="flex items-center justify-between text-sm bg-gray-900/30 rounded px-3 py-2">
+                          <span className="text-cyan-400 truncate flex-1 mr-2">{page.path}</span>
+                          <span className="text-gray-500 text-xs whitespace-nowrap">
+                            {new Date(page.time).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Historique complet des visites */}
+                    {selectedVisitor.visitHistory && selectedVisitor.visitHistory.length > 0 && (
+                      <>
+                        <h5 className="text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+                          <History className="w-4 h-4 text-purple-400" />
+                          Historique complet ({selectedVisitor.visitHistory.length} jours)
+                        </h5>
+                        <div className="space-y-2 max-h-48 overflow-y-auto">
+                          {selectedVisitor.visitHistory.map((day, idx) => (
+                            <div key={idx} className="bg-gray-900/50 rounded-lg p-3 border border-gray-700/50">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="text-white font-medium text-sm">
+                                  {new Date(day.date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}
+                                </span>
+                                <span className="text-purple-400 text-sm">
+                                  {day.visits} visite{day.visits > 1 ? 's' : ''}
+                                </span>
+                              </div>
+                              <div className="flex flex-wrap gap-1">
+                                {day.pages.slice(0, 5).map((pagePath, pIdx) => (
+                                  <span key={pIdx} className="text-xs bg-gray-800 text-gray-400 px-2 py-0.5 rounded">
+                                    {pagePath}
+                                  </span>
+                                ))}
+                                {day.pages.length > 5 && (
+                                  <span className="text-xs text-gray-500">+{day.pages.length - 5} autres</span>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        </>
       )}
     </div>
   )
